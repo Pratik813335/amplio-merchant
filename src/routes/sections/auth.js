@@ -19,7 +19,11 @@ const AmplifyForgotPasswordPage = lazy(() => import('src/pages/auth/amplify/forg
 
 // JWT
 const JwtLoginPage = lazy(() => import('src/pages/auth/jwt/login'));
+const JwtRegisterPhonePage = lazy(() => import('src/pages/auth/jwt/register-phone'));
+const JwtRegisterEmailPage = lazy(() => import('src/pages/auth/jwt/register-email'));
 const JwtRegisterPage = lazy(() => import('src/pages/auth/jwt/register'));
+const JwtNewPasswordPage = lazy(() => import('src/pages/auth/jwt/new-password'));
+const JwtForgotPasswordPage = lazy(() => import('src/pages/auth/jwt/forgot-password'));
 
 // FIREBASE
 const FirebaseLoginPage = lazy(() => import('src/pages/auth/firebase/login'));
@@ -30,6 +34,12 @@ const FirebaseForgotPasswordPage = lazy(() => import('src/pages/auth/firebase/fo
 // AUTH0
 const Auth0LoginPage = lazy(() => import('src/pages/auth/auth0/login'));
 const Auth0Callback = lazy(() => import('src/pages/auth/auth0/callback'));
+
+// KYC pages
+const KYCBasicInfoPage = lazy(() => import('src/pages/kyc/kyc-basic-info'));
+const CompanyKycPage = lazy(() => import('src/pages/kyc/company-kyc'));
+const CompanyKycSuccessPage = lazy(() => import('src/pages/kyc/kyc-sucessfull'));
+const CompanyKycPendingPage = lazy(() => import('src/pages/kyc/kyc-pending'));
 
 // ----------------------------------------------------------------------
 
@@ -93,12 +103,39 @@ const authJwt = {
       ),
     },
     {
+      path: 'register-phone',
+      element: (
+        <AuthClassicLayout title="Manage the job more effectively with Minimal">
+          <JwtRegisterPhonePage />
+        </AuthClassicLayout>
+      ),
+    },
+    {
+      path: 'register-email',
+      element: (
+        <AuthClassicLayout title="Manage the job more effectively with Minimal">
+          <JwtRegisterEmailPage />
+        </AuthClassicLayout>
+      ),
+    },
+    {
       path: 'register',
       element: (
         <AuthClassicLayout title="Manage the job more effectively with Minimal">
           <JwtRegisterPage />
         </AuthClassicLayout>
       ),
+    },
+    {
+      element: (
+        <AuthClassicLayout>
+          <Outlet />
+        </AuthClassicLayout>
+      ),
+      children: [
+        { path: 'new-password', element: <JwtNewPasswordPage /> },
+        { path: 'forgot-password', element: <JwtForgotPasswordPage /> },
+      ],
     },
   ],
 };
@@ -168,9 +205,36 @@ const authAuth0 = {
   ],
 };
 
+const authKyc = {
+  path: 'kyc',
+  element: (
+    <Suspense fallback={<SplashScreen />}>
+      <Outlet />
+    </Suspense>
+  ),
+  children: [
+    {
+      path: 'basic-info',
+      element: <KYCBasicInfoPage />,
+    },
+    {
+      path: 'kyc-successful',
+      element: <CompanyKycSuccessPage />,
+    },
+    {
+      path: 'kyc-pending',
+      element: <CompanyKycPendingPage />,
+    },
+    {
+      path: 'company-kyc',
+      element: <CompanyKycPage />,
+    },
+  ],
+};
+
 export const authRoutes = [
   {
     path: 'auth',
-    children: [authAmplify, authJwt, authFirebase, authAuth0],
-  },
+    children: [authAmplify, authJwt, authFirebase, authAuth0, authKyc], 
+  }, 
 ];

@@ -22,7 +22,8 @@ import { useBoolean } from 'src/hooks/use-boolean';
 import { useAuthContext } from 'src/auth/hooks';
 // components
 import Iconify from 'src/components/iconify';
-import FormProvider, { RHFTextField } from 'src/components/hook-form';
+import FormProvider, { RHFCheckbox, RHFTextField } from 'src/components/hook-form';
+import { Card } from '@mui/material';
 
 // ----------------------------------------------------------------------
 
@@ -42,11 +43,13 @@ export default function JwtLoginView() {
   const LoginSchema = Yup.object().shape({
     email: Yup.string().required('Email is required').email('Email must be a valid email address'),
     password: Yup.string().required('Password is required'),
+    rememberMe: Yup.boolean(),
   });
 
   const defaultValues = {
-    email: 'demo@minimals.cc',
-    password: 'demo1234',
+    email: '',
+    password: '',
+    rememberMe: true,
   };
 
   const methods = useForm({
@@ -62,13 +65,24 @@ export default function JwtLoginView() {
 
   const onSubmit = handleSubmit(async (data) => {
     try {
-      await login?.(data.email, data.password);
+      await login?.(data.email, data.password, data.rememberMe);
 
       router.push(returnTo || PATH_AFTER_LOGIN);
     } catch (error) {
       console.error(error);
-      reset();
-      setErrorMsg(typeof error === 'string' ? error : error.message);
+
+      const message =
+        typeof error === 'string'
+          ? error
+          : error?.error?.message || error?.message || 'Login failed';
+
+      if (message.toLowerCase().includes('email')) {
+        setErrorMsg('Email address not found');
+      } else if (message.toLowerCase().includes('password')) {
+        setErrorMsg('Incorrect password');
+      } else {
+        setErrorMsg(message);
+      }
     }
   });
 
@@ -90,6 +104,20 @@ export default function JwtLoginView() {
     <Stack spacing={2.5}>
       {!!errorMsg && <Alert severity="error">{errorMsg}</Alert>}
 
+      <Typography variant="h4" sx={{ display: 'flex', justifyContent: 'start' }}>
+        Sign in To Merchant Portal
+      </Typography>
+      <Typography variant="body1" sx={{ textAlign: 'start' }}>
+        Log in securely to manage your account, protect your personal information, and stay safe
+        with advanced security features
+      </Typography>
+      <Stack direction="row" spacing={0.5}>
+        <Typography variant="body2">New user?</Typography>
+
+        <Link component={RouterLink} href={paths.auth.jwt.registerPhone} variant="subtitle2">
+          Create an account
+        </Link>
+      </Stack>
       <RHFTextField name="email" label="Email address" />
 
       <RHFTextField
@@ -106,10 +134,23 @@ export default function JwtLoginView() {
           ),
         }}
       />
-
-      <Link variant="body2" color="inherit" underline="always" sx={{ alignSelf: 'flex-end' }}>
-        Forgot password?
-      </Link>
+      <Stack direction="row" alignItems="center" justifyContent="space-between">
+        <RHFCheckbox name="rememberMe" label="Remember me" sx={{ m: 0 }} />
+        <Link
+          variant="body2"
+          color="inherit"
+          underline="always"
+          sx={{
+            cursor: 'pointer',
+            '&:hover': {
+              textDecoration: 'underline',
+            },
+          }}
+          onClick={() => router.push(paths.auth.jwt.forgotPassword)}
+        >
+          Forgot password?
+        </Link>
+      </Stack>
 
       <LoadingButton
         fullWidth
@@ -121,18 +162,21 @@ export default function JwtLoginView() {
       >
         Login
       </LoadingButton>
+      <Typography variant="body2" sx={{ textAlign: 'center' }}>
+        Copyright © 2025 InvoiceDiscounting. All rights reserved.
+      </Typography>
     </Stack>
   );
 
   return (
     <FormProvider methods={methods} onSubmit={onSubmit}>
-      {renderHead}
+      {/* {renderHead}
 
       <Alert severity="info" sx={{ mb: 3 }}>
         Use email : <strong>demo@minimals.cc</strong> / password :<strong> demo1234</strong>
-      </Alert>
+      </Alert> */}
 
-      {renderForm}
+      <Card sx={{ p: 3, py: 5 }}>{renderForm}</Card>
     </FormProvider>
   );
 }

@@ -1,3 +1,4 @@
+//
 import axios from 'axios';
 // config
 import { HOST_API } from 'src/config-global';
@@ -30,10 +31,18 @@ export const endpoints = {
   kanban: '/api/kanban',
   calendar: '/api/calendar',
   auth: {
-    me: '/api/auth/me',
-    login: '/api/auth/login',
-    register: '/api/auth/register',
+    me: '/auth/me',
+    login: '/auth/merchant-login',
+    register: '/register',
+    forgotPassword: '/auth/forget-password/send-email-otp',
+    newPassword: '/auth/forget-password/verify-email-otp',
   },
+  companyProfile: {
+    me: '/company-profiles/me',
+    bankDetails: '/company-profiles/bank-details',
+    addressDetails: '/company-profiles/address-details',
+  },
+
   mail: {
     list: '/api/mail/list',
     details: '/api/mail/details',
@@ -49,5 +58,119 @@ export const endpoints = {
     list: '/api/product/list',
     details: '/api/product/details',
     search: '/api/product/search',
+  },
+  businessKyc: {
+    data: '/business-kyc/state',
+    dataByStatus: (statusValue) => `/business-kyc/data-by-status/${statusValue}`,
+    guarantors: '/business-kyc/guarantor-details',
+    agreements: '/business-kyc/agreements',
+    roc: '/business-kyc/roc',
+    financials: '/business-kyc/financials-details',
+    dpn: '/business-kyc/dpn',
+  },
+
+
+  scheduler: {
+    list: '/schedulers',
+    filterList: (filter) => `/schedulers?filter=${filter}`,
+    details: (id) => `/schedulers/${id}`,
+  },
+  documentType: {
+    list: '/document-types',
+    filterList: (filter) => `/document-types?filter=${filter}`,
+    details: (id) => `/document-types/${id}`,
+  },
+  entityType: {
+    list: '/company-entity-types',
+    filterList: (filter) => `/company-entity-types?filter=${filter}`,
+    details: (id) => `/company-entity-types/${id}`,
+  },
+
+  companyKyc: {
+    kycProgress: (sessionId) => `/company-profiles/kyc-progress/${sessionId}`,
+    getSection: (section, profileId, route = '') =>
+      `/company-profiles/kyc-get-data/${section}/${profileId}?route=${encodeURIComponent(route)}`,
+    addressDetails: 'company-profiles/address-details',
+    details: (id) => `/company-profiles/bank-details/${id}`,
+    getBankDetails: `/company-profiles/bank-details`,
+    getDocuments: `/company-profiles/documents`,
+    getProfileData: `/company-profiles/me`,
+  },
+  merchantKyc: {
+    kycProgress: (sessionId) => `/merchant-profiles/kyc-progress/${sessionId}`,
+    getSection: (section, profileId, route = '') =>
+      `/merchant-profiles/kyc-get-data/${section}/${profileId}?route=${encodeURIComponent(route)}`,
+    addressDetails: 'company-profiles/address-details',
+    details: (id) => `/company-profiles/bank-details/${id}`,
+    getBankDetails: `/company-profiles/bank-details`,
+    getDocuments: `/company-profiles/documents`,
+    getProfileData: `/merchant-profiles/me`,
+  },
+  merchantDealershipType: {
+    list: '/dealership-types',
+    filterList: (filter) => `/dealership-types?filter=${filter}`,
+    details: (id) => `/dealership-types/${id}`,
+  },
+  companyEntityType: {
+    list: '/company-entity-types',
+    filterList: (filter) => `/company-entity-types?filter=${filter}`,
+    details: (id) => `/company-entity-types/${id}`,
+  },
+  companySectorType: {
+    list: '/company-sector-types',
+    filterList: (filter) => `/company-sector-types?filter=${filter}`,
+    details: (id) => `/company-sector-types/${id}`,
+  },
+  documentByScreen: (route) => `/screens/documents-by-screen/${encodeURIComponent(route)}`,
+  companyInfo: {
+    list: '/api/kyc/issuer_kyc/company-info/',
+    filterList: (filter) => `/api/kyc/issuer_kyc/company-info/?filter=${filter}`,
+    details: (id) => `/api/kyc/issuer_kyc/company-info/${id}`,
+  },
+  signatories: {
+    list: '/company-profiles/authorize-signatory',
+    filterList: (filter) => `/company-profiles/authorize-signatory?filter=${filter}`,
+    details: (signatoryId) => `/company-profiles/authorize-signatory/${signatoryId}`,
+  },
+  clientdetails: {
+    list: '/company-profiles/authorize-signatory',
+    filterList: (filter) => `/company-profiles/authorize-signatory?filter=${filter}`,
+    details: (signatoryId) => `/company-profiles/authorize-signatory/${signatoryId}`,
+  },
+  designation: {
+    list: '/designations',
+    filterList: (filter) => `/designations?filter=${filter}`,
+    details: (id) => `/designations/${id}`,
+  },
+  bondEstimations: {
+    list: '/bond-estimations',
+    filterList: (filter) => `/bond-estimations?filter=${filter}`,
+    details: (applicationId) => `/bond-estimations/${applicationId}`,
+  },
+  // bondApplications: {
+  //   list: '/bond-applications',
+  //   filterList: (filter) => `/bond-applications?filter=${filter}`,
+  //   details: (applicationId) => `/bond-applications/${applicationId}`,
+  //   dataByStatus: (applicationId, statusValue) => `/bond-applications/${applicationId}/data-by-status/${statusValue}`
+  // },
+  creditRatingAgencies: {
+    list: '/credit-rating-agencies',
+  },
+  creditRatings: {
+    list: '/credit-ratings',
+  },
+  bankDetails: {
+    list: '/company-profiles/bank-details',
+    filterList: (filter) => `/company-profiles/bank-details?filter=${filter}`,
+    details: (accountId) => `/company-profiles/bank-details/${accountId}`,
+  },
+  investorCategories: {
+    list: '/investor-categories',
+    filterList: (filter) => `/investor-categories?filter=${filter}`,
+  },
+  fieldOptions: {
+    chargeTypes: '/charge-types',
+    ownershipTypes: '/ownership-types',
+    collateralTypes: '/collateral-types',
   },
 };
