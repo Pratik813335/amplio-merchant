@@ -63,7 +63,7 @@ export function AuthProvider({ children }) {
 
         const response = await axios.get(endpoints.auth.me);
 
-        const { user } = response.data;
+        const  user  = response.data;
 
         dispatch({
           type: 'INITIAL',
@@ -95,10 +95,11 @@ export function AuthProvider({ children }) {
   }, [initialize]);
 
   // LOGIN
-  const login = useCallback(async (email, password) => {
+  const login = useCallback(async (email, password, rememberMe) => {
     const data = {
       email,
       password,
+      rememberMe,
     };
 
     const response = await axios.post(endpoints.auth.login, data);

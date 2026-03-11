@@ -23,7 +23,6 @@ import * as Yup from 'yup';
 import { yupResolver } from '@hookform/resolvers/yup';
 import { useRouter } from 'src/routes/hook';
 import { enqueueSnackbar } from 'notistack';
-import axiosInstance from 'src/utils/axios';
 import { useGetDetails } from 'src/api/companyKyc';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { Card } from '@mui/material';
@@ -31,6 +30,7 @@ import { LoadingButton } from '@mui/lab';
 import Iconify from 'src/components/iconify';
 import PropTypes from 'prop-types';
 
+import axiosInstance from 'src/utils/axios';
 import KYCFooter from './kyc-footer';
 
 // import { NewKycBankDetails } from 'src/forms-autofilled-script/kyb-script/newkyb';

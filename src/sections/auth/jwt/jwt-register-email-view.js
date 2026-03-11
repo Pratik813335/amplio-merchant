@@ -11,10 +11,10 @@ import InputAdornment from '@mui/material/InputAdornment';
 import { Box, Card, Grid, TextField } from '@mui/material';
 import { useRouter, useSearchParams } from 'src/routes/hook';
 import { useSnackbar } from 'src/components/snackbar';
-import axiosInstance from 'src/utils/axios';
 import { paths } from 'src/routes/paths';
 import { RouterLink } from 'src/routes/components';
 import FormProvider, { RHFTextField } from 'src/components/hook-form';
+import axiosInstance from 'src/utils/axios';
 
 export default function JwtRegisterByEmailView() {
   const router = useRouter();

@@ -1,7 +1,7 @@
 import * as Yup from 'yup';
 import { useEffect, useMemo, useRef, useState } from 'react';
+import PropTypes from 'prop-types';
 import Box from '@mui/material/Box';
-import Chip from '@mui/material/Chip';
 import Container from '@mui/material/Container';
 import LoadingButton from '@mui/lab/LoadingButton';
 import MenuItem from '@mui/material/MenuItem';
@@ -12,15 +12,15 @@ import { Card } from '@mui/material';
 
 import FormProvider, { RHFCustomFileUploadBox } from 'src/components/hook-form';
 import { RHFSelect } from 'src/components/hook-form/rhf-select';
-import KYCFooter from './kyc-footer';
 
 import { useForm, useWatch } from 'react-hook-form';
-import axiosInstance from 'src/utils/axios';
 
 import { enqueueSnackbar } from 'notistack';
 
 import { useGetKycSection } from 'src/api/companyKyc';
 import { yupResolver } from '@hookform/resolvers/yup';
+import axiosInstance from 'src/utils/axios';
+import KYCFooter from './kyc-footer';
 
 const FILE_ACCEPT = {
   'application/pdf': ['.pdf'],
@@ -198,9 +198,10 @@ export default function KYCCompanyDetails({
     return documents.filter((item) => !excludedIds.has(item.documentId));
   }, [documents, certificateDoc, gstDoc, moaDoc, aoaDoc]);
 
-  const hasServerData = useMemo(() => {
-    return documents.some((item) => item?.documentFile?.documentFile?.id);
-  }, [documents]);
+  const hasServerData = useMemo(
+    () => documents.some((item) => item?.documentFile?.documentFile?.id),
+    [documents]
+  );
 
   useEffect(() => {
     reset(defaultValues);
@@ -243,6 +244,7 @@ export default function KYCCompanyDetails({
   }, [
     mandatoryDocumentIds,
     values,
+    hasServerData,
     dataInitializedSteps,
     setDataInitializedSteps,
     setActiveStepId,
@@ -356,12 +358,24 @@ export default function KYCCompanyDetails({
         'gstr9_year_1.pdf',
       ];
 
-      const selectedType = moaAoaType || defaultMoaAoaType || (moaDoc ? 'moa' : aoaDoc ? 'aoa' : '');
+      let selectedType = moaAoaType || defaultMoaAoaType;
+      if (!selectedType) {
+        if (moaDoc) {
+          selectedType = 'moa';
+        } else if (aoaDoc) {
+          selectedType = 'aoa';
+        }
+      }
       if (selectedType) {
         setValue('moaAoaType', selectedType, { shouldValidate: true, shouldDirty: true });
       }
 
-      const selectedDoc = selectedType === 'aoa' ? aoaDoc : selectedType === 'moa' ? moaDoc : null;
+      let selectedDoc = null;
+      if (selectedType === 'aoa') {
+        selectedDoc = aoaDoc;
+      } else if (selectedType === 'moa') {
+        selectedDoc = moaDoc;
+      }
 
       const uniqueDocs = [
         certificateDoc,
@@ -547,3 +561,10 @@ export default function KYCCompanyDetails({
     </Container>
   );
 }
+
+KYCCompanyDetails.propTypes = {
+  percent: PropTypes.func.isRequired,
+  setActiveStepId: PropTypes.func.isRequired,
+  dataInitializedSteps: PropTypes.array,
+  setDataInitializedSteps: PropTypes.func,
+};

@@ -24,7 +24,6 @@ import FormProvider, {
   RHFAutocomplete,
   RHFCustomFileUploadBox,
 } from 'src/components/hook-form';
-import axiosInstance from 'src/utils/axios';
 // import dayjs from 'dayjs';
 import { useGetKycProgress } from 'src/api/merchantKyc';
 import { paths } from 'src/routes/paths';
@@ -32,6 +31,7 @@ import { useRouter } from 'src/routes/hook';
 import { useGetDealershipTypes } from 'src/api/dealershipTypes';
 import Logo from 'src/components/logo';
 import { indianStates } from 'src/_mock/_state';
+import axiosInstance from 'src/utils/axios';
 import KYCFooter from './kyc-footer';
 
 // import { NewCompanyBasicInfo } from 'src/forms-autofilled-script/kyb-script/newkyb';
@@ -162,6 +162,7 @@ export default function KYCBasicInfo() {
 
   const onSubmit = handleSubmit(async (formData) => {
     try {
+      // eslint-disable-next-line no-shadow
       const sessionId = localStorage.getItem('sessionId') || '';
 
       const dateOfIncorporationStr = formData.dateOfIncorporation

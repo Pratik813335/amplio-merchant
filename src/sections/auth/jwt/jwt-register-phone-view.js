@@ -12,9 +12,9 @@ import { Box, Card, Grid, TextField } from '@mui/material';
 import { useSnackbar } from 'src/components/snackbar';
 import { useRouter, useSearchParams } from 'src/routes/hook';
 import FormProvider, { RHFTextField } from 'src/components/hook-form';
-import axiosInstance from 'src/utils/axios';
 import { paths } from 'src/routes/paths';
 import { RouterLink } from 'src/routes/components';
+import axiosInstance from 'src/utils/axios';
 
 export default function JwtRegisterByMobileView() {
   const router = useRouter();

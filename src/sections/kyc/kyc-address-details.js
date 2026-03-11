@@ -17,8 +17,8 @@ import { useForm, useWatch } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
 import { useSnackbar } from 'notistack';
 import FormProvider, { RHFTextField, RHFSelect, RHFCustomFileUploadBox } from 'src/components/hook-form';
-import axiosInstance from 'src/utils/axios';
 import { useGetKycAddressDetails } from 'src/api/companyKyc';
+import axiosInstance from 'src/utils/axios';
 import KYCFooter from './kyc-footer';
 // import { NewKycAddressDetails } from 'src/forms-autofilled-script/kyb-script/newkyb';
 
