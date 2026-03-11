@@ -4,6 +4,8 @@ import MainLayout from 'src/layouts/main';
 // config
 // import { PATH_AFTER_LOGIN } from 'src/config-global';
 //
+import { PATH_AFTER_LOGIN } from 'src/config-global';
+
 import { mainRoutes, HomePage } from './main';
 import { authRoutes } from './auth';
 import { authDemoRoutes } from './auth-demo';
@@ -15,22 +17,22 @@ import { componentsRoutes } from './components';
 export default function Router() {
   return useRoutes([
     // SET INDEX PAGE WITH SKIP HOME PAGE
-    // {
-    //   path: '/',
-    //   element: <Navigate to={PATH_AFTER_LOGIN} replace />,
-    // },
+    {
+      path: '/',
+      element: <Navigate to={PATH_AFTER_LOGIN} replace />,
+    },
 
     // ----------------------------------------------------------------------
 
     // SET INDEX PAGE WITH HOME PAGE
-    {
-      path: '/',
-      element: (
-        <MainLayout>
-          <HomePage />
-        </MainLayout>
-      ),
-    },
+    // {
+    //   path: '/',
+    //   element: (
+    //     <MainLayout>
+    //       <HomePage />
+    //     </MainLayout>
+    //   ),
+    // },
 
     // Auth routes
     ...authRoutes,
