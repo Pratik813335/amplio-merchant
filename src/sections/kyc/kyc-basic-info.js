@@ -261,7 +261,7 @@ export default function KYCBasicInfo() {
 
   useEffect(() => {
     if (fetchedProfileId) {
-      sessionStorage.setItem('company_profile_id', fetchedProfileId);
+      sessionStorage.setItem('merchant_profile_id', fetchedProfileId);
     }
   }, [fetchedProfileId]);
 

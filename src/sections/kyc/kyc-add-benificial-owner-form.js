@@ -95,7 +95,7 @@ export default function KYCAddUBOsForm({
       phoneNumber: currentUser?.phone || '',
       role: currentUser?.designationValue || '',
       ownershipPercentage: currentUser?.ownershipPercentage || '',
-      panCard: '',
+      panCard: currentUser?.panCard || null,
       customDesignation: '',
       submittedPanFullName: currentUser?.submittedPanFullName || '',
       submittedPanNumber: currentUser?.submittedPanNumber || '',
@@ -154,40 +154,67 @@ export default function KYCAddUBOsForm({
         enqueueSnackbar('PAN card is required', { variant: 'error' });
         return;
       }
-      const designationValue = data.role === 'other' ? data.customDesignation : data.role;
 
-      const payload = {
-        usersId,
-        uboDetails: [
-          {
-            fullName: data.name,
-            email: data.email,
-            phone: data.phoneNumber,
-            ownershipPercentage: Number(data.ownershipPercentage),
+      const designationValue =
+        data.role === 'other' ? data.customDesignation : data.role;
 
-            // Extracted PAN details (from OCR)
-            extractedPanFullName: extractedPan?.extractedPanFullName || '',
-            extractedPanNumber: extractedPan?.extractedPanNumber || '',
-            extractedDateOfBirth: extractedPan?.extractedDateOfBirth || '',
+      const uboDetail = {
+        fullName: data.name,
+        email: data.email,
+        phone: data.phoneNumber,
+        ownershipPercentage: Number(data.ownershipPercentage),
 
-            // Submitted PAN details (after human check / edit)
-            submittedPanFullName: data.submittedPanFullName,
-            submittedPanNumber: data.submittedPanNumber,
-            submittedDateOfBirth: data.submittedDateOfBirth,
+        extractedPanFullName: extractedPan?.extractedPanFullName || '',
+        extractedPanNumber: extractedPan?.extractedPanNumber || '',
+        extractedDateOfBirth: extractedPan?.extractedDateOfBirth || '',
 
-            panCardId,
-            designationType: data.role === 'other' ? 'custom' : 'dropdown',
-            designationValue,
-            roleValue: designationValue,
-          },
-        ],
+        submittedPanFullName: data.submittedPanFullName,
+        submittedPanNumber: data.submittedPanNumber,
+        submittedDateOfBirth: data.submittedDateOfBirth,
+
+        panCardId,
+        designationType: data.role === 'other' ? 'custom' : 'dropdown',
+        designationValue,
+        roleValue: designationValue,
       };
 
-      const res = await axiosInstance.post('/merchant-profiles/kyc-ubo-details', payload);
+      let res;
+
+      // ------------------------
+      // ADD NEW UBO
+      // ------------------------
+      if (!isEditMode) {
+        const payload = {
+          usersId,
+          uboDetails: [uboDetail],
+        };
+
+        res = await axiosInstance.post(
+          '/merchant-profiles/kyc-ubo-details',
+          payload
+        );
+      }
+
+      // ------------------------
+      // UPDATE EXISTING UBO
+      // ------------------------
+      if (isEditMode) {
+        const payload = {
+          usersId,
+          uboId: currentUser.id,
+          uboDetail
+        };
+
+        res = await axiosInstance.patch('/merchant-profiles/kyc-ubo-details', payload);
+      }
 
       if (res?.data?.success) {
-        enqueueSnackbar('UBO added successfully', { variant: 'success' });
-        onSuccess?.(payload.uboDetails[0]);
+        enqueueSnackbar(
+          isEditMode ? 'UBO updated successfully' : 'UBO added successfully',
+          { variant: 'success' }
+        );
+
+        onSuccess?.();
         onClose();
       } else {
         enqueueSnackbar(res?.data?.message || 'Something went wrong', {
@@ -196,7 +223,10 @@ export default function KYCAddUBOsForm({
       }
     } catch (err) {
       console.error(err);
-      enqueueSnackbar('Failed to add UBO', { variant: 'error' });
+      enqueueSnackbar(
+        isEditMode ? 'Failed to update UBO' : 'Failed to add UBO',
+        { variant: 'error' }
+      );
     }
   });
 
@@ -208,7 +238,7 @@ export default function KYCAddUBOsForm({
         phoneNumber: currentUser?.phone || '',
         role: currentUser?.designationValue || '',
         ownershipPercentage: currentUser?.ownershipPercentage || '',
-        panCard: '',
+        panCard: currentUser?.panCard || null,
         customDesignation: '',
         submittedPanFullName: currentUser?.submittedPanFullName || '',
         submittedPanNumber: currentUser?.submittedPanNumber || '',
@@ -421,62 +451,56 @@ export default function KYCAddUBOsForm({
               PAN Section
             </Typography>
 
-            {isViewMode ? (
-              <RHFTextField name="submittedPanNumber" label="PAN Number*" disabled />
-            ) : (
-              <>
-                <RHFCustomFileUploadBox
-                  name="panCard"
-                  label="Upload PAN*"
-                  fileType="pan"
-                  required={!isEditMode}
-                  error={!!errors.panCard}
-                  accept={{
-                    'application/pdf': ['.pdf'],
-                    'image/png': ['.png'],
-                    'image/jpeg': ['.jpg', '.jpeg'],
+            <RHFCustomFileUploadBox
+              name="panCard"
+              label="Upload PAN*"
+              fileType="pan"
+              required={!isEditMode}
+              error={!!errors.panCard}
+              accept={{
+                'application/pdf': ['.pdf'],
+                'image/png': ['.png'],
+                'image/jpeg': ['.jpg', '.jpeg'],
+              }}
+              disabled={isViewMode}
+            />
+
+
+            <RHFTextField
+              name="submittedPanFullName"
+              label="PAN Holder Full Name*"
+              disabled={isViewMode}
+            />
+
+            <RHFTextField
+              name="submittedPanNumber"
+              label="PAN Number*"
+              disabled={isViewMode}
+            />
+
+            <Controller
+              name="submittedDateOfBirth"
+              control={control}
+              render={({ field, fieldState: { error } }) => (
+                <DatePicker
+                  {...field}
+                  label="PAN Date of Birth*"
+                  disabled={isViewMode}
+                  value={field.value ? new Date(field.value) : null}
+                  onChange={(newValue) =>
+                    field.onChange(newValue ? format(newValue, 'yyyy-MM-dd') : '')
+                  }
+                  format="dd/MM/yyyy"
+                  slotProps={{
+                    textField: {
+                      fullWidth: true,
+                      error: !!error,
+                      helperText: error?.message,
+                    },
                   }}
                 />
-                <RHFTextField
-                  name="submittedPanFullName"
-                  label="PAN Holder Full Name*"
-                  disabled={!isPanUploaded}
-                  inputProps={{ style: { textTransform: 'uppercase' } }}
-                />
-
-                <RHFTextField
-                  name="submittedPanNumber"
-                  label="PAN Number*"
-                  disabled={!isPanUploaded}
-                  inputProps={{ style: { textTransform: 'uppercase' } }}
-                />
-
-                <Controller
-                  name="submittedDateOfBirth"
-                  control={control}
-                  render={({ field, fieldState: { error } }) => (
-                    <DatePicker
-                      {...field}
-                      label="PAN Date of Birth*"
-                      disabled={!isPanUploaded}
-                      value={field.value ? new Date(field.value) : null}
-                      onChange={(newValue) =>
-                        field.onChange(newValue ? format(newValue, 'yyyy-MM-dd') : '')
-                      }
-                      format="dd/MM/yyyy"
-                      slotProps={{
-                        textField: {
-                          fullWidth: true,
-                          error: !!error,
-                          helperText: error?.message,
-                        },
-                      }}
-                    />
-                  )}
-                />
-
-              </>
-            )}
+              )}
+            />
           </Box>
         </DialogContent>
 

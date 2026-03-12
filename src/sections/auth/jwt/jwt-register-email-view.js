@@ -22,7 +22,7 @@ export default function JwtRegisterByEmailView() {
 
   const redirectBasedOnProgress = async (sessionId) => {
     try {
-      const res = await axiosInstance.get(`/company-profiles/kyc-progress/${sessionId}`);
+      const res = await axiosInstance.get(`/merchant-profiles/kyc-progress/${sessionId}`);
 
       const progress = res?.data?.currentProgress || [];
       const profile = res?.data?.profile;
@@ -30,14 +30,14 @@ export default function JwtRegisterByEmailView() {
       console.log('CURRENT PROGRESS:', progress);
 
       if (profile?.usersId) {
-        sessionStorage.setItem('company_user_id', profile.usersId);
+        sessionStorage.setItem('merchant_user_id', profile.usersId);
       }
 
       if (profile?.id) {
-        sessionStorage.setItem('company_profile_id', profile.id);
+        sessionStorage.setItem('merchant_profile_id', profile.id);
       }
 
-      if (!progress.includes('company_kyc')) {
+      if (!progress.includes('merchant_kyc')) {
         router.push(paths.auth.kyc.kycBasicInfo);
         return;
       }
