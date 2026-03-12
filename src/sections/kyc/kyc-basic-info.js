@@ -226,7 +226,7 @@ export default function KYCBasicInfo() {
 
         // ✅ Store it so next page can access it
         if (usersId) {
-          sessionStorage.setItem('company_user_id', usersId);
+          sessionStorage.setItem('merchant_user_id', usersId);
         } else {
           console.warn('No usersId found in /merchant-registration response');
         }
@@ -516,7 +516,7 @@ export default function KYCBasicInfo() {
                   textAlign: 'left',
                 }}
               >
-                Company Basic Information
+                Merchant Basic Information
               </Typography>
               <Typography
                 variant="h5"
@@ -526,7 +526,7 @@ export default function KYCBasicInfo() {
                   textAlign: 'left',
                 }}
               >
-                Please provide your company details to proceed
+                Please provide your details to proceed
               </Typography>
             </Stack>
 

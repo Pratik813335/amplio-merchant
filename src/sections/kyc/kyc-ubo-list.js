@@ -1,14 +1,11 @@
 import { useEffect, useState } from 'react';
-import { m } from 'framer-motion';
 // @mui
 import { styled } from '@mui/material/styles';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import Container from '@mui/material/Container';
-import IconButton from '@mui/material/IconButton';
 import Stack from '@mui/material/Stack';
 import Typography from '@mui/material/Typography';
-import Grid from '@mui/material/Unstable_Grid2';
 import TextField from '@mui/material/TextField';
 import InputAdornment from '@mui/material/InputAdornment';
 import Iconify from 'src/components/iconify';
@@ -19,19 +16,13 @@ import TableContainer from '@mui/material/TableContainer';
 import TableHead from '@mui/material/TableHead';
 import TableRow from '@mui/material/TableRow';
 import Paper from '@mui/material/Paper';
-// components
-import { RouterLink } from 'src/routes/components';
-import { MotionContainer, varFade } from 'src/components/animate';
-import { paths } from 'src/routes/paths';
-import { useGetSignatories } from 'src/api/companyKyc';
 import { Card } from '@mui/material';
 import { TableNoData } from 'src/components/table';
 import Label from 'src/components/label';
 import PropTypes from 'prop-types';
-import KYCAddSignatoriesForm from './kyc-add-signatories-form';
+import { useGetUBOs } from 'src/api/merchantKyc';
+import KYCAddUBOsForm from './kyc-add-benificial-owner-form';
 import KYCFooter from './kyc-footer';
-
-// ----------------------------------------------------------------------
 
 const StyledSearch = styled(TextField)(({ theme }) => ({
   width: 300,
@@ -46,49 +37,30 @@ const StyledSearch = styled(TextField)(({ theme }) => ({
   },
 }));
 
-// ----------------------------------------------------------------------
+const getStatusMeta = (status) => {
+  if (status === 1) return { color: 'success', label: 'Verified' };
+  if (status === 2) return { color: 'error', label: 'Rejected' };
+  return { color: 'warning', label: 'Pending' };
+};
 
-// Sample data for the table
-const createData = (name, din, email, phone, role) => ({ name, din, email, phone, role });
-
-const rows = [
-  createData('John Doe', '1234567890', 'john@example.com', '+1 234 567 8901', 'Director'),
-  createData(
-    'Jane Smith',
-    '0987654321',
-    'jane@example.com',
-    '+1 987 654 3210',
-    'Authorized Signatory'
-  ),
-];
-
-export default function KYCSignatories({ percent, setActiveStepId }) {
+export default function KYCUBOs({ percent, setActiveStepId }) {
   const [open, setOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
-  const { signatories, loading, refreshSignatories } = useGetSignatories();
+  const { ubos, refreshUbos, loading } = useGetUBOs();
 
-  const handleOpen = () => setOpen(true);
-  const handleClose = () => setOpen(false);
-
-  const filteredRows = signatories.filter((row) =>
+  const filteredRows = ubos.filter((row) =>
     Object.values(row).some(
       (value) => value && value.toString().toLowerCase().includes(searchTerm.toLowerCase())
     )
   );
 
-  const format = 'dd/MM/yyyy';
-
   useEffect(() => {
-    if (!loading && signatories && signatories.length >= 1) {
+    if (!loading && ubos.length >= 1) {
       percent(100);
     }
-  }, [loading, percent, setActiveStepId, signatories]);
+  }, [loading, percent, ubos]);
 
-  useEffect(() => {
-    refreshSignatories();
-  }, [refreshSignatories]);
-
-  const notFound = !loading && (signatories.length === 0 || filteredRows.length === 0);
+  const notFound = !loading && (ubos.length === 0 || filteredRows.length === 0);
 
   return (
     <Container sx={{ position: 'relative', py: { xs: 6, sm: 8, md: 10 } }}>
@@ -101,7 +73,7 @@ export default function KYCSignatories({ percent, setActiveStepId }) {
           position: 'relative',
           overflow: 'hidden',
           minHeight: 600,
-          display: 'flex',          // ✅ add
+          display: 'flex',
           flexDirection: 'column',
         }}
       >
@@ -114,7 +86,7 @@ export default function KYCSignatories({ percent, setActiveStepId }) {
               textAlign: 'left',
             }}
           >
-            Authorized Signatories
+            Ultimate Beneficial Owners
           </Typography>
           <Typography
             variant="h5"
@@ -124,7 +96,7 @@ export default function KYCSignatories({ percent, setActiveStepId }) {
               textAlign: 'left',
             }}
           >
-            Add director and authorized signatories for your company.
+            Add all UBO details for merchant KYC verification.
           </Typography>
         </Stack>
 
@@ -136,13 +108,10 @@ export default function KYCSignatories({ percent, setActiveStepId }) {
             justifyContent: 'space-between',
             alignItems: { xs: 'stretch', sm: 'center' },
             gap: { xs: 2, sm: 0 },
-            //   boxShadow: '0px 0px 12px 0px #00000040',
-            // p: { xs: 2, sm: 3, md: 4 },
-            // borderRadius: '23px',
           }}
         >
-          <Typography variant="h4" color='primary' sx={{ mb: { xs: 1, sm: 0 } }}>
-            Add Signatories
+          <Typography variant="h4" color="primary" sx={{ mb: { xs: 1, sm: 0 } }}>
+            Add UBO
           </Typography>
           <Box
             sx={{
@@ -153,7 +122,7 @@ export default function KYCSignatories({ percent, setActiveStepId }) {
             }}
           >
             <StyledSearch
-              placeholder="Search signatories..."
+              placeholder="Search UBOs..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               sx={{ width: { xs: '100%', sm: 300 } }}
@@ -167,122 +136,93 @@ export default function KYCSignatories({ percent, setActiveStepId }) {
             />
             <Button
               variant="contained"
-              color='primary'
+              color="primary"
               startIcon={<Iconify icon="eva:plus-fill" />}
-              onClick={handleOpen}
+              onClick={() => setOpen(true)}
               sx={{
                 height: 40,
                 width: { xs: '100%', sm: 'auto' },
                 order: { xs: -1, sm: 1 },
               }}
             >
-              Add Signatory
+              Add UBO
             </Button>
 
-            <KYCAddSignatoriesForm
+            <KYCAddUBOsForm
               open={open}
-              onClose={handleClose}
+              onClose={() => setOpen(false)}
               onSuccess={() => {
-                refreshSignatories();
+                refreshUbos();
                 setOpen(false);
               }}
             />
           </Box>
         </Box>
+
         <Box sx={{ flexGrow: 1 }}>
           <TableContainer component={Paper} sx={{ mb: 5 }}>
-            <Table sx={{ minWidth: 650 }} aria-label="signatories table">
+            <Table sx={{ minWidth: 650 }} aria-label="ubo table">
               <TableHead>
                 <TableRow>
                   <TableCell>Name</TableCell>
+                  <TableCell align="left">Ownership %</TableCell>
                   <TableCell align="left">Role</TableCell>
                   <TableCell align="left">Email</TableCell>
                   <TableCell align="left">Phone</TableCell>
                   <TableCell align="left">DOB</TableCell>
                   <TableCell align="left">PAN</TableCell>
-                  <TableCell align="left">Board Resolution</TableCell>
                   <TableCell align="left">Status</TableCell>
-                  {/* <TableCell align="right">Actions</TableCell> */}
                 </TableRow>
               </TableHead>
 
               <TableBody>
-                {filteredRows.map((row, index) => (
-                  <TableRow key={index}>
-                    <TableCell>{row.fullName}</TableCell>
+                {filteredRows.map((row) => {
+                  const statusMeta = getStatusMeta(row.status);
 
-                    <TableCell>{row.designationValue}</TableCell>
-
-                    <TableCell>{row.email}</TableCell>
-
-                    <TableCell>{row.phone}</TableCell>
-
-                    <TableCell>
-                      {row.submittedDateOfBirth
-                        ? new Date(row.submittedDateOfBirth).toLocaleDateString()
-                        : '-'}
-                    </TableCell>
-
-                    {/* PAN */}
-                    <TableCell>
-                      {row.panCardFile?.fileUrl ? (
-                        <a
-                          href={row.panCardFile.fileUrl}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          style={{ color: '#1976d2', textDecoration: 'underline' }}
-                        >
-                          View
-                        </a>
-                      ) : (
-                        '-'
-                      )}
-                    </TableCell>
-
-                    {/* Board Resolution */}
-                    <TableCell>
-                      {row.boardResolutionFile?.fileUrl ? (
-                        <a
-                          href={row.boardResolutionFile.fileUrl}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          style={{ color: '#1976d2', textDecoration: 'underline' }}
-                        >
-                          View
-                        </a>
-                      ) : (
-                        '-'
-                      )}
-                    </TableCell>
-
-                    {/* Status */}
-                    <TableCell>
-                      <Label
-                        color={row.status === 1 ? 'success' : 'warning'}
-                      >
-                        {row.status === 1 ? 'Verified' : 'Pending'}
-                      </Label>
-                    </TableCell>
-
-                    {/* Actions */}
-                    {/* <TableCell align="right">
-                      <IconButton color="error">
-                        <Iconify icon="eva:trash-2-outline" />
-                      </IconButton>
-                    </TableCell> */}
-                  </TableRow>
-                ))}
+                  return (
+                    <TableRow key={row.id || row.panCardId || row.email}>
+                      <TableCell>{row.fullName}</TableCell>
+                      <TableCell>{row.ownershipPercentage ?? '-'}</TableCell>
+                      <TableCell>{row.designationValue}</TableCell>
+                      <TableCell>{row.email}</TableCell>
+                      <TableCell>{row.phone}</TableCell>
+                      <TableCell>
+                        {row.submittedDateOfBirth
+                          ? new Date(row.submittedDateOfBirth).toLocaleDateString()
+                          : '-'}
+                      </TableCell>
+                      <TableCell>
+                        {row.panCard?.fileUrl ? (
+                          <a
+                            href={row.panCard.fileUrl}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            style={{ color: '#1976d2', textDecoration: 'underline' }}
+                          >
+                            View
+                          </a>
+                        ) : (
+                          '-'
+                        )}
+                      </TableCell>
+                      <TableCell>
+                        <Label color={statusMeta.color}>{statusMeta.label}</Label>
+                      </TableCell>
+                    </TableRow>
+                  );
+                })}
 
                 <TableNoData notFound={notFound} />
               </TableBody>
             </Table>
           </TableContainer>
         </Box>
+
         <Box sx={{ textAlign: 'right', mt: 'auto', pt: 3 }}>
           <Button
             variant="contained"
             color="primary"
-            disabled={signatories.length < 1}
+            disabled={ubos.length < 1}
             onClick={() => {
               percent(100);
               setActiveStepId();
@@ -291,15 +231,13 @@ export default function KYCSignatories({ percent, setActiveStepId }) {
             Next
           </Button>
         </Box>
-
       </Card>
       <KYCFooter />
     </Container>
   );
 }
 
-KYCSignatories.propTypes = {
+KYCUBOs.propTypes = {
   percent: PropTypes.func.isRequired,
   setActiveStepId: PropTypes.func.isRequired,
-
 };

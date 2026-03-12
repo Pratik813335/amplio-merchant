@@ -17,8 +17,8 @@ import { useForm, useWatch } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
 import { useSnackbar } from 'notistack';
 import FormProvider, { RHFTextField, RHFSelect, RHFCustomFileUploadBox } from 'src/components/hook-form';
-import { useGetKycAddressDetails } from 'src/api/companyKyc';
 import axiosInstance from 'src/utils/axios';
+import { useGetKycAddressDetails } from 'src/api/merchantKyc';
 import KYCFooter from './kyc-footer';
 // import { NewKycAddressDetails } from 'src/forms-autofilled-script/kyb-script/newkyb';
 
@@ -151,7 +151,7 @@ export default function KYCAddressDetails({
 
   const onSubmit = async (form) => {
     try {
-      const usersId = sessionStorage.getItem('company_user_id');
+      const usersId = sessionStorage.getItem('merchant_user_id');
       if (!usersId) {
         enqueueSnackbar('User ID missing. Please restart KYC process.', { variant: 'error' });
         return;
@@ -190,13 +190,13 @@ export default function KYCAddressDetails({
       let res;
 
       if (registeredAddress) {
-        res = await axiosInstance.patch('/company-profiles/kyc-address-details', {
+        res = await axiosInstance.patch('/merchant-profiles/kyc-address-details', {
           usersId,
           registeredAddress: registeredAddressPayload,
           correspondenceAddress: correspondenceAddressPayload,
         });
       } else {
-        res = await axiosInstance.post('/company-profiles/kyc-address-details', {
+        res = await axiosInstance.post('/merchant-profiles/kyc-address-details', {
           usersId,
           registeredAddress: registeredAddressPayload,
           correspondenceAddress: correspondenceAddressPayload,
@@ -274,13 +274,10 @@ export default function KYCAddressDetails({
         setActiveStepId();
       }
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [
     registeredAddressData,
-    reset,
-    defaultValues,
-    dataInitializedSteps,
-    setDataInitializedSteps,
-    setActiveStepId,
+    reset
   ]);
 
   return (

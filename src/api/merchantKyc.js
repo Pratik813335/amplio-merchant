@@ -1,5 +1,5 @@
 import useSWR from 'swr';
-import { useEffect, useMemo } from 'react';
+import { useCallback, useEffect, useMemo } from 'react';
 import { fetcher, endpoints } from 'src/utils/axios';
 
 export function useGetKycProgress(sessionId) {
@@ -43,11 +43,12 @@ export function useGetKycSection(section, route = '') {
   });
 
   useEffect(() => {
-    if (section === 'company_documents' && URL) {
-      console.log('[KYC company_documents] request id debug:', {
+    if (['merchant_documents', 'kyc_company_documents'].includes(section) && URL) {
+      console.log('[KYC documents] request id debug:', {
         requestId: usersId,
-        company_user_id: sessionStorage.getItem('company_user_id'),
-        company_profile_id: sessionStorage.getItem('company_profile_id'),
+        merchant_user_id: sessionStorage.getItem('merchant_user_id'),
+        merchant_profile_id: sessionStorage.getItem('merchant_profile_id'),
+        section,
         url: URL,
       });
     }
@@ -63,10 +64,10 @@ export function useGetKycSection(section, route = '') {
   };
 }
 export function useGetDetails() {
-  const profileId = sessionStorage.getItem('company_user_id'); // ⬅️ Directly read
+  const profileId = sessionStorage.getItem('merchant_user_id'); // ⬅️ Directly read
 
   const URL = profileId
-    ? endpoints.companyKyc.getSection('company_bank_details', profileId, '')
+    ? endpoints.merchantKyc.getSection('merchant_bank_details', profileId, '')
     : null;
 
   const { data, isLoading, error, isValidating, mutate } = useSWR(URL, fetcher, {
@@ -89,10 +90,10 @@ export function useGetDetails() {
 }
 
 export function useGetKycAddressDetails() {
-  const profileId = sessionStorage.getItem('company_user_id');
+  const profileId = sessionStorage.getItem('merchant_user_id');
 
   const URL = profileId
-    ? endpoints.companyKyc.getSection('company_address_details', profileId, '')
+    ? endpoints.merchantKyc.getSection('merchant_address_details', profileId, '')
     : null;
 
   const { data, isLoading, error, isValidating, mutate } = useSWR(URL, fetcher, {
@@ -120,6 +121,32 @@ export function useGetKycAddressDetails() {
     addressDetailsError: error,
     addressDetailsValidating: isValidating,
     refreshAddressDetails: () => mutate(),
+  };
+}
+
+
+export function useGetUBOs() {
+  const profileId = sessionStorage.getItem('merchant_user_id');
+
+  const URL = profileId
+    ? endpoints.merchantKyc.getSection('merchant_ubo_details', profileId, '')
+    : null;
+
+  const { data, isLoading, error, isValidating, mutate } = useSWR(URL, fetcher, {
+    keepPreviousData: true,
+  });
+
+  const refreshUbos = useCallback(() => {
+    mutate();
+  }, [mutate]);
+
+  return {
+    ubos: data?.data || [],
+    loading: isLoading,
+    error,
+    validating: isValidating,
+    empty: !isLoading && !data?.data?.length,
+    refreshUbos,
   };
 }
 

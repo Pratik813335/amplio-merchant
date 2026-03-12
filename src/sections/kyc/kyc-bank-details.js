@@ -23,13 +23,12 @@ import * as Yup from 'yup';
 import { yupResolver } from '@hookform/resolvers/yup';
 import { useRouter } from 'src/routes/hook';
 import { enqueueSnackbar } from 'notistack';
-import { useGetDetails } from 'src/api/companyKyc';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { Card } from '@mui/material';
 import { LoadingButton } from '@mui/lab';
 import Iconify from 'src/components/iconify';
 import PropTypes from 'prop-types';
-
+import { useGetDetails } from 'src/api/merchantKyc';
 import axiosInstance from 'src/utils/axios';
 import KYCFooter from './kyc-footer';
 
@@ -130,7 +129,7 @@ export default function KYCBankDetails({
 
   const onSubmit = handleSubmit(async (data) => {
     try {
-      const usersId = sessionStorage.getItem('company_user_id');
+      const usersId = sessionStorage.getItem('merchant_user_id');
 
       if (!usersId) {
         enqueueSnackbar('User ID missing. Please restart KYC process.', { variant: 'error' });
@@ -197,12 +196,12 @@ export default function KYCBankDetails({
 
       if (bankDetails && bankDetails.length > 0) {
         res = await axiosInstance.patch(
-          '/company-profiles/kyc-bank-details',
+          '/merchant-profiles/kyc-bank-details',
           payload
         );
       } else {
         res = await axiosInstance.post(
-          '/company-profiles/kyc-bank-details',
+          '/merchant-profiles/kyc-bank-details',
           payload
         );
       }
@@ -267,29 +266,29 @@ export default function KYCBankDetails({
   //   }
   // };
 
-const requiredFields = useMemo(
-  () => ['addressProof', 'bankName', 'branchName', 'accountNumber', 'ifscCode'],
-  []
-);
+  const requiredFields = useMemo(
+    () => ['addressProof', 'bankName', 'branchName', 'accountNumber', 'ifscCode'],
+    []
+  );
 
   const errors = methods.formState.errors;
 
   const calculatePercent = useCallback(() => {
-  let valid = 0;
+    let valid = 0;
 
-  requiredFields.forEach((field) => {
-    const value = values[field];
-    // eslint-disable-next-line no-plusplus
-    if (value && !errors[field]) valid++;
-  });
+    requiredFields.forEach((field) => {
+      const value = values[field];
+      // eslint-disable-next-line no-plusplus
+      if (value && !errors[field]) valid++;
+    });
 
-  return Math.round((valid / requiredFields.length) * 100);
-}, [values, errors, requiredFields]);
+    return Math.round((valid / requiredFields.length) * 100);
+  }, [values, errors, requiredFields]);
 
   // eslint-disable-next-line react-hooks/exhaustive-deps
-useEffect(() => {
-  percent(calculatePercent());
-}, [calculatePercent, percent]);
+  useEffect(() => {
+    percent(calculatePercent());
+  }, [calculatePercent, percent]);
 
   useEffect(() => {
     if (bankDetails?.length > 0) {
@@ -310,7 +309,8 @@ useEffect(() => {
         setActiveStepId();
       }
     }
-  },  [bankDetails, reset, dataInitializedSteps, setActiveStepId, setDataInitializedSteps]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [bankDetails, reset]);
 
   return (
     <Container>

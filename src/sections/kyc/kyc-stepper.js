@@ -6,18 +6,18 @@ import { useRouter } from 'src/routes/hook';
 import { paths } from 'src/routes/paths';
 import Logo from 'src/components/logo';
 import ProgressStepper from 'src/components/progress-stepper/ProgressStepper';
-import KYCSignatories from './kyc-signatories';
-import KYCCompanyDetails from './kyc-company-details';
+import KYCUBOs from './kyc-ubo-list';
+import KYCMerchantDetails from './kyc-merchant-details';
 import KYCBankDetails from './kyc-bank-details';
 import KYCAddressDetails from './kyc-address-details';
 
 export default function Stepper() {
   const router = useRouter();
   const steps = [
-    { id: 'kyc_company_documents', number: 1, lines: ['Company', 'Documents'] },
+    { id: 'kyc_company_documents', number: 1, lines: ['Merchant', 'Documents'] },
     { id: 'kyc_address_details', number: 2, lines: ['Address', 'Details'] },
     { id: 'kyc_bank_details', number: 3, lines: ['Bank', 'Details'] },
-    { id: 'kyc_signatories', number: 4, lines: ['Authorized', 'Signatories'] },
+    { id: 'kyc_signatories', number: 4, lines: ['UBO', 'Details'] },
   ];
 
   const [activeStepId, setActiveStepId] = useState('kyc_company_documents');
@@ -51,7 +51,7 @@ export default function Stepper() {
     switch (activeStepId) {
       case 'kyc_company_documents':
         return (
-          <KYCCompanyDetails
+          <KYCMerchantDetails
             percent={(p) => updateStepPercent('kyc_company_documents', p)}
             setActiveStepId={() => setActiveStepId('kyc_address_details')}
             dataInitializedSteps={dataInitializedSteps}
@@ -87,7 +87,7 @@ export default function Stepper() {
 
       case 'kyc_signatories':
         return (
-          <KYCSignatories
+          <KYCUBOs
             percent={(p) => updateStepPercent('kyc_signatories', p)}
             setActiveStepId={() => router.push(paths.auth.kyc.kycPending)}
             dataInitializedSteps={dataInitializedSteps}

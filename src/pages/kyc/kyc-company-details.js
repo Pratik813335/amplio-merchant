@@ -1,6 +1,6 @@
 import { Helmet } from 'react-helmet-async';
 // sections
-import KYCCompanyDetails from 'src/sections/kyc/kyc-company-details';
+import KYCCompanyDetails from 'src/sections/kyc/kyc-merchant-details';
 
 // ----------------------------------------------------------------------
 
