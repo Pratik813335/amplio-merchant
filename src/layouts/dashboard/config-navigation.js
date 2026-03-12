@@ -72,6 +72,15 @@ export function useNavData() {
       {
         subheader: t('management'),
         items: [
+          // LIQUIDITY ENGINE
+          {
+            title: t('liquidity engine'),
+            path: paths.dashboard.liquidityEngine.list,
+            icon: ICONS.liquidityEngine,
+            children: [
+              {title: t('list'), path: paths.dashboard.liquidityEngine.list},
+            ]
+          },
           // USER
           // {
           //   title: t('user'),

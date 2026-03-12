@@ -117,6 +117,11 @@ export const paths = {
       booking: `${ROOTS.DASHBOARD}/booking`,
       file: `${ROOTS.DASHBOARD}/file`,
     },
+    liquidityEngine: {
+      list: `${ROOTS.DASHBOARD}/liquidityEngine/list`,
+      new: `${ROOTS.DASHBOARD}/liquidityEngine/new`,
+      edit: (id) => `${ROOTS.DASHBOARD}/liquidityEngine/${id}/edit`,
+    },
     user: {
       root: `${ROOTS.DASHBOARD}/user`,
       new: `${ROOTS.DASHBOARD}/user/new`,

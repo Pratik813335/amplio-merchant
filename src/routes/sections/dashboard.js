@@ -29,6 +29,8 @@ const InvoiceListPage = lazy(() => import('src/pages/dashboard/invoice/list'));
 const InvoiceDetailsPage = lazy(() => import('src/pages/dashboard/invoice/details'));
 const InvoiceCreatePage = lazy(() => import('src/pages/dashboard/invoice/new'));
 const InvoiceEditPage = lazy(() => import('src/pages/dashboard/invoice/edit'));
+// LIQUIDITY-ENGINE
+const LiquidityEngineListPage = lazy(() => import('src/pages/dashboard/liquidityEngine/list'))
 // USER
 const UserProfilePage = lazy(() => import('src/pages/dashboard/user/profile'));
 const UserCardsPage = lazy(() => import('src/pages/dashboard/user/cards'));
@@ -123,6 +125,13 @@ export const dashboardRoutes = [
           { path: ':id/edit', element: <InvoiceEditPage /> },
           { path: 'new', element: <InvoiceCreatePage /> },
         ],
+      },
+      {
+        path: 'liquidityEngine',
+        children: [
+          { element: <LiquidityEngineListPage />, index: true },
+          { path: 'list', element: <LiquidityEngineListPage /> },
+        ]
       },
       {
         path: 'post',
