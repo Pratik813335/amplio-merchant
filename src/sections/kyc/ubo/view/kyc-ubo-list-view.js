@@ -65,9 +65,21 @@ const defaultFilters = {
   status: 'all',
 };
 
+const handledUboAutoNavigationByMerchant = new Set();
+
+const getMerchantStorageId = () =>
+  sessionStorage.getItem('merchant_user_id') || sessionStorage.getItem('merchant_profile_id');
+
+const getUboNextConfirmedKey = (merchantId) => `kyc_ubo_next_confirmed:${merchantId}`;
+
 // ----------------------------------------------------------------------
 
-export default function UbosListView({ percent, setActiveStepId,setDataInitializedSteps, dataInitializedSteps }) {
+export default function UbosListView({
+  percent,
+  setActiveStepId,
+  setDataInitializedSteps,
+  dataInitializedSteps,
+}) {
   const table = useTable();
 
   const settings = useSettingsContext();
@@ -105,15 +117,34 @@ export default function UbosListView({ percent, setActiveStepId,setDataInitializ
 
   const canReset = !isEqual(defaultFilters, filters);
 
- useEffect(() => {
-  if (!loading && ubos.length >= 1) {
-    percent(100);
+  useEffect(() => {
+    if (loading) return;
 
-    if (!dataInitializedSteps?.includes('kyc_ubo_details')) {
-      setDataInitializedSteps((prev) => [...prev, 'kyc_ubo_details']);
+    if (ubos.length >= 1) {
+      percent(100);
+
+      if (!dataInitializedSteps?.includes('kyc_ubo_details')) {
+        setDataInitializedSteps?.();
+      }
+    } else {
+      percent(0);
     }
-  }
-}, [loading, ubos, percent, dataInitializedSteps, setDataInitializedSteps]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [dataInitializedSteps, loading, ubos]);
+
+  useEffect(() => {
+    if (loading) return;
+
+    const merchantId = getMerchantStorageId();
+
+    if (!merchantId || handledUboAutoNavigationByMerchant.has(merchantId)) return;
+
+    handledUboAutoNavigationByMerchant.add(merchantId);
+
+    if (ubos.length >= 1 && sessionStorage.getItem(getUboNextConfirmedKey(merchantId)) === 'true') {
+      setActiveStepId();
+    }
+  }, [loading, setActiveStepId, ubos]);
 
   const notFound = (!dataFiltered.length && canReset) || !dataFiltered.length;
 
@@ -156,7 +187,6 @@ export default function UbosListView({ percent, setActiveStepId,setDataInitializ
     [router]
   );
 
-
   const handleAdd = () => {
     setSelectedUBO(null);
     setViewMode(false);
@@ -178,8 +208,6 @@ export default function UbosListView({ percent, setActiveStepId,setDataInitializ
     setOpen(true);
   };
 
-
-
   const handleClose = () => {
     setOpen(false);
     setSelectedUBO(null);
@@ -198,11 +226,22 @@ export default function UbosListView({ percent, setActiveStepId,setDataInitializ
     setFilters(defaultFilters);
   }, []);
 
+  const handleNext = () => {
+    const merchantId = getMerchantStorageId();
+
+    if (merchantId) {
+      sessionStorage.setItem(getUboNextConfirmedKey(merchantId), 'true');
+    }
+
+    percent(100);
+    setActiveStepId();
+  };
+
   return (
     <>
       <Container maxWidth={settings.themeStretch ? false : 'lg'}>
         <Stack spacing={0.5} sx={{ mb: 2 }}>
-          <Typography variant="h3" color='primary' sx={{ fontWeight: 700, }}>
+          <Typography variant="h3" color="primary" sx={{ fontWeight: 700 }}>
             Ultimate Beneficial Owners
           </Typography>
 
@@ -210,22 +249,15 @@ export default function UbosListView({ percent, setActiveStepId,setDataInitializ
             Add all UBO details for merchant KYC verification.
           </Typography>
         </Stack>
-        <Stack
-          direction="row"
-          justifyContent="space-between"
-          alignItems="center"
-          sx={{ mb: 2 }}
-        >
-
+        <Stack direction="row" justifyContent="space-between" alignItems="center" sx={{ mb: 2 }}>
           <Typography variant="h4" color="primary">
             Add UBO
           </Typography>
 
-
           <Button
             onClick={handleAdd}
             variant="contained"
-            color='primary'
+            color="primary"
             startIcon={<Iconify icon="mingcute:add-line" />}
           >
             New Ubo
@@ -370,20 +402,14 @@ export default function UbosListView({ percent, setActiveStepId,setDataInitializ
             dense={table.dense}
             onChangeDense={table.onChangeDense}
           />
-
-
-
         </Card>
 
         <Box sx={{ textAlign: 'right', mt: 3 }}>
           <Button
             variant="contained"
-            color='primary'
+            color="primary"
             disabled={ubos.length < 1}
-            onClick={() => {
-              percent(100);
-              setActiveStepId();
-            }}
+            onClick={handleNext}
           >
             Next
           </Button>
@@ -401,7 +427,6 @@ export default function UbosListView({ percent, setActiveStepId,setDataInitializ
           handleClose();
         }}
       />
-
 
       <ConfirmDialog
         open={confirm.value}
@@ -452,9 +477,8 @@ function applyFilter({ inputData, comparator, filters }) {
   inputData = stabilizedThis.map((el) => el[0]);
 
   if (name) {
-    inputData = inputData.filter(
-      (user) =>
-        user.fullName?.toLowerCase().includes(name.toLowerCase())
+    inputData = inputData.filter((user) =>
+      user.fullName?.toLowerCase().includes(name.toLowerCase())
     );
   }
 
@@ -462,12 +486,8 @@ function applyFilter({ inputData, comparator, filters }) {
     inputData = inputData.filter((user) => user.status === status);
   }
 
-
-
   if (role.length) {
-    inputData = inputData.filter((user) =>
-      role.includes(user.designationValue)
-    );
+    inputData = inputData.filter((user) => role.includes(user.designationValue));
   }
 
   return inputData;

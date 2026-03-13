@@ -113,7 +113,19 @@ export default function PSPListView({ setActiveStepId, saveStepData, percent = (
   const [selectedPSP, setSelectedPSP] = useState(null);
   const [editMode, setEditMode] = useState(false);
 
-  const { psps = [], refreshPsps } = useGetPSPs();
+  const { psps = [], refreshPsps, loading } = useGetPSPs();
+
+  useEffect(() => {
+    if (!loading) {
+      if (psps.length >= 1) {
+        percent(100);
+      } else {
+        percent(0);
+      }
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [psps, loading]);
+
   const tableData = psps;
   // console.log('psp tableData',tableData);
   // const [tableData, setTableData] = useState(DUMMY_PSPS);
