@@ -210,7 +210,7 @@ export default function KYCAddUBOsForm({
         onSuccess?.();
         onClose();
       } else {
-        enqueueSnackbar(res?.data?.message || 'Something went wrong', {
+        enqueueSnackbar(res?.error?.message || 'Something went wrong', {
           variant: 'error',
         });
       }
