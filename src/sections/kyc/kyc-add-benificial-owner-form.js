@@ -62,14 +62,7 @@ export default function KYCAddUBOsForm({
       .required('Phone number is required')
       .matches(/^[0-9]{10}$/, 'Please enter a valid 10-digit phone number'),
     role: Yup.string().required('Role is required'),
-    ownershipPercentage: Yup.number()
-      .transform((value, originalValue) =>
-        originalValue === '' ? undefined : Number(originalValue)
-      )
-      .typeError('Ownership percentage must be a number')
-      .required('Ownership percentage is required')
-      .min(1, 'Ownership percentage must be at least 1')
-      .max(100, 'Ownership percentage cannot exceed 100'),
+    ownershipPercentage: Yup.number().required('Ownership percentage is required'),
     customDesignation: Yup.string().when('role', (role, schema) =>
       role === 'other' ? schema.required('Please enter designation') : schema.notRequired()
     ),
@@ -417,14 +410,12 @@ export default function KYCAddUBOsForm({
             <RHFTextField
               name="phoneNumber"
               label="Phone Number*"
-              type="tel"
               disabled={isViewMode}
               inputProps={{ maxLength: 10 }}
             />
             <RHFTextField
               name="ownershipPercentage"
               label="Ownership Percentage*"
-              type="number"
               disabled={isViewMode}
               inputProps={{ min: 1, max: 100 }}
             />

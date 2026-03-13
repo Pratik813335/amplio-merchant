@@ -150,6 +150,7 @@ export default function KYCUBOs({ percent, setActiveStepId }) {
 
             <Button
               variant="contained"
+              color='primary'
               startIcon={<Iconify icon="eva:plus-fill" />}
               onClick={handleAdd}
             >
@@ -243,6 +244,7 @@ export default function KYCUBOs({ percent, setActiveStepId }) {
         <Box sx={{ textAlign: 'right', mt: 'auto' }}>
           <Button
             variant="contained"
+            color='primary'
             disabled={ubos.length < 1}
             onClick={() => {
               percent(100);

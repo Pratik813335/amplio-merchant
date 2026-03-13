@@ -43,7 +43,7 @@ export function useGetKycSection(section, route = '') {
   });
 
   useEffect(() => {
-    if (['merchant_documents', 'kyc_company_documents'].includes(section) && URL) {
+    if (['merchant_documents', 'kyc_merchant_documents'].includes(section) && URL) {
       console.log('[KYC documents] request id debug:', {
         requestId: usersId,
         merchant_user_id: sessionStorage.getItem('merchant_user_id'),

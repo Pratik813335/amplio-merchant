@@ -162,7 +162,7 @@ export default function KYCAddressDetails({
       const registeredAddressPayload = {
         addressType: 'registered',
         addressLineOne: form.registeredAddressLine1,
-        addressLineTwo: form.registeredAddressLine2 || null,
+        addressLineTwo: form.registeredAddressLine2 || '',
         country: form.registeredCountry,
         city: form.registeredCity,
         state: form.registeredState,
@@ -177,8 +177,8 @@ export default function KYCAddressDetails({
           ? form.registeredAddressLine1
           : form.correspondenceAddressLine1,
         addressLineTwo: form.sameAsRegistered
-          ? form.registeredAddressLine2 || null
-          : form.correspondenceAddressLine2 || null,
+          ? form.registeredAddressLine2 || ''
+          : form.correspondenceAddressLine2 || '',
         country: form.sameAsRegistered ? form.registeredCountry : form.correspondenceCountry,
         city: form.sameAsRegistered ? form.registeredCity : form.correspondenceCity,
         state: form.sameAsRegistered ? form.registeredState : form.correspondenceState,
@@ -294,7 +294,7 @@ export default function KYCAddressDetails({
         }}
       >
         <Stack spacing={0.5} alignItems="flex-start" sx={{ mb: 4 }}>
-          <Typography variant="h3" sx={{ fontWeight: 700, color: '#206CFE', textAlign: 'left' }}>
+          <Typography variant="h3" color='primary' sx={{ fontWeight: 700, textAlign: 'left' }}>
             Address Details
           </Typography>
           <Typography variant="h5" sx={{ fontWeight: 500, color: '#000000', textAlign: 'left' }}>
