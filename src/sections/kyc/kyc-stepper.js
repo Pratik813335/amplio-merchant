@@ -11,6 +11,7 @@ import UbosListView from './view/kyc-ubo-list-view';
 import KYCMerchantDetails from './kyc-merchant-details';
 import KYCBankDetails from './kyc-bank-details';
 import KYCAddressDetails from './kyc-address-details';
+import { PSPListView } from './psp/view';
 
 export default function Stepper() {
   const router = useRouter();
@@ -19,6 +20,7 @@ export default function Stepper() {
     { id: 'kyc_address_details', number: 2, lines: ['Address', 'Details'] },
     { id: 'kyc_bank_details', number: 3, lines: ['Bank', 'Details'] },
     { id: 'kyc_ubo_details', number: 4, lines: ['UBO', 'Details'] },
+    { id: 'kyc_psp', number: 5, lines: ['PSP', 'Details'] },
   ];
 
   const [activeStepId, setActiveStepId] = useState('kyc_merchant_documents');
@@ -28,6 +30,7 @@ export default function Stepper() {
     kyc_address_details: { percent: 0 },
     kyc_bank_details: { percent: 0 },
     kyc_ubo_details: { percent: 0 },
+    kyc_psp: { percent: 0 },
   });
 
   const updateStepPercent = (stepId, percent) => {
@@ -90,11 +93,21 @@ export default function Stepper() {
         return (
           <UbosListView
             percent={(p) => updateStepPercent('kyc_ubo_details', p)}
-            setActiveStepId={() => router.push(paths.auth.kyc.kycPending)}
+            setActiveStepId={() => setActiveStepId('kyc_psp')}
             dataInitializedSteps={dataInitializedSteps}
             setDataInitializedSteps={() =>
               setDataInitializedSteps((prev) => [...prev, 'kyc_ubo_details'])
             }
+          />
+        );
+
+      case 'kyc_psp':
+        return (
+          <PSPListView
+            percent={(p) => updateStepPercent('kyc_psp', p)}
+            setActiveStepId={() => router.push(paths.auth.kyc.kycPending)}
+            dataInitializedSteps={dataInitializedSteps}
+            setDataInitializedSteps={() => setDataInitializedSteps((prev) => [...prev, 'kyc_psp'])}
           />
         );
 

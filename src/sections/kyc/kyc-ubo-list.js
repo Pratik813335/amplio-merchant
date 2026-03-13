@@ -44,7 +44,12 @@ const getStatusMeta = (status) => {
   return { color: 'warning', label: 'Pending' };
 };
 
-export default function KYCUBOs({ percent, setActiveStepId }) {
+export default function KYCUBOs({
+  percent,
+  setActiveStepId,
+  dataInitializedSteps,
+  setDataInitializedSteps,
+}) {
   const [open, setOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
 
@@ -56,17 +61,26 @@ export default function KYCUBOs({ percent, setActiveStepId }) {
 
   const filteredRows = ubos.filter((row) =>
     Object.values(row).some(
-      (value) =>
-        value &&
-        value.toString().toLowerCase().includes(searchTerm.toLowerCase())
+      (value) => value && value.toString().toLowerCase().includes(searchTerm.toLowerCase())
     )
   );
 
   useEffect(() => {
     if (!loading && ubos.length >= 1) {
       percent(100);
+      if (!dataInitializedSteps?.includes('kyc_signatories')) {
+        setDataInitializedSteps?.();
+        setActiveStepId();
+      }
     }
-  }, [loading, percent, ubos]);
+  }, [
+    loading,
+    percent,
+    ubos,
+    dataInitializedSteps,
+    setDataInitializedSteps,
+    setActiveStepId,
+  ]);
 
   const notFound = !loading && (ubos.length === 0 || filteredRows.length === 0);
 
@@ -276,4 +290,6 @@ export default function KYCUBOs({ percent, setActiveStepId }) {
 KYCUBOs.propTypes = {
   percent: PropTypes.func.isRequired,
   setActiveStepId: PropTypes.func.isRequired,
+  dataInitializedSteps: PropTypes.array,
+  setDataInitializedSteps: PropTypes.func,
 };

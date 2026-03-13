@@ -72,6 +72,14 @@ export function useNavData() {
       {
         subheader: t('management'),
         items: [
+          {
+            title: t('psp'),
+            path: paths.dashboard.user.root,
+            icon: ICONS.user,
+            children: [
+              { title: t('psp'), path: paths.dashboard.psp.new },
+            ],
+          },
           // USER
           // {
           //   title: t('user'),

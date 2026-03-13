@@ -59,6 +59,9 @@ export const endpoints = {
     details: '/api/product/details',
     search: '/api/product/search',
   },
+  pspMaster: {
+    list: '/psp-masters',
+  },
   businessKyc: {
     data: '/business-kyc/state',
     dataByStatus: (statusValue) => `/business-kyc/data-by-status/${statusValue}`,
@@ -163,6 +166,9 @@ export const endpoints = {
     list: '/company-profiles/bank-details',
     filterList: (filter) => `/company-profiles/bank-details?filter=${filter}`,
     details: (accountId) => `/company-profiles/bank-details/${accountId}`,
+  },
+  psp: {
+    list: '/company-profiles/bank-details',
   },
   investorCategories: {
     list: '/investor-categories',
