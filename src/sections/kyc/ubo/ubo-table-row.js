@@ -63,7 +63,7 @@ export default function UboTableRow({ row, selected, handleView, onEditRow, onSe
         </TableCell>
 
         <TableCell align="right" sx={{ px: 1, whiteSpace: 'nowrap' }}>
-          <Tooltip title="Quick Edit" placement="top" arrow>
+          <Tooltip title="View" placement="top" arrow>
             <IconButton
               onClick={() => handleView(row)}
             >
@@ -71,11 +71,13 @@ export default function UboTableRow({ row, selected, handleView, onEditRow, onSe
             </IconButton>
           </Tooltip>
 
-          <IconButton
-            onClick={() => onEditRow(row)}
-          >
-            <Iconify icon="solar:pen-bold" />
-          </IconButton>
+          <Tooltip title="Edit" placement="top" arrow>
+            <IconButton
+              onClick={() => onEditRow(row)}
+            >
+              <Iconify icon="solar:pen-bold" />
+            </IconButton>
+          </Tooltip>
         </TableCell>
       </TableRow>
 

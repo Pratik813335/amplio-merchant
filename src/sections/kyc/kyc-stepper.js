@@ -7,10 +7,10 @@ import { paths } from 'src/routes/paths';
 import Logo from 'src/components/logo';
 import ProgressStepper from 'src/components/progress-stepper/ProgressStepper';
 // import KYCUBOs from './kyc-ubo-list';
-import UbosListView from './view/kyc-ubo-list-view';
 import KYCMerchantDetails from './kyc-merchant-details';
 import KYCBankDetails from './kyc-bank-details';
 import KYCAddressDetails from './kyc-address-details';
+import UbosListView from './ubo/view/kyc-ubo-list-view';
 
 export default function Stepper() {
   const router = useRouter();
