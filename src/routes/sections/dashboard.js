@@ -11,6 +11,7 @@ import { LoadingScreen } from 'src/components/loading-screen';
 
 // OVERVIEW
 const IndexPage = lazy(() => import('src/pages/dashboard/app'));
+const OverviewForecastingPage = lazy(() => import('src/pages/dashboard/forecasting'));
 const OverviewEcommercePage = lazy(() => import('src/pages/dashboard/ecommerce'));
 const OverviewAnalyticsPage = lazy(() => import('src/pages/dashboard/analytics'));
 const OverviewBankingPage = lazy(() => import('src/pages/dashboard/banking'));
@@ -79,6 +80,7 @@ export const dashboardRoutes = [
     ),
     children: [
       { element: <IndexPage />, index: true },
+      { path: 'forecasting', element: <OverviewForecastingPage />},
       { path: 'ecommerce', element: <OverviewEcommercePage /> },
       { path: 'analytics', element: <OverviewAnalyticsPage /> },
       { path: 'banking', element: <OverviewBankingPage /> },
