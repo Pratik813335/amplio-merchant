@@ -7,8 +7,9 @@ import DashboardLayout from 'src/layouts/dashboard';
 // components
 import { LoadingScreen } from 'src/components/loading-screen';
 
-// ----------------------------------------------------------------------
 
+// ----------------------------------------------------------------------
+const TransectionPage = lazy(() => import('src/pages/dashboard/transaction'));
 // OVERVIEW
 const IndexPage = lazy(() => import('src/pages/dashboard/app'));
 const OverviewForecastingPage = lazy(() => import('src/pages/dashboard/forecasting'));
@@ -86,6 +87,7 @@ export const dashboardRoutes = [
       { path: 'banking', element: <OverviewBankingPage /> },
       { path: 'booking', element: <OverviewBookingPage /> },
       { path: 'file', element: <OverviewFilePage /> },
+      { path: 'transaction', element: <TransectionPage /> },
       {
         path: 'user',
         children: [
