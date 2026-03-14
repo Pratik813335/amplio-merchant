@@ -25,7 +25,7 @@ export default function WidgetSummaryCard({ icon, timing, title, percent, total,
     series,
     options,
   } = chart;
-
+// data
   const chartOptions = {
     colors: colors.map((color) => color[1]),
     fill: {
