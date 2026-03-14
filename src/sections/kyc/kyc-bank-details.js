@@ -328,9 +328,9 @@ export default function KYCBankDetails({
         <Stack spacing={0.5} alignItems="flex-start" sx={{ mb: 4 }}>
           <Typography
             variant="h3"
+            color='primary'
             sx={{
               fontWeight: 700,
-              color: '#206CFE',
               textAlign: 'left',
             }}
           >

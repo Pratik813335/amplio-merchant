@@ -87,7 +87,13 @@ export default function KYCMerchantDetails({
     const values = {};
 
     documents.forEach((item) => {
-      values[`doc_${item.documentId}`] = item?.documentFile?.documentFile ?? null;
+      values[`doc_${item.documentId}`] = item?.documentFile?.documentFile
+        ? {
+          id: item.documentFile.documentFile.id,
+          fileUrl: item.documentFile.documentFile.fileUrl,
+          fileOriginalName: item.documentFile.documentFile.fileOriginalName,
+        }
+        : null;
     });
 
     values.moaAoaType = defaultMoaAoaType;
@@ -236,7 +242,7 @@ export default function KYCMerchantDetails({
 
     const isStepComplete = mandatoryDocumentIds.every((id) => Boolean(values?.[`doc_${id}`]?.id));
 
-    if (isStepComplete && !dataInitializedSteps?.includes('kyc_company_documents')) {
+    if (isStepComplete && !dataInitializedSteps?.includes('kyc_merchant_documents')) {
       setDataInitializedSteps();
       setActiveStepId();
     }
@@ -466,9 +472,9 @@ export default function KYCMerchantDetails({
         <Stack spacing={0.5} alignItems="flex-start" sx={{ mb: 4 }}>
           <Typography
             variant="h3"
+            color='primary'
             sx={{
               fontWeight: 700,
-              color: '#206CFE',
               textAlign: 'left',
             }}
           >

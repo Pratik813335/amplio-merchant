@@ -1,28 +1,33 @@
 import PropTypes from 'prop-types';
+
 // @mui
 import { alpha, useTheme } from '@mui/material/styles';
 import Box from '@mui/material/Box';
 import Stack from '@mui/material/Stack';
 import Typography from '@mui/material/Typography';
 import Card from '@mui/material/Card';
+import Tooltip from '@mui/material/Tooltip';
+
+// component
+import Iconify from 'src/components/iconify';
+
 // utils
 import { fNumber, fPercent } from 'src/utils/format-number';
-// components
-import Iconify from 'src/components/iconify';
+
 
 // ----------------------------------------------------------------------
 
 export default function WidgetSummaryCard({ icon, timing, title, percent, total, chart, sx, ...other }) {
   const theme = useTheme();
-  const colors = [theme.palette.primary.light, theme.palette.primary.main];
-  // const {
 
-  //   series,
-  //   options,
-  // } = chart;
-
+  const {
+    colors = [theme.palette.primary.light, theme.palette.primary.main],
+    series,
+    options,
+  } = chart;
+  // data
   const chartOptions = {
-    colors: colors.map((colr) => colr[1]),
+    colors: colors.map((color) => color[1]),
     fill: {
       type: 'gradient',
       gradient: {
@@ -53,7 +58,7 @@ export default function WidgetSummaryCard({ icon, timing, title, percent, total,
       },
       marker: { show: false },
     },
-    // ...options,
+    ...options,
   };
 
   function formatNumber(num) {
@@ -73,55 +78,44 @@ export default function WidgetSummaryCard({ icon, timing, title, percent, total,
 
     return number;
   }
-  // if (!total && total !== 0) return null;
 
   return (
     <Card sx={{ display: 'flex', alignItems: 'center', p: 3, ...sx }} {...other}>
       <Box sx={{ flexGrow: 1 }}>
-        <Box display="flex" justifyContent="space-between">
-          <Typography variant="subtitle2">{title}</Typography>
 
-          <Iconify icon={icon} width={30} height={5} sx={{
-            borderRadius: 1,
-            p: 0.5,
-            backgroundColor: alpha(theme.palette.info.dark, 0.08),
-            color: alpha(theme.palette.info.dark, 1.00),
-          }} />
+        {/* Title + Icon */}
+        <TruncatedTypography text={title} icon={icon} />
 
-
-        </Box>
-
+        {/* Amount + Percent */}
         <Stack direction="row" alignItems="center" sx={{ mt: 2, mb: 1 }}>
-          {String(total).includes("%") ?
-            <Typography variant="h5">{total}</Typography> :
+
+          {String(total).includes('%') ? (
+            <Typography variant="h5">{total}</Typography>
+          ) : (
             <Typography variant="h5">{formatNumber(total)}</Typography>
-          }
+          )}
 
           <Iconify
-            width={24}
-            icon={
-              percent < 0
-                ? 'icons8:arrows-long-down'
-                : 'icons8:arrows-long-up'
-            }
+            width={20}
+            icon={percent < 0 ? 'icons8:arrows-long-down' : 'icons8:arrows-long-up'}
             sx={{
               ml: 1,
-              color: 'success.main',
-              ...(percent < 0 && {
-                color: 'error.main',
-              }),
+              color: percent < 0 ? 'error.main' : 'success.main',
             }}
           />
 
           <Typography component="div" variant="subtitle2">
             {percent > 0 && '+'}
-
             {fPercent(percent)}
           </Typography>
+
         </Stack>
-        <Typography variant='caption' sx={{ color: "grey" }}>
+
+        {/* Timing */}
+        <Typography variant="caption" color="text.secondary">
           {timing}
         </Typography>
+
       </Box>
     </Card>
   );
@@ -139,4 +133,61 @@ WidgetSummaryCard.propTypes = {
   hideArrow: PropTypes.bool,
   arrowColor: PropTypes.string,
   arrowSize: PropTypes.string,
+};
+
+
+// ----------------------------------------------------------------------
+
+export function TruncatedTypography({ text, icon }) {
+  const theme = useTheme();
+
+  const words = text?.split(' ') || [];
+  const isTruncated = words.length > 3;
+  const truncatedText = isTruncated ? `${words.slice(0, 3).join(' ')}...` : text;
+
+  return (
+    <Box
+      sx={{
+        display: 'flex',
+        alignItems: 'center',
+        gap: 1,
+      }}
+    >
+      <Tooltip title={isTruncated ? text : ''} arrow disableHoverListener={!isTruncated}>
+        <Typography
+          variant="subtitle2"
+          noWrap
+          sx={{
+            flexGrow: 1,
+            minWidth: 0,
+          }}
+        >
+          {truncatedText}
+        </Typography>
+      </Tooltip>
+
+      {icon && (
+        <Box
+          sx={{
+            flexShrink: 0,
+            width: theme.spacing(3.5),
+            height: theme.spacing(3.5),
+            borderRadius: 1,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            bgcolor: alpha(theme.palette.info.main, 0.08),
+            color: theme.palette.primary.main,
+          }}
+        >
+          <Iconify icon={icon} width={18} height={18} />
+        </Box>
+      )}
+    </Box>
+  );
+}
+
+TruncatedTypography.propTypes = {
+  text: PropTypes.string,
+  icon: PropTypes.string,
 };

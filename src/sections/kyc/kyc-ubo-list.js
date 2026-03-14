@@ -8,6 +8,7 @@ import Stack from '@mui/material/Stack';
 import Typography from '@mui/material/Typography';
 import TextField from '@mui/material/TextField';
 import InputAdornment from '@mui/material/InputAdornment';
+import IconButton from '@mui/material/IconButton';
 import Iconify from 'src/components/iconify';
 import Table from '@mui/material/Table';
 import TableBody from '@mui/material/TableBody';
@@ -43,9 +44,19 @@ const getStatusMeta = (status) => {
   return { color: 'warning', label: 'Pending' };
 };
 
-export default function KYCUBOs({ percent, setActiveStepId }) {
+export default function KYCUBOs({
+  percent,
+  setActiveStepId,
+  dataInitializedSteps,
+  setDataInitializedSteps,
+}) {
   const [open, setOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
+
+  const [selectedUBO, setSelectedUBO] = useState(null);
+  const [viewMode, setViewMode] = useState(false);
+  const [editMode, setEditMode] = useState(false);
+
   const { ubos, refreshUbos, loading } = useGetUBOs();
 
   const filteredRows = ubos.filter((row) =>
@@ -57,10 +68,49 @@ export default function KYCUBOs({ percent, setActiveStepId }) {
   useEffect(() => {
     if (!loading && ubos.length >= 1) {
       percent(100);
+      if (!dataInitializedSteps?.includes('kyc_signatories')) {
+        setDataInitializedSteps?.();
+        setActiveStepId();
+      }
     }
-  }, [loading, percent, ubos]);
+  }, [
+    loading,
+    percent,
+    ubos,
+    dataInitializedSteps,
+    setDataInitializedSteps,
+    setActiveStepId,
+  ]);
 
   const notFound = !loading && (ubos.length === 0 || filteredRows.length === 0);
+
+  const handleAdd = () => {
+    setSelectedUBO(null);
+    setViewMode(false);
+    setEditMode(false);
+    setOpen(true);
+  };
+
+  const handleView = (row) => {
+    setSelectedUBO(row);
+    setViewMode(true);
+    setEditMode(false);
+    setOpen(true);
+  };
+
+  const handleEdit = (row) => {
+    setSelectedUBO(row);
+    setEditMode(true);
+    setViewMode(false);
+    setOpen(true);
+  };
+
+  const handleClose = () => {
+    setOpen(false);
+    setSelectedUBO(null);
+    setViewMode(false);
+    setEditMode(false);
+  };
 
   return (
     <Container sx={{ position: 'relative', py: { xs: 6, sm: 8, md: 10 } }}>
@@ -70,32 +120,17 @@ export default function KYCUBOs({ percent, setActiveStepId }) {
           borderRadius: 3,
           width: '100%',
           boxShadow: '0px 8px 25px rgba(0,0,0,0.08)',
-          position: 'relative',
-          overflow: 'hidden',
           minHeight: 600,
           display: 'flex',
           flexDirection: 'column',
         }}
       >
-        <Stack spacing={0.5} alignItems="flex-start" sx={{ mb: 4 }}>
-          <Typography
-            variant="h3"
-            sx={{
-              fontWeight: 700,
-              color: '#206CFE',
-              textAlign: 'left',
-            }}
-          >
+        <Stack spacing={0.5} sx={{ mb: 4 }}>
+          <Typography variant="h3" sx={{ fontWeight: 700, color: '#206CFE' }}>
             Ultimate Beneficial Owners
           </Typography>
-          <Typography
-            variant="h5"
-            sx={{
-              fontWeight: 500,
-              color: '#000000',
-              textAlign: 'left',
-            }}
-          >
+
+          <Typography variant="h5" sx={{ fontWeight: 500 }}>
             Add all UBO details for merchant KYC verification.
           </Typography>
         </Stack>
@@ -104,124 +139,126 @@ export default function KYCUBOs({ percent, setActiveStepId }) {
           sx={{
             mb: 5,
             display: 'flex',
-            flexDirection: { xs: 'column', sm: 'row' },
             justifyContent: 'space-between',
-            alignItems: { xs: 'stretch', sm: 'center' },
-            gap: { xs: 2, sm: 0 },
+            flexWrap: 'wrap',
+            gap: 2,
           }}
         >
-          <Typography variant="h4" color="primary" sx={{ mb: { xs: 1, sm: 0 } }}>
+          <Typography variant="h4" color="primary">
             Add UBO
           </Typography>
-          <Box
-            sx={{
-              display: 'flex',
-              flexDirection: { xs: 'column', sm: 'row' },
-              gap: 2,
-              width: { xs: '100%', sm: 'auto' },
-            }}
-          >
+
+          <Stack direction="row" spacing={2}>
             <StyledSearch
               placeholder="Search UBOs..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              sx={{ width: { xs: '100%', sm: 300 } }}
               InputProps={{
                 startAdornment: (
                   <InputAdornment position="start">
-                    <Iconify icon="eva:search-fill" sx={{ color: 'text.disabled' }} />
+                    <Iconify icon="eva:search-fill" />
                   </InputAdornment>
                 ),
               }}
             />
+
             <Button
               variant="contained"
-              color="primary"
+              color='primary'
               startIcon={<Iconify icon="eva:plus-fill" />}
-              onClick={() => setOpen(true)}
-              sx={{
-                height: 40,
-                width: { xs: '100%', sm: 'auto' },
-                order: { xs: -1, sm: 1 },
-              }}
+              onClick={handleAdd}
             >
               Add UBO
             </Button>
-
-            <KYCAddUBOsForm
-              open={open}
-              onClose={() => setOpen(false)}
-              onSuccess={() => {
-                refreshUbos();
-                setOpen(false);
-              }}
-            />
-          </Box>
+          </Stack>
         </Box>
 
-        <Box sx={{ flexGrow: 1 }}>
-          <TableContainer component={Paper} sx={{ mb: 5 }}>
-            <Table sx={{ minWidth: 650 }} aria-label="ubo table">
-              <TableHead>
-                <TableRow>
-                  <TableCell>Name</TableCell>
-                  <TableCell align="left">Ownership %</TableCell>
-                  <TableCell align="left">Role</TableCell>
-                  <TableCell align="left">Email</TableCell>
-                  <TableCell align="left">Phone</TableCell>
-                  <TableCell align="left">DOB</TableCell>
-                  <TableCell align="left">PAN</TableCell>
-                  <TableCell align="left">Status</TableCell>
-                </TableRow>
-              </TableHead>
+        <TableContainer component={Paper} sx={{ mb: 5 }}>
+          <Table>
+            <TableHead>
+              <TableRow>
+                <TableCell>Name</TableCell>
+                <TableCell>Ownership %</TableCell>
+                <TableCell>Role</TableCell>
+                <TableCell>Email</TableCell>
+                <TableCell>Phone</TableCell>
+                <TableCell>DOB</TableCell>
+                <TableCell>PAN</TableCell>
+                <TableCell>Status</TableCell>
+                <TableCell align="center">Action</TableCell>
+              </TableRow>
+            </TableHead>
 
-              <TableBody>
-                {filteredRows.map((row) => {
-                  const statusMeta = getStatusMeta(row.status);
+            <TableBody>
+              {filteredRows.map((row) => {
+                const statusMeta = getStatusMeta(row.status);
 
-                  return (
-                    <TableRow key={row.id || row.panCardId || row.email}>
-                      <TableCell>{row.fullName}</TableCell>
-                      <TableCell>{row.ownershipPercentage ?? '-'}</TableCell>
-                      <TableCell>{row.designationValue}</TableCell>
-                      <TableCell>{row.email}</TableCell>
-                      <TableCell>{row.phone}</TableCell>
-                      <TableCell>
-                        {row.submittedDateOfBirth
-                          ? new Date(row.submittedDateOfBirth).toLocaleDateString()
-                          : '-'}
-                      </TableCell>
-                      <TableCell>
-                        {row.panCard?.fileUrl ? (
-                          <a
-                            href={row.panCard.fileUrl}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            style={{ color: '#1976d2', textDecoration: 'underline' }}
+                return (
+                  <TableRow key={row.id}>
+                    <TableCell>{row.fullName}</TableCell>
+                    <TableCell>{row.ownershipPercentage}</TableCell>
+                    <TableCell>{row.designationValue}</TableCell>
+                    <TableCell>{row.email}</TableCell>
+                    <TableCell>{row.phone}</TableCell>
+
+                    <TableCell>
+                      {row.submittedDateOfBirth
+                        ? new Date(
+                            row.submittedDateOfBirth
+                          ).toLocaleDateString()
+                        : '-'}
+                    </TableCell>
+
+                    <TableCell>
+                      {row.panCard?.fileUrl ? (
+                        <a
+                          href={row.panCard.fileUrl}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                        >
+                          View
+                        </a>
+                      ) : (
+                        '-'
+                      )}
+                    </TableCell>
+
+                    <TableCell>
+                      <Label color={statusMeta.color}>
+                        {statusMeta.label}
+                      </Label>
+                    </TableCell>
+
+                    <TableCell align="center">
+                      <Stack direction="row" spacing={1}>
+                        <IconButton
+                          onClick={() => handleView(row)}
+                        >
+                          <Iconify icon="solar:eye-bold" />
+                        </IconButton>
+
+                        {row.status !== 1 && (
+                          <IconButton
+                            onClick={() => handleEdit(row)}
                           >
-                            View
-                          </a>
-                        ) : (
-                          '-'
+                            <Iconify icon="solar:pen-bold" />
+                          </IconButton>
                         )}
-                      </TableCell>
-                      <TableCell>
-                        <Label color={statusMeta.color}>{statusMeta.label}</Label>
-                      </TableCell>
-                    </TableRow>
-                  );
-                })}
+                      </Stack>
+                    </TableCell>
+                  </TableRow>
+                );
+              })}
 
-                <TableNoData notFound={notFound} />
-              </TableBody>
-            </Table>
-          </TableContainer>
-        </Box>
+              <TableNoData notFound={notFound} />
+            </TableBody>
+          </Table>
+        </TableContainer>
 
-        <Box sx={{ textAlign: 'right', mt: 'auto', pt: 3 }}>
+        <Box sx={{ textAlign: 'right', mt: 'auto' }}>
           <Button
             variant="contained"
-            color="primary"
+            color='primary'
             disabled={ubos.length < 1}
             onClick={() => {
               percent(100);
@@ -232,6 +269,19 @@ export default function KYCUBOs({ percent, setActiveStepId }) {
           </Button>
         </Box>
       </Card>
+
+      <KYCAddUBOsForm
+        open={open}
+        currentUser={selectedUBO}
+        isViewMode={viewMode}
+        isEditMode={editMode}
+        onClose={handleClose}
+        onSuccess={() => {
+          refreshUbos();
+          handleClose();
+        }}
+      />
+
       <KYCFooter />
     </Container>
   );
@@ -240,4 +290,6 @@ export default function KYCUBOs({ percent, setActiveStepId }) {
 KYCUBOs.propTypes = {
   percent: PropTypes.func.isRequired,
   setActiveStepId: PropTypes.func.isRequired,
+  dataInitializedSteps: PropTypes.array,
+  setDataInitializedSteps: PropTypes.func,
 };

@@ -43,7 +43,7 @@ export function useGetKycSection(section, route = '') {
   });
 
   useEffect(() => {
-    if (['merchant_documents', 'kyc_company_documents'].includes(section) && URL) {
+    if (['merchant_documents', 'kyc_merchant_documents'].includes(section) && URL) {
       console.log('[KYC documents] request id debug:', {
         requestId: usersId,
         merchant_user_id: sessionStorage.getItem('merchant_user_id'),
@@ -124,7 +124,6 @@ export function useGetKycAddressDetails() {
   };
 }
 
-
 export function useGetUBOs() {
   const profileId = sessionStorage.getItem('merchant_user_id');
 
@@ -150,104 +149,113 @@ export function useGetUBOs() {
   };
 }
 
-export function useGetSignatories() {
-  const profileId = sessionStorage.getItem('company_user_id');
+export function useGetPSPs() {
+  const profileId = sessionStorage.getItem('merchant_user_id');
 
   const URL = profileId
-    ? endpoints.companyKyc.getSection('company_authorized_signatories', profileId, '')
+    ? endpoints.merchantKyc.getSection('merchant_psp_details', profileId, '')
     : null;
 
   const { data, isLoading, error, isValidating, mutate } = useSWR(URL, fetcher, {
     keepPreviousData: true,
   });
+  // console.log('psp data', data);
 
-  const refreshSignatories = () => {
+  const refreshPsps = useCallback(() => {
     mutate();
-  };
+  }, [mutate]);
 
   return {
-    signatories: data?.data || [],
+    psps: data?.data || [],
     loading: isLoading,
     error,
     validating: isValidating,
     empty: !isLoading && !data?.data?.length,
-    refreshSignatories,
+    refreshPsps,
   };
 }
 
-export function useGetDocuments(companyId) {
-  const URL = endpoints.companyKyc.getDocuments;
+// export function useGetDocuments(companyId) {
+//   const URL = endpoints.companyKyc.getDocuments;
 
-  const { data, isLoading, error, isValidating, mutate } = useSWR(URL, fetcher, {
-    keepPreviousData: true,
-  });
+//   const { data, isLoading, error, isValidating, mutate } = useSWR(URL, fetcher, {
+//     keepPreviousData: true,
+//   });
 
-  const refreshDocuments = () => {
-    mutate();
-  };
+//   const refreshDocuments = () => {
+//     mutate();
+//   };
 
-  return {
-    documents: data?.documents || [],
-    loading: isLoading,
-    error,
-    validating: isValidating,
-    empty: !isLoading && (!data?.documents || data.documents.length === 0),
-    refreshDocuments,
-  };
-}
+//   return {
+//     documents: data?.documents || [],
+//     loading: isLoading,
+//     error,
+//     validating: isValidating,
+//     empty: !isLoading && (!data?.documents || data.documents.length === 0),
+//     refreshDocuments,
+//   };
+// }
 
-export function useGetBankDetails() {
-  const URL = endpoints.companyKyc.getBankDetails;
+// export function useGetBankDetails() {
+//   const URL = endpoints.companyKyc.getBankDetails;
 
-  const { data, error, isLoading, isValidating, mutate } = useSWR(URL, fetcher, {
-    keepPreviousData: true,
-    revalidateOnFocus: false,
-  });
+//   const { data, error, isLoading, isValidating, mutate } = useSWR(URL, fetcher, {
+//     keepPreviousData: true,
+//     revalidateOnFocus: false,
+//   });
 
-  const refreshBankDetail = () => {
-    mutate();
-  };
+//   const refreshBankDetail = () => {
+//     mutate();
+//   };
 
-  return {
-    bankDetails: data?.bankDetails || [],
-    loading: isLoading,
-    error,
-    validating: isValidating,
-    empty: !isLoading && !data?.bankDetails?.length,
-    raw: data,
-    refreshBankDetail,
-  };
-}
+//   return {
+//     bankDetails: data?.bankDetails || [],
+//     loading: isLoading,
+//     error,
+//     validating: isValidating,
+//     empty: !isLoading && !data?.bankDetails?.length,
+//     raw: data,
+//     refreshBankDetail,
+//   };
+// }
 
-export function useGetBankDetail(id) {
-  const URL = id ? endpoints.companyKyc.details(id) : null;
+// export function useGetBankDetail(id) {
+//   const URL = id ? endpoints.companyKyc.details(id) : null;
 
-  const { data, error, isLoading, isValidating, mutate } = useSWR(URL, fetcher, {
-    keepPreviousData: true,
-  });
+//   const { data, error, isLoading, isValidating, mutate } = useSWR(URL, fetcher, {
+//     keepPreviousData: true,
+//   });
 
-  return {
-    bank: data?.bankDetails || null,
-    loading: isLoading,
-    error,
-    validating: isValidating,
-    refreshBank: () => mutate(),
-  };
-}
+//   return {
+//     bank: data?.bankDetails || null,
+//     loading: isLoading,
+//     error,
+//     validating: isValidating,
+//     refreshBank: () => mutate(),
+//   };
+// }
+//   return {
+//     bank: data?.bankDetails || null,
+//     loading: isLoading,
+//     error,
+//     validating: isValidating,
+//     refreshBank: () => mutate(),
+//   };
+// }
 
 
-export default function useGetProfileData() {
-  const URL = endpoints.companyKyc.getProfileData;
+// export default function useGetProfileData() {
+//   const URL = endpoints.companyKyc.getProfileData;
 
-  const { data, isLoading, error, isValidating } = useSWR(URL, fetcher, {
-    keepPreviousData: true,
-  });
+//   const { data, isLoading, error, isValidating } = useSWR(URL, fetcher, {
+//     keepPreviousData: true,
+//   });
 
-  return {
-    profileData: data?.profile || null,
-    loading: isLoading,
-    error,
-    validating: isValidating,
-  };
-}
+//   return {
+//     profileData: data?.profile || null,
+//     loading: isLoading,
+//     error,
+//     validating: isValidating,
+//   };
+// }
 

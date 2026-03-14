@@ -6,6 +6,8 @@ import { AuthGuard } from 'src/auth/guard';
 import DashboardLayout from 'src/layouts/dashboard';
 // components
 import { LoadingScreen } from 'src/components/loading-screen';
+import { Layer } from 'react-map-gl';
+import { element } from 'prop-types';
 // import SettingsPage from 'src/pages/dashboard/settings';
 
 
@@ -14,8 +16,10 @@ const SettingsPage = lazy(() => import('src/pages/dashboard/settings'));
 const TransactionPage = lazy(() => import('src/pages/dashboard/transaction'));
 // OVERVIEW
 const IndexPage = lazy(() => import('src/pages/dashboard/app'));
+const OverviewForecastingPage = lazy(() => import('src/pages/dashboard/forecasting'));
 const OverviewEcommercePage = lazy(() => import('src/pages/dashboard/ecommerce'));
 const OverviewAnalyticsPage = lazy(() => import('src/pages/dashboard/analytics'));
+const OverviewDashboardPage = lazy(() => import('src/pages/dashboard/dashboard'))
 const OverviewBankingPage = lazy(() => import('src/pages/dashboard/banking'));
 const OverviewBookingPage = lazy(() => import('src/pages/dashboard/booking'));
 const OverviewFilePage = lazy(() => import('src/pages/dashboard/file'));
@@ -41,6 +45,8 @@ const UserListPage = lazy(() => import('src/pages/dashboard/user/list'));
 const UserAccountPage = lazy(() => import('src/pages/dashboard/user/account'));
 const UserCreatePage = lazy(() => import('src/pages/dashboard/user/new'));
 const UserEditPage = lazy(() => import('src/pages/dashboard/user/edit'));
+// PSP
+const PSPCreatePage = lazy(() => import('src/pages/dashboard/psp/new'));
 // BLOG
 const BlogPostsPage = lazy(() => import('src/pages/dashboard/post/list'));
 const BlogPostPage = lazy(() => import('src/pages/dashboard/post/details'));
@@ -84,6 +90,8 @@ export const dashboardRoutes = [
     ),
     children: [
       { element: <IndexPage />, index: true },
+      { path: 'forecasting', element: <OverviewForecastingPage />},
+      { path: 'dashboard', element: <OverviewDashboardPage /> },
       { path: 'ecommerce', element: <OverviewEcommercePage /> },
       { path: 'analytics', element: <OverviewAnalyticsPage /> },
       { path: 'banking', element: <OverviewBankingPage /> },
@@ -101,6 +109,13 @@ export const dashboardRoutes = [
           { path: 'new', element: <UserCreatePage /> },
           { path: ':id/edit', element: <UserEditPage /> },
           { path: 'account', element: <UserAccountPage /> },
+        ],
+      },
+      {
+        path: 'psp',
+        children: [
+          { element: <PSPCreatePage />, index: true },
+          { path: 'new', element: <PSPCreatePage /> },
         ],
       },
       {

@@ -68,7 +68,7 @@ export const paths = {
       forgotPassword: `${ROOTS.AUTH}/jwt/forgot-password`,
     },
     kyc: {
-      companyKyc: `${ROOTS.AUTH}/kyc/company-kyc`,
+      companyKyc: `${ROOTS.AUTH}/kyc/merchant-kyc`,
       kycBasicInfo: `${ROOTS.AUTH}/kyc/basic-info`,
       kycSuccessful: `${ROOTS.AUTH}/kyc/kyc-successful`,
       kycPending: `${ROOTS.AUTH}/kyc/kyc-pending`,
@@ -107,12 +107,14 @@ export const paths = {
     blank: `${ROOTS.DASHBOARD}/blank`,
     kanban: `${ROOTS.DASHBOARD}/kanban`,
     calendar: `${ROOTS.DASHBOARD}/calendar`,
-    fileManager: `${ROOTS.DASHBOARD}/file-manager`,
+    fileManager: `${ROOTS.DASHBOARD}/file-manager`, 
     permission: `${ROOTS.DASHBOARD}/permission`,
     general: {
       app: `${ROOTS.DASHBOARD}/app`,
+      forecasting: `${ROOTS.DASHBOARD}/forecasting`,
       settings: `${ROOTS.DASHBOARD}/settings`,
       transaction: `${ROOTS.DASHBOARD}/transaction`,
+      dashboard: `${ROOTS.DASHBOARD}/dashboard`,
       ecommerce: `${ROOTS.DASHBOARD}/ecommerce`,
       analytics: `${ROOTS.DASHBOARD}/analytics`,
       banking: `${ROOTS.DASHBOARD}/banking`,
@@ -135,6 +137,10 @@ export const paths = {
       demo: {
         edit: `${ROOTS.DASHBOARD}/user/${MOCK_ID}/edit`,
       },
+    },
+    psp: {
+      root: `${ROOTS.DASHBOARD}/psp`,
+      new: `${ROOTS.DASHBOARD}/psp/new`,
     },
     product: {
       root: `${ROOTS.DASHBOARD}/product`,
