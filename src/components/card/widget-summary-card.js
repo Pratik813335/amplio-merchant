@@ -129,6 +129,10 @@ WidgetSummaryCard.propTypes = {
   timing: PropTypes.string,
   icon: PropTypes.string,
   total: PropTypes.number,
+  iconColor: PropTypes.string,
+  hideArrow: PropTypes.bool,
+  arrowColor: PropTypes.string,
+  arrowSize: PropTypes.string,
 };
 
 

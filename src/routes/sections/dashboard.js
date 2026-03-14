@@ -36,6 +36,8 @@ const InvoiceListPage = lazy(() => import('src/pages/dashboard/invoice/list'));
 const InvoiceDetailsPage = lazy(() => import('src/pages/dashboard/invoice/details'));
 const InvoiceCreatePage = lazy(() => import('src/pages/dashboard/invoice/new'));
 const InvoiceEditPage = lazy(() => import('src/pages/dashboard/invoice/edit'));
+// LIQUIDITY-ENGINE
+const LiquidityEngineListPage = lazy(() => import('src/pages/dashboard/liquidityEngine/list'))
 // USER
 const UserProfilePage = lazy(() => import('src/pages/dashboard/user/profile'));
 const UserCardsPage = lazy(() => import('src/pages/dashboard/user/cards'));
@@ -43,8 +45,6 @@ const UserListPage = lazy(() => import('src/pages/dashboard/user/list'));
 const UserAccountPage = lazy(() => import('src/pages/dashboard/user/account'));
 const UserCreatePage = lazy(() => import('src/pages/dashboard/user/new'));
 const UserEditPage = lazy(() => import('src/pages/dashboard/user/edit'));
-// PSP
-const PSPCreatePage = lazy(() => import('src/pages/dashboard/psp/new'));
 // BLOG
 const BlogPostsPage = lazy(() => import('src/pages/dashboard/post/list'));
 const BlogPostPage = lazy(() => import('src/pages/dashboard/post/details'));
@@ -110,13 +110,6 @@ export const dashboardRoutes = [
         ],
       },
       {
-        path: 'psp',
-        children: [
-          { element: <PSPCreatePage />, index: true },
-          { path: 'new', element: <PSPCreatePage /> },
-        ],
-      },
-      {
         path: 'product',
         children: [
           { element: <ProductListPage />, index: true },
@@ -143,6 +136,13 @@ export const dashboardRoutes = [
           { path: ':id/edit', element: <InvoiceEditPage /> },
           { path: 'new', element: <InvoiceCreatePage /> },
         ],
+      },
+      {
+        path: 'liquidityEngine',
+        children: [
+          { element: <LiquidityEngineListPage />, index: true },
+          { path: 'list', element: <LiquidityEngineListPage /> },
+        ]
       },
       {
         path: 'post',

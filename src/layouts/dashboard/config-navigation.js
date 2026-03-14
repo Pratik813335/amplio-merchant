@@ -80,13 +80,14 @@ export function useNavData() {
       {
         subheader: t('management'),
         items: [
+          // LIQUIDITY ENGINE
           {
-            title: t('psp'),
-            path: paths.dashboard.user.root,
-            icon: ICONS.user,
+            title: t('liquidity engine'),
+            path: paths.dashboard.liquidityEngine.list,
+            icon: ICONS.liquidityEngine,
             children: [
-              { title: t('psp'), path: paths.dashboard.psp.new },
-            ],
+              {title: t('list'), path: paths.dashboard.liquidityEngine.list},
+            ]
           },
           // USER
           // {
