@@ -89,14 +89,6 @@ export function useNavData() {
               {title: t('list'), path: paths.dashboard.liquidityEngine.list},
             ]
           },
-          {
-            title: t('psp'),
-            path: paths.dashboard.user.root,
-            icon: ICONS.user,
-            children: [
-              { title: t('psp'), path: paths.dashboard.psp.new },
-            ],
-          },
           // USER
           // {
           //   title: t('user'),

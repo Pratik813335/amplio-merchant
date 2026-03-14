@@ -45,8 +45,6 @@ const UserListPage = lazy(() => import('src/pages/dashboard/user/list'));
 const UserAccountPage = lazy(() => import('src/pages/dashboard/user/account'));
 const UserCreatePage = lazy(() => import('src/pages/dashboard/user/new'));
 const UserEditPage = lazy(() => import('src/pages/dashboard/user/edit'));
-// PSP
-const PSPCreatePage = lazy(() => import('src/pages/dashboard/psp/new'));
 // BLOG
 const BlogPostsPage = lazy(() => import('src/pages/dashboard/post/list'));
 const BlogPostPage = lazy(() => import('src/pages/dashboard/post/details'));
@@ -109,13 +107,6 @@ export const dashboardRoutes = [
           { path: 'new', element: <UserCreatePage /> },
           { path: ':id/edit', element: <UserEditPage /> },
           { path: 'account', element: <UserAccountPage /> },
-        ],
-      },
-      {
-        path: 'psp',
-        children: [
-          { element: <PSPCreatePage />, index: true },
-          { path: 'new', element: <PSPCreatePage /> },
         ],
       },
       {

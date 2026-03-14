@@ -138,10 +138,6 @@ export const paths = {
         edit: `${ROOTS.DASHBOARD}/user/${MOCK_ID}/edit`,
       },
     },
-    psp: {
-      root: `${ROOTS.DASHBOARD}/psp`,
-      new: `${ROOTS.DASHBOARD}/psp/new`,
-    },
     product: {
       root: `${ROOTS.DASHBOARD}/product`,
       new: `${ROOTS.DASHBOARD}/product/new`,
