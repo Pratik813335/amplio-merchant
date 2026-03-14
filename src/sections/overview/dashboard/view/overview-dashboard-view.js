@@ -52,7 +52,7 @@ const DASHBOARD_CARDS = [
         "percent": 12,
         "total": 480000,
         "timing": "Ready to disburse",
-        "icon": "mdi:water-outline"
+        "icon": "mdi:drop-outline"
     },
     {
         "title": "Eligible Receivables (Today) Receivables (Today) Receivables (Today) Receivables (Today)  ",
@@ -71,7 +71,7 @@ const DASHBOARD_CARDS = [
     {
         "title": "Bank Settlement Score",
         "percent": 4.5,
-        "total": 9888888,
+        "total": '98.5%',
         "timing": "Based on 90-day history",
         "icon": "mdi:check-circle-outline"
     },

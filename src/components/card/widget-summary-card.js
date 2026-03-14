@@ -90,9 +90,15 @@ export default function WidgetSummaryCard({ icon, timing, title, percent, total,
         <Stack direction="row" alignItems="center" sx={{ mt: 2, mb: 1 }}>
 
           {String(total).includes('%') ? (
-            <Typography variant="h5">{total}</Typography>
+            <Stack direction="row" alignItems="center" spacing={0.5}>
+              <Iconify icon="mdi:currency-inr" width={18} />
+              <Typography variant="h4">{total}</Typography>
+            </Stack>
           ) : (
-            <Typography variant="h5">{formatNumber(total)}</Typography>
+            <Stack direction="row" alignItems="center" spacing={0.5}>
+              <Iconify icon="mdi:currency-inr" width={18} />
+              <Typography variant="h4">{formatNumber(total)}</Typography>
+            </Stack>
           )}
 
           <Iconify
