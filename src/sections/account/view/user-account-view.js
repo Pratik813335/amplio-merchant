@@ -12,23 +12,30 @@ import Iconify from 'src/components/iconify';
 import { useSettingsContext } from 'src/components/settings';
 import CustomBreadcrumbs from 'src/components/custom-breadcrumbs';
 //
-import AccountGeneral from '../account-general';
+import BusinessProfile from '../account-general';
 import AccountBilling from '../account-billing';
 import AccountSocialLinks from '../account-social-links';
 import AccountNotifications from '../account-notifications';
 import AccountChangePassword from '../account-change-password';
+import BusinessBankPage from '../bank-account';
+import PspAccountPage from '../psp-account';
 
 // ----------------------------------------------------------------------
 
 const TABS = [
   {
-    value: 'general',
-    label: 'General',
+    value: 'businessProfile',
+    label: 'Business Profile',
     icon: <Iconify icon="solar:user-id-bold" width={24} />,
   },
   {
-    value: 'billing',
-    label: 'Billing',
+    value: 'bankAccount',
+    label: 'Bank Account',
+    icon: <Iconify icon="solar:bill-list-bold" width={24} />,
+  },
+  {
+    value: 'pspIntegration',
+    label: 'PSP Integration',
     icon: <Iconify icon="solar:bill-list-bold" width={24} />,
   },
   {
@@ -36,11 +43,11 @@ const TABS = [
     label: 'Notifications',
     icon: <Iconify icon="solar:bell-bing-bold" width={24} />,
   },
-  {
-    value: 'social',
-    label: 'Social links',
-    icon: <Iconify icon="solar:share-bold" width={24} />,
-  },
+  // {
+  //   value: 'social',
+  //   label: 'Social links',
+  //   icon: <Iconify icon="solar:share-bold" width={24} />,
+  // },
   {
     value: 'security',
     label: 'Security',
@@ -53,7 +60,7 @@ const TABS = [
 export default function AccountView() {
   const settings = useSettingsContext();
 
-  const [currentTab, setCurrentTab] = useState('general');
+  const [currentTab, setCurrentTab] = useState('businessProfile');
 
   const handleChangeTab = useCallback((event, newValue) => {
     setCurrentTab(newValue);
@@ -85,20 +92,22 @@ export default function AccountView() {
         ))}
       </Tabs>
 
-      {currentTab === 'general' && <AccountGeneral />}
+      {currentTab === 'businessProfile' && <BusinessProfile />}
 
-      {currentTab === 'billing' && (
+      {/* {currentTab === 'billing' && (
         <AccountBilling
           plans={_userPlans}
           cards={_userPayment}
           invoices={_userInvoices}
           addressBook={_userAddressBook}
         />
-      )}
+      )} */}
 
+      {currentTab === 'bankAccount' && <BusinessBankPage />}
+      {currentTab === 'pspIntegration' && <PspAccountPage />}
       {currentTab === 'notifications' && <AccountNotifications />}
 
-      {currentTab === 'social' && <AccountSocialLinks socialLinks={_userAbout.socialLinks} />}
+      {/* {currentTab === 'social' && <AccountSocialLinks socialLinks={_userAbout.socialLinks} />} */}
 
       {currentTab === 'security' && <AccountChangePassword />}
     </Container>
