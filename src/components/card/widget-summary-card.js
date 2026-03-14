@@ -19,15 +19,13 @@ import { fNumber, fPercent } from 'src/utils/format-number';
 
 export default function WidgetSummaryCard({ icon, timing, title, percent, total, chart, sx, ...other }) {
   const theme = useTheme();
-  // const colors = [theme.palette.primary.light, theme.palette.primary.main];
-  // const {
 
   const {
     colors = [theme.palette.primary.light, theme.palette.primary.main],
     series,
     options,
   } = chart;
-// data
+  // data
   const chartOptions = {
     colors: colors.map((color) => color[1]),
     fill: {
@@ -60,11 +58,11 @@ export default function WidgetSummaryCard({ icon, timing, title, percent, total,
       },
       marker: { show: false },
     },
-    // ...options,
+    ...options,
   };
 
   function formatNumber(num) {
-      const number = Number(num);
+    const number = Number(num);
 
     if (number >= 10000000) {
       return `${(number / 10000000).toFixed(2)} Cr`;
@@ -78,31 +76,24 @@ export default function WidgetSummaryCard({ icon, timing, title, percent, total,
       return `${(number / 1000).toFixed(2)} K`;
     }
 
-      return number;
-    }
-  // if (!total && total !== 0) return null;
+    return number;
+  }
 
   return (
     <Card sx={{ display: 'flex', alignItems: 'center', p: 3, ...sx }} {...other}>
       <Box sx={{ flexGrow: 1 }}>
-        <Box display='flex' justifyContent='space-between'>
-          <Typography variant="subtitle2">{title}</Typography>
 
-          <Iconify icon={icon} width={30} height={5} sx={{
-            borderRadius: 1,
-            p: 0.5,
-            backgroundColor: alpha(theme.palette.info.dark, 0.08),
-            color: alpha(theme.palette.info.dark, 1.00),
-          }} />
+        {/* Title + Icon */}
+        <TruncatedTypography text={title} icon={icon} />
 
-
-        </Box>
-
+        {/* Amount + Percent */}
         <Stack direction="row" alignItems="center" sx={{ mt: 2, mb: 1 }}>
-          {String(total).includes("%") ?
-            <Typography variant="h5">{total}</Typography> :
+
+          {String(total).includes('%') ? (
+            <Typography variant="h5">{total}</Typography>
+          ) : (
             <Typography variant="h5">{formatNumber(total)}</Typography>
-          }
+          )}
 
           <Iconify
             width={20}
@@ -119,7 +110,9 @@ export default function WidgetSummaryCard({ icon, timing, title, percent, total,
           </Typography>
 
         </Stack>
-        <Typography variant='caption' sx={{ color: "grey" }}>
+
+        {/* Timing */}
+        <Typography variant="caption" color="text.secondary">
           {timing}
         </Typography>
 
@@ -180,7 +173,7 @@ export function TruncatedTypography({ text, icon }) {
             alignItems: 'center',
             justifyContent: 'center',
             bgcolor: alpha(theme.palette.info.main, 0.08),
-            color: theme.palette.info.main,
+            color: theme.palette.primary.main,
           }}
         >
           <Iconify icon={icon} width={18} height={18} />
