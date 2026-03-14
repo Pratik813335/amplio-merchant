@@ -3,7 +3,6 @@ import PropTypes from 'prop-types';
 import { alpha, useTheme } from '@mui/material/styles';
 import Box from '@mui/material/Box';
 import Card from '@mui/material/Card';
-import Chip from '@mui/material/Chip';
 import Stack from '@mui/material/Stack';
 import Typography from '@mui/material/Typography';
 // components
@@ -27,7 +26,7 @@ function LiquidityEngineCardItem({ disbursement }) {
         border: `1px solid ${theme.palette.divider}`,
         borderRadius: 2,
         boxShadow: 'none',
-        // bgcolor: theme.palette.background.paper,
+
         '&:hover': {
           boxShadow: theme.shadows[2],
         },
@@ -49,11 +48,7 @@ function LiquidityEngineCardItem({ disbursement }) {
             flexShrink: 0,
           }}
         >
-          <Iconify
-            icon="lucide:droplets"
-            width={24}
-            sx={{ color: theme.palette.success.dark }}
-          />
+          <Iconify icon="lucide:droplets" width={24} sx={{ color: theme.palette.success.dark }} />
         </Box>
 
         {/* Date + subtitle */}
@@ -101,7 +96,6 @@ export default function LiquidityEngineCard({ disbursements }) {
         border: `1px solid ${theme.palette.divider}`,
         borderRadius: 2,
         boxShadow: 'none',
-        // bgcolor: theme.palette.background.paper,
       }}
     >
       {/* Section Title inside card */}
