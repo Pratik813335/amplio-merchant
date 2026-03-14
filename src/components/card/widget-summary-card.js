@@ -19,13 +19,15 @@ import { fNumber, fPercent } from 'src/utils/format-number';
 
 export default function WidgetSummaryCard({ icon, timing, title, percent, total, chart, sx, ...other }) {
   const theme = useTheme();
-  const colors = [theme.palette.primary.light, theme.palette.primary.main];
+  // const colors = [theme.palette.primary.light, theme.palette.primary.main];
   // const {
 
-  //   series,
-  //   options,
-  // } = chart;
-
+  const {
+    colors = [theme.palette.primary.light, theme.palette.primary.main],
+    series,
+    options,
+  } = chart;
+// data
   const chartOptions = {
     colors: colors.map((color) => color[1]),
     fill: {
