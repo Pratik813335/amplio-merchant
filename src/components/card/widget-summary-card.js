@@ -25,7 +25,7 @@ export default function WidgetSummaryCard({ icon, timing, title, percent, total,
     series,
     options,
   } = chart;
-// data
+  // data
   const chartOptions = {
     colors: colors.map((color) => color[1]),
     fill: {
@@ -173,10 +173,10 @@ export function TruncatedTypography({ text, icon }) {
             alignItems: 'center',
             justifyContent: 'center',
             bgcolor: alpha(theme.palette.info.main, 0.08),
-            color: theme.palette.info.main,
+            color: theme.palette.primary.main,
           }}
         >
-          <Iconify icon={icon} width={18} height={18} />
+          <Iconify icon={icon} width={25} height={25} />
         </Box>
       )}
     </Box>

@@ -52,7 +52,7 @@ const DASHBOARD_CARDS = [
         "percent": 12,
         "total": 480000,
         "timing": "Ready to disburse",
-        "icon": "codicon:pulse"
+        "icon": "mdi:water-outline"
     },
     {
         "title": "Eligible Receivables (Today) Receivables (Today) Receivables (Today) Receivables (Today)  ",
@@ -66,14 +66,14 @@ const DASHBOARD_CARDS = [
         "percent": 1.8,
         "total": 78787878,
         "timing": "Across 3 buckets",
-        "icon": "codicon:pulse"
+        "icon": "mdi:clock-outline"
     },
     {
         "title": "Bank Settlement Score",
         "percent": 4.5,
         "total": 9888888,
         "timing": "Based on 90-day history",
-        "icon": "mdi:trending-up"
+        "icon": "mdi:check-circle-outline"
     },
 
 
