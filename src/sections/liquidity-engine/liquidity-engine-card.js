@@ -1,6 +1,6 @@
 import PropTypes from 'prop-types';
 // @mui
-import { useTheme } from '@mui/material/styles';
+import { alpha, useTheme } from '@mui/material/styles';
 import Box from '@mui/material/Box';
 import Card from '@mui/material/Card';
 import Chip from '@mui/material/Chip';
@@ -8,6 +8,7 @@ import Stack from '@mui/material/Stack';
 import Typography from '@mui/material/Typography';
 // components
 import Iconify from 'src/components/iconify';
+import Label from 'src/components/label';
 
 // ----------------------------------------------------------------------
 
@@ -26,7 +27,7 @@ function LiquidityEngineCardItem({ disbursement }) {
         border: `1px solid ${theme.palette.divider}`,
         borderRadius: 2,
         boxShadow: 'none',
-        bgcolor: theme.palette.background.paper,
+        // bgcolor: theme.palette.background.paper,
         '&:hover': {
           boxShadow: theme.shadows[2],
         },
@@ -34,14 +35,14 @@ function LiquidityEngineCardItem({ disbursement }) {
       }}
     >
       {/* Left: Icon + Date + Count */}
-      <Stack direction="row" alignItems="center" spacing={2.5}>
+      <Stack direction="row" alignItems="center" spacing={3}>
         {/* Green Icon Box */}
         <Box
           sx={{
             width: 44,
             height: 44,
             borderRadius: 1.5,
-            bgcolor: theme.palette.success.lighter,
+            bgcolor: alpha(theme.palette.success.main, 0.16),
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
@@ -49,7 +50,7 @@ function LiquidityEngineCardItem({ disbursement }) {
           }}
         >
           <Iconify
-            icon="material-symbols-light:water-drops-outline-rounded"
+            icon="lucide:droplets"
             width={24}
             sx={{ color: theme.palette.success.dark }}
           />
@@ -57,7 +58,7 @@ function LiquidityEngineCardItem({ disbursement }) {
 
         {/* Date + subtitle */}
         <Stack spacing={0.4}>
-          <Typography variant="subtitle1" fontWeight={700} color="text.primary">
+          <Typography variant="subtitle1" fontWeight={600} color="text.primary">
             {date}
           </Typography>
           <Typography variant="body2" color="text.secondary">
@@ -72,22 +73,7 @@ function LiquidityEngineCardItem({ disbursement }) {
           {amount}
         </Typography>
 
-        <Chip
-          label={status}
-          size="small"
-          sx={{
-            bgcolor: theme.palette.success.lighter,
-            color: theme.palette.success.dark,
-            fontWeight: 600,
-            fontSize: 12,
-            height: 24,
-            borderRadius: 1.5,
-            border: `1px solid ${theme.palette.success.light}`,
-            '& .MuiChip-label': {
-              px: 1.5,
-            },
-          }}
-        />
+        <Label color="success">{status}</Label>
       </Stack>
     </Card>
   );
@@ -106,20 +92,30 @@ LiquidityEngineCardItem.propTypes = {
 // ----------------------------------------------------------------------
 
 export default function LiquidityEngineCard({ disbursements }) {
+  const theme = useTheme();
+
   return (
-    <Box sx={{ mt: 5 }}>
-      {/* Section Title */}
+    <Card
+      sx={{
+        p: 3,
+        border: `1px solid ${theme.palette.divider}`,
+        borderRadius: 2,
+        boxShadow: 'none',
+        // bgcolor: theme.palette.background.paper,
+      }}
+    >
+      {/* Section Title inside card */}
       <Typography variant="h6" fontWeight={700} sx={{ mb: 3 }}>
         Liquidity Disbursement History
       </Typography>
 
       {/* List of disbursement cards */}
-      <Stack spacing={2}>
+      <Stack spacing={3}>
         {disbursements.map((item) => (
           <LiquidityEngineCardItem key={item.id} disbursement={item} />
         ))}
       </Stack>
-    </Box>
+    </Card>
   );
 }
 
