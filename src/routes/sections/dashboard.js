@@ -6,10 +6,12 @@ import { AuthGuard } from 'src/auth/guard';
 import DashboardLayout from 'src/layouts/dashboard';
 // components
 import { LoadingScreen } from 'src/components/loading-screen';
+// import SettingsPage from 'src/pages/dashboard/settings';
 
 
 // ----------------------------------------------------------------------
-const TransectionPage = lazy(() => import('src/pages/dashboard/transaction'));
+const SettingsPage = lazy(() => import('src/pages/dashboard/settings'));
+const TransactionPage = lazy(() => import('src/pages/dashboard/transaction'));
 // OVERVIEW
 const IndexPage = lazy(() => import('src/pages/dashboard/app'));
 const OverviewEcommercePage = lazy(() => import('src/pages/dashboard/ecommerce'));
@@ -87,7 +89,8 @@ export const dashboardRoutes = [
       { path: 'banking', element: <OverviewBankingPage /> },
       { path: 'booking', element: <OverviewBookingPage /> },
       { path: 'file', element: <OverviewFilePage /> },
-      { path: 'transaction', element: <TransectionPage /> },
+      { path: 'transaction', element: <TransactionPage /> },
+      { path: 'settings', element: <SettingsPage /> },
       {
         path: 'user',
         children: [
