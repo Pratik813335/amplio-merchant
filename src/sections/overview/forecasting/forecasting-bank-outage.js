@@ -5,24 +5,62 @@ import Stack from '@mui/material/Stack';
 import Typography from '@mui/material/Typography';
 import LinearProgress from '@mui/material/LinearProgress';
 import Box from '@mui/material/Box';
+import Carousel, { CarouselArrows, useCarousel } from 'src/components/carousel';
 
 // --------------------------------------------------------
 
-export default function BankOutageProbability({ title, data, ...other }) {
+export default function ForecastingBankOutage({ title, data, ...other }) {
+
+  const carousel = useCarousel({
+    slidesToShow: 1,
+    slidesToScroll: 1, 
+    infinite: false,
+    speed: 500,
+  });
+
+  const groups = [];
+  for (let i = 0; i < data.length; i += 4) {
+    groups.push(data.slice(i, i + 4));
+  }
+
   return (
     <Card {...other}>
       <CardHeader title={title} />
 
-      <Stack spacing={3} sx={{ p: 3 }}>
-        {data.map((bank) => (
-          <BankItem key={bank.id} bank={bank} />
-        ))}
-      </Stack>
+      <Box sx={{ p: 3, position: 'relative', mx: -1 }}>
+
+        <Carousel ref={carousel.carouselRef} {...carousel.carouselSettings}>
+
+          {groups.map((group, index) => (
+            <Box key={index} sx={{ px: 1 }}>
+
+              <Stack spacing={3}>
+                {group.map((bank) => (
+                  <BankItem key={bank.id} bank={bank} />
+                ))}
+              </Stack>
+
+            </Box>
+          ))}
+
+        </Carousel>
+
+        <CarouselArrows
+          onNext={carousel.onNext}
+          onPrev={carousel.onPrev}
+          sx={{
+            top: -45,
+            right: 16,
+            position: 'absolute',
+          }}
+        />
+
+      </Box>
     </Card>
   );
 }
 
-BankOutageProbability.propTypes = {
+ForecastingBankOutage.propTypes = {
   title: PropTypes.string,
   data: PropTypes.array,
 };

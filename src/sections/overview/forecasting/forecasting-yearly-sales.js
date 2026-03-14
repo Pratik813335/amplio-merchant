@@ -11,7 +11,7 @@ import Chart, { useChart } from 'src/components/chart';
 
 // ----------------------------------------------------------------------
 
-export default function EcommerceYearlySales({ title, subheader, chart, ...other }) {
+export default function ForecastingYearlySales({ title, subheader, chart, ...other }) {
   const { colors, categories, series, options } = chart;
 
   const [seriesData, setSeriesData] = useState('2019');
@@ -62,7 +62,7 @@ export default function EcommerceYearlySales({ title, subheader, chart, ...other
   );
 }
 
-EcommerceYearlySales.propTypes = {
+ForecastingYearlySales.propTypes = {
   chart: PropTypes.object,
   subheader: PropTypes.string,
   title: PropTypes.string,

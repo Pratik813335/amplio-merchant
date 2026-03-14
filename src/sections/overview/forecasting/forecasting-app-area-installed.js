@@ -10,7 +10,7 @@ import Chart, { useChart } from 'src/components/chart';
 
 // ----------------------------------------------------------------------
 
-export default function AppAreaInstalled({ title, subheader, chart, ...other }) {
+export default function ForecastingAppAreaInstalled({ title, subheader, chart, ...other }) {
   const theme = useTheme();
 
   const {
@@ -67,7 +67,7 @@ export default function AppAreaInstalled({ title, subheader, chart, ...other }) 
   );
 }
 
-AppAreaInstalled.propTypes = {
+ForecastingAppAreaInstalled.propTypes = {
   chart: PropTypes.object,
   subheader: PropTypes.string,
   title: PropTypes.string,

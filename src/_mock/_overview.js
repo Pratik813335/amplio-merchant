@@ -358,7 +358,6 @@ export const _aiInsightsPredictions = [
     description:
       'ICICI Bank shows 15% higher delay probability on March 2-3 (weekend effect)',
     percentage: 87,
-    color: 'warning',
   },
   {
     id: '2',
@@ -366,7 +365,6 @@ export const _aiInsightsPredictions = [
     description:
       'March 5 (Wednesday) predicted to have 22% higher transaction volume',
     percentage: 92,
-    color: 'info',
   },
   {
     id: '3',
@@ -374,7 +372,6 @@ export const _aiInsightsPredictions = [
     description:
       'Card transactions showing 18% higher refund rate in last 48 hours',
     percentage: 94,
-    color: 'error',
   },
   {
     id: '4',
@@ -382,46 +379,59 @@ export const _aiInsightsPredictions = [
     description:
       'Feb 28 – Mar 1 shows best bank reliability scores (98.5% avg)',
     percentage: 96,
-    color: 'success',
   },
 ];
 
 // RAIL RELIABILITY
-// ----------------------------------------------------------------------
 
 export const _railSettlementReliability = [
   {
     rail: 'UPI',
     banks: [
-      { name: 'HDFC', value: '99.2%', color: 'success' },
-      { name: 'ICICI', value: '98.5%', color: 'success' },
-      { name: 'Axis', value: '97.8%', color: 'warning' },
-      { name: 'SBI', value: '96.5%', color: 'error' },        
+      { name: 'HDFC', value: '99.2%' },
+      { name: 'ICICI', value: '98.5%' },
+      { name: 'Axis', value: '97.8%' },
+      { name: 'SBI', value: '96.5%' },
+      { name: 'SBI', value: '96.5%' },
+      { name: 'SBI', value: '96.5%' },
+      { name: 'SBI', value: '96.5%' },
+      { name: 'SBI', value: '96.5%' },
+      { name: 'SBI', value: '96.5%' },
     ],
   },
   {
     rail: 'QR',
     banks: [
-      { name: 'HDFC', value: '98.8%', color: 'success' },
-      { name: 'ICICI', value: '98.2%', color: 'success' },
-      { name: 'Axis', value: '97.5%', color: 'warning' },
-      { name: 'SBI', value: '96.2%', color: 'error' },
+      { name: 'HDFC', value: '98.8%' },
+      { name: 'ICICI', value: '98.2%' },
+      { name: 'Axis', value: '97.5%' },
+      { name: 'SBI', value: '96.2%' },
+      { name: 'SBI', value: '96.2%' },
+      { name: 'SBI', value: '96.2%' },
+      { name: 'SBI', value: '96.2%' },
+      { name: 'SBI', value: '96.2%' },
+      { name: 'SBI', value: '96.2%' },
     ],
   },
   {
     rail: 'Card',
     banks: [
-      { name: 'HDFC', value: '98.5%', color: 'success' },
-      { name: 'ICICI', value: '97.9%', color: 'warning' },
-      { name: 'Axis', value: '97.2%', color: 'warning' },
-      { name: 'SBI', value: '95.8%', color: 'error' },
+      { name: 'HDFC', value: '98.5%' },
+      { name: 'ICICI', value: '97.9%' },
+      { name: 'Axis', value: '97.2%' },
+      { name: 'SBI', value: '95.8%' },
+      { name: 'SBI', value: '95.8%' },
+      { name: 'SBI', value: '95.8%' },
+      { name: 'SBI', value: '95.8%' },
+      { name: 'SBI', value: '95.8%' },
+      { name: 'SBI', value: '95.8%' },
+      { name: 'SBI', value: '95.8%' },
     ],
   },
 ];
 
 
 // BANK OUTAGE PROBABILITY
-// ----------------------------------------------------------------------
 
 export const _bankOutageProbability = [
   {
@@ -448,14 +458,64 @@ export const _bankOutageProbability = [
     lastOutage: '2 days ago',
     percentage: 5.8,
   },
+  {
+    id: '4',
+    bank: 'SBI',
+    lastOutage: '2 days ago',
+    percentage: 5.8,
+  },
+  {
+    id: '4',
+    bank: 'SBI',
+    lastOutage: '2 days ago',
+    percentage: 5.8,
+  },
+  {
+    id: '4',
+    bank: 'SBI',
+    lastOutage: '2 days ago',
+    percentage: 5.8,
+  },
+  {
+    id: '4',
+    bank: 'SBI',
+    lastOutage: '2 days ago',
+    percentage: 5.8,
+  },
+  {
+    id: '4',
+    bank: 'SBI',
+    lastOutage: '2 days ago',
+    percentage: 5.8,
+  },
+  {
+    id: '4',
+    bank: 'SBI',
+    lastOutage: '2 days ago',
+    percentage: 5.8,
+  },
+  {
+    id: '4',
+    bank: 'SBI',
+    lastOutage: '2 days ago',
+    percentage: 5.8,
+  },
 ];
 
 export const _highRiskDays = [
-  { date: '28 Feb', confidence: 95, color: '#22c55e' },
-  { date: '1 Mar', confidence: 92, color: '#22c55e' },
-  { date: '2 Mar', confidence: 88, color: '#facc15' },
-  { date: '3 Mar', confidence: 85, color: '#facc15' },
-  { date: '4 Mar', confidence: 82, color: '#facc15' },
-  { date: '5 Mar', confidence: 78, color: '#ef4444' },
-  { date: '6 Mar', confidence: 75, color: '#ef4444' },
+  { date: '28 Feb', confidence: 95 },
+  { date: '1 Mar', confidence: 92 },
+  { date: '2 Mar', confidence: 88 },
+  { date: '3 Mar', confidence: 85 },
+  { date: '4 Mar', confidence: 82 },
+  { date: '5 Mar', confidence: 78 },
+  { date: '6 Mar', confidence: 75 },
+  { date: '3 Mar', confidence: 85 },
+  { date: '5 Mar', confidence: 78 },
+  { date: '4 Mar', confidence: 82 },
+  { date: '1 Mar', confidence: 92 },
+  { date: '4 Mar', confidence: 82 },
+  { date: '5 Mar', confidence: 78 },
+  { date: '3 Mar', confidence: 85 },
+  { date: '1 Mar', confidence: 92 },
 ];

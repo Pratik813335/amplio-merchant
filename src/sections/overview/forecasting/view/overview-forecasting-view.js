@@ -11,26 +11,21 @@ import {
   _analyticTraffic,
   _aiInsightsPredictions,
   _railSettlementReliability,
-  _bankOutageProbability ,
-
+  _bankOutageProbability,
 } from 'src/_mock';
 // components
 import { useSettingsContext } from 'src/components/settings';
 // assets
 import { MotivationIllustration } from 'src/assets/illustrations';
 //
+import WidgetSummaryCard from 'src/components/card/widget-summary-card';
 
-import EcommerceYearlySales from '../ecommerce-yearly-sales';
-import BankOutageProbability from '../bank-outage-probability';
-import EcommerceWidgetSummary from '../ecommerce-widget-summary';
-
-import AppAreaInstalled from '../app-area-installed';
-
-import HighRiskDaysHighlighted from '../high-risks-days-highlighted';
-
-import AiInsightsPredictions from '../ai-insights-predictions';
-
-import RailSettlementReliability from '../rail-settlement-reliability';
+import ForecastingYearlySales from '../forecasting-yearly-sales';
+import ForecastingBankOutage from '../forecasting-bank-outage';
+import ForecastingAppAreaInstalled from '../forecasting-app-area-installed';
+import ForecastingHighRisk from '../forecasting-high-risks';
+import ForecastingAiInsights from '../forecasting-ai-insights';
+import ForecastingRail from '../forecasting-rail';
 
 // ----------------------------------------------------------------------
 
@@ -41,58 +36,58 @@ export default function OverviewForecastingView() {
 
   const settings = useSettingsContext();
 
+  const DASHBOARD_CARDS = [
+  {
+    title: "7-Day Forecast Accuracy",
+    percent: 3,
+    total: "94.2%",
+    timing: "Based on last 30 days",
+    icon: "mdi:target"
+  },
+  {
+    title: "Avg Settlement Confidence",
+    percent: 6,
+    total: "85.7%",
+    timing: "Weighted by amount",
+    icon: "mdi:trending-up"
+  },
+  {
+    title: "High Risk Days",
+    percent: 4,
+    total: 2,
+    timing: "Next 7 days",
+    icon: "mdi:alert-outline"
+  },
+  {
+    title: "Expected Net Inflow",
+    percent: 8,
+    total: 44,
+    timing: "Next 7 days (after refunds)",
+    icon: "mdi:trending-up"
+  },
+];
+
   return (
     <Container maxWidth={settings.themeStretch ? false : 'xl'}>
       <Grid container spacing={3}>
-        <Grid xs={12} md={3}>
-          <EcommerceWidgetSummary
-            title="Product Sold"
-            percent={2.6}
-            total={765}
-            chart={{
-              series: [22, 8, 35, 50, 82, 84, 77, 12, 87, 43],
-            }}
-          />
-        </Grid>
-
-        <Grid xs={12} md={3}>
-          <EcommerceWidgetSummary
-            title="Total Balance"
-            percent={-0.1}
-            total={18765}
-            chart={{
-              colors: [theme.palette.info.light, theme.palette.info.main],
-              series: [56, 47, 40, 62, 73, 30, 23, 54, 67, 68],
-            }}
-          />
-        </Grid>
-
-        <Grid xs={12} md={3}>
-          <EcommerceWidgetSummary
-            title="Sales Profit"
-            percent={0.6}
-            total={4876}
-            chart={{
-              colors: [theme.palette.warning.light, theme.palette.warning.main],
-              series: [40, 70, 75, 70, 50, 28, 7, 64, 38, 27],
-            }}
-          />
-        </Grid>
-
-        <Grid xs={12} md={3}>
-          <EcommerceWidgetSummary
-            title="Sales Profit"
-            percent={0.6}
-            total={4876}
-            chart={{
-              colors: [theme.palette.warning.light, theme.palette.warning.main],
-              series: [40, 70, 75, 70, 50, 28, 7, 64, 38, 27],
-            }}
-          />
-        </Grid>
+        {DASHBOARD_CARDS.map((card) => (
+          <Grid item xs={12} md={3}>
+            <WidgetSummaryCard
+              key={card.title}
+              title={card.title}
+              percent={card.percent}
+              total={card.total}
+              timing={card.timing}
+              icon={card.icon}
+              chart={{
+                series: [5, 18, 12, 51, 68, 11, 39, 37, 27, 20],
+              }}
+            />
+          </Grid>
+        ))}
 
         <Grid xs={12} md={12} lg={12}>
-          <EcommerceYearlySales
+          <ForecastingYearlySales
             title="7-Day Settlement Prediction"
             subheader="Predicted inflow with confidence intervals"
             chart={{
@@ -117,26 +112,41 @@ export default function OverviewForecastingView() {
         </Grid>
 
         <Grid xs={12} md={12} lg={12}>
-          <HighRiskDaysHighlighted title="High Risk Days Highlighted" list={_highRiskDays} />
+          <ForecastingHighRisk title="High Risk Days Highlighted" list={_highRiskDays} />
         </Grid>
 
-        <Grid xs={12} md={6} >
-          <RailSettlementReliability
+        <Grid xs={12} md={6}>
+          <ForecastingRail
             title="Rail-wise Settlement Reliability"
             list={_railSettlementReliability}
           />
         </Grid>
 
-        <Grid xs={12} md={6} >
-          <BankOutageProbability title="Bank Outage Probability" data={_bankOutageProbability} />
+        <Grid xs={12} md={6}>
+          <ForecastingBankOutage 
+                 title="Bank Outage Probability" 
+                 data={_bankOutageProbability} />
         </Grid>
 
         <Grid xs={12} md={12} lg={12}>
-          <AppAreaInstalled
+          <ForecastingAppAreaInstalled
             title="Seasonality Patterns (6 Months)"
             // subheader="(+43%) than last year"
             chart={{
-              categories: [ 'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec', ],
+              categories: [
+                'Jan',
+                'Feb',
+                'Mar',
+                'Apr',
+                'May',
+                'Jun',
+                'Jul',
+                'Aug',
+                'Sep',
+                'Oct',
+                'Nov',
+                'Dec',
+              ],
               series: [
                 {
                   year: '2019',
@@ -153,7 +163,7 @@ export default function OverviewForecastingView() {
         </Grid>
 
         <Grid xs={12}>
-          <AiInsightsPredictions title="AI Insights & Predictions" list={_aiInsightsPredictions} />
+          <ForecastingAiInsights title="AI Insights & Predictions" list={_aiInsightsPredictions} />
         </Grid>
       </Grid>
     </Container>
