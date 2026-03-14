@@ -113,6 +113,7 @@ export const paths = {
       app: `${ROOTS.DASHBOARD}/app`,
       forecasting: `${ROOTS.DASHBOARD}/forecasting`,
       transaction: `${ROOTS.DASHBOARD}/transaction`,
+      dashboard: `${ROOTS.DASHBOARD}/dashboard`,
       ecommerce: `${ROOTS.DASHBOARD}/ecommerce`,
       analytics: `${ROOTS.DASHBOARD}/analytics`,
       banking: `${ROOTS.DASHBOARD}/banking`,

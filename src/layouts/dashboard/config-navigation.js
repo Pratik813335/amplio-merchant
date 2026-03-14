@@ -64,7 +64,7 @@ export function useNavData() {
           // { title: t('banking'), path: paths.dashboard.general.banking, icon: ICONS.banking },
           // { title: t('booking'), path: paths.dashboard.general.booking, icon: ICONS.booking },
           // { title: t('file'), path: paths.dashboard.general.file, icon: ICONS.file },
-          { title: t('Dashboard'), path: paths.dashboard.general.analytics, icon: ICONS.dashboard },
+          { title: t('dashboard'), path: paths.dashboard.root, icon: ICONS.dashboard },
           { title: t('transaction'), path: paths.dashboard.general.transaction, icon: ICONS.analytics },
           { title: t('Forecasting'), path: paths.dashboard.general.forecasting, icon: ICONS.forecasting },
         ],
