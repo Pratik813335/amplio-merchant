@@ -72,6 +72,9 @@ export const endpoints = {
     dpn: '/business-kyc/dpn',
   },
 
+  businessProfile: {
+data: '/company-profiles/bank-details'
+  },
 
   scheduler: {
     list: '/schedulers',

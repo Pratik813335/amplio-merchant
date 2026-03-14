@@ -8,10 +8,12 @@ import DashboardLayout from 'src/layouts/dashboard';
 import { LoadingScreen } from 'src/components/loading-screen';
 import { Layer } from 'react-map-gl';
 import { element } from 'prop-types';
+// import SettingsPage from 'src/pages/dashboard/settings';
 
 
 // ----------------------------------------------------------------------
-const TransectionPage = lazy(() => import('src/pages/dashboard/transaction'));
+const SettingsPage = lazy(() => import('src/pages/dashboard/settings'));
+const TransactionPage = lazy(() => import('src/pages/dashboard/transaction'));
 // OVERVIEW
 const IndexPage = lazy(() => import('src/pages/dashboard/app'));
 const OverviewForecastingPage = lazy(() => import('src/pages/dashboard/forecasting'));
@@ -93,7 +95,8 @@ export const dashboardRoutes = [
       { path: 'banking', element: <OverviewBankingPage /> },
       { path: 'booking', element: <OverviewBookingPage /> },
       { path: 'file', element: <OverviewFilePage /> },
-      { path: 'transaction', element: <TransectionPage /> },
+      { path: 'transaction', element: <TransactionPage /> },
+      { path: 'settings', element: <SettingsPage /> },
       {
         path: 'user',
         children: [
