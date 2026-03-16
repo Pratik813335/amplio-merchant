@@ -44,6 +44,7 @@ const ICONS = {
   analytics: icon('ic_analytics'),
   dashboard: icon('ic_dashboard'),
   forecasting: icon('ic_forecasting'),
+  borrowing: icon('ic_borrowing'),
 };
 
 // ----------------------------------------------------------------------
@@ -67,6 +68,7 @@ export function useNavData() {
           { title: t('dashboard'), path: paths.dashboard.root, icon: ICONS.dashboard },
           { title: t('transaction'), path: paths.dashboard.general.transaction, icon: ICONS.analytics },
           { title: t('Forecasting'), path: paths.dashboard.general.forecasting, icon: ICONS.forecasting },
+          { title: t('borrowings'), path: paths.dashboard.general.borrowing, icon: ICONS.borrowing }
         ],
       },
 
