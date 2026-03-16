@@ -125,6 +125,25 @@ export const _analyticTraffic = [
     total: _mock.number.nativeL(4),
     icon: 'eva:twitter-fill',
   },
+  {
+    value: 'facebook',
+    label: 'FaceBook',
+    total: _mock.number.nativeL(1),
+    icon: 'eva:facebook-fill',
+  },
+  {
+    value: 'google',
+    label: 'Google',
+    total: _mock.number.nativeL(2),
+    icon: 'eva:google-fill',
+  },
+  {
+    value: 'linkedin',
+    label: 'Linkedin',
+    total: _mock.number.nativeL(3),
+    icon: 'eva:linkedin-fill',
+  },
+  
 ];
 
 // ECOMMERCE
@@ -328,3 +347,175 @@ export const _bookingNew = [...Array(5)].map((_, index) => ({
   avatarUrl: _mock.image.avatar(index),
   coverUrl: _mock.image.travel(index),
 }));
+
+// AI INSIGHTS
+// ----------------------------------------------------------------------
+
+export const _aiInsightsPredictions = [
+  {
+    id: '1',
+    title: 'Settlement Delay Risk',
+    description:
+      'ICICI Bank shows 15% higher delay probability on March 2-3 (weekend effect)',
+    percentage: 87,
+  },
+  {
+    id: '2',
+    title: 'Peak Volume Expected',
+    description:
+      'March 5 (Wednesday) predicted to have 22% higher transaction volume',
+    percentage: 92,
+  },
+  {
+    id: '3',
+    title: 'Refund Spike Detected',
+    description:
+      'Card transactions showing 18% higher refund rate in last 48 hours',
+    percentage: 94,
+  },
+  {
+    id: '4',
+    title: 'Optimal Settlement Window',
+    description:
+      'Feb 28 – Mar 1 shows best bank reliability scores (98.5% avg)',
+    percentage: 96,
+  },
+];
+
+// RAIL RELIABILITY
+
+export const _railSettlementReliability = [
+  {
+    rail: 'UPI',
+    banks: [
+      { name: 'HDFC', value: '99.2%' },
+      { name: 'ICICI', value: '98.5%' },
+      { name: 'Axis', value: '97.8%' },
+      { name: 'SBI', value: '96.5%' },
+      { name: 'SBI', value: '96.5%' },
+      { name: 'SBI', value: '96.5%' },
+      { name: 'SBI', value: '96.5%' },
+      { name: 'SBI', value: '96.5%' },
+      { name: 'SBI', value: '96.5%' },
+    ],
+  },
+  {
+    rail: 'QR',
+    banks: [
+      { name: 'HDFC', value: '98.8%' },
+      { name: 'ICICI', value: '98.2%' },
+      { name: 'Axis', value: '97.5%' },
+      { name: 'SBI', value: '96.2%' },
+      { name: 'SBI', value: '96.2%' },
+      { name: 'SBI', value: '96.2%' },
+      { name: 'SBI', value: '96.2%' },
+      { name: 'SBI', value: '96.2%' },
+      { name: 'SBI', value: '96.2%' },
+    ],
+  },
+  {
+    rail: 'Card',
+    banks: [
+      { name: 'HDFC', value: '98.5%' },
+      { name: 'ICICI', value: '97.9%' },
+      { name: 'Axis', value: '97.2%' },
+      { name: 'SBI', value: '95.8%' },
+      { name: 'SBI', value: '95.8%' },
+      { name: 'SBI', value: '95.8%' },
+      { name: 'SBI', value: '95.8%' },
+      { name: 'SBI', value: '95.8%' },
+      { name: 'SBI', value: '95.8%' },
+      { name: 'SBI', value: '95.8%' },
+    ],
+  },
+];
+
+
+// BANK OUTAGE PROBABILITY
+
+export const _bankOutageProbability = [
+  {
+    id: '1',
+    bank: 'HDFC',
+    lastOutage: '15 days ago',
+    percentage: 2.1,
+  },
+  {
+    id: '2',
+    bank: 'ICICI',
+    lastOutage: '8 days ago',
+    percentage: 3.5,
+  },
+  {
+    id: '3',
+    bank: 'Axis',
+    lastOutage: '5 days ago',
+    percentage: 4.2,
+  },
+  {
+    id: '4',
+    bank: 'SBI',
+    lastOutage: '2 days ago',
+    percentage: 5.8,
+  },
+  {
+    id: '4',
+    bank: 'SBI',
+    lastOutage: '2 days ago',
+    percentage: 5.8,
+  },
+  {
+    id: '4',
+    bank: 'SBI',
+    lastOutage: '2 days ago',
+    percentage: 5.8,
+  },
+  {
+    id: '4',
+    bank: 'SBI',
+    lastOutage: '2 days ago',
+    percentage: 5.8,
+  },
+  {
+    id: '4',
+    bank: 'SBI',
+    lastOutage: '2 days ago',
+    percentage: 5.8,
+  },
+  {
+    id: '4',
+    bank: 'SBI',
+    lastOutage: '2 days ago',
+    percentage: 5.8,
+  },
+  {
+    id: '4',
+    bank: 'SBI',
+    lastOutage: '2 days ago',
+    percentage: 5.8,
+  },
+  {
+    id: '4',
+    bank: 'SBI',
+    lastOutage: '2 days ago',
+    percentage: 5.8,
+  },
+];
+
+export const _highRiskDays = [
+  { date: '28 Feb', confidence: 95 },
+  { date: '1 Mar', confidence: 92 },
+  { date: '2 Mar', confidence: 88 },
+  { date: '3 Mar', confidence: 85 },
+  { date: '4 Mar', confidence: 82 },
+  { date: '5 Mar', confidence: 78 },
+  { date: '6 Mar', confidence: 75 },
+  { date: '3 Mar', confidence: 85 },
+  { date: '5 Mar', confidence: 78 },
+  { date: '4 Mar', confidence: 82 },
+  { date: '1 Mar', confidence: 92 },
+  { date: '4 Mar', confidence: 82 },
+  { date: '5 Mar', confidence: 78 },
+  { date: '3 Mar', confidence: 85 },
+  { date: '1 Mar', confidence: 92 },
+];

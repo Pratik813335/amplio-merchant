@@ -15,7 +15,6 @@ import WidgetSummaryCard from 'src/components/card/widget-summary-card';
 import DashboardPredictionTimeline from '../dashboard-prediction-timeline';
 import DashboardActiveExposure from '../dashboard-active-exposure';
 import DashboardEligibleReceivables from '../dashboard-eligible-receivables';
-import DashboardWidgetSummary from '../dashboard-widget-summary';
 import DashboardAccountSummary from '../dashboard-account-summary';
 // import DashboardTransactionsFeed from '../dashboard-transactions-feed';
 import DashboardTransactionTable from '../dashboard-transaction-table';

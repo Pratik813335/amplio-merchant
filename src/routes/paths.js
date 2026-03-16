@@ -107,10 +107,12 @@ export const paths = {
     blank: `${ROOTS.DASHBOARD}/blank`,
     kanban: `${ROOTS.DASHBOARD}/kanban`,
     calendar: `${ROOTS.DASHBOARD}/calendar`,
-    fileManager: `${ROOTS.DASHBOARD}/file-manager`,
+    fileManager: `${ROOTS.DASHBOARD}/file-manager`, 
     permission: `${ROOTS.DASHBOARD}/permission`,
     general: {
       app: `${ROOTS.DASHBOARD}/app`,
+      forecasting: `${ROOTS.DASHBOARD}/forecasting`,
+      settings: `${ROOTS.DASHBOARD}/settings`,
       transaction: `${ROOTS.DASHBOARD}/transaction`,
       dashboard: `${ROOTS.DASHBOARD}/dashboard`,
       borrowing: `${ROOTS.DASHBOARD}/borrowing`,
@@ -119,6 +121,11 @@ export const paths = {
       banking: `${ROOTS.DASHBOARD}/banking`,
       booking: `${ROOTS.DASHBOARD}/booking`,
       file: `${ROOTS.DASHBOARD}/file`,
+    },
+    liquidityEngine: {
+      list: `${ROOTS.DASHBOARD}/liquidityEngine/list`,
+      new: `${ROOTS.DASHBOARD}/liquidityEngine/new`,
+      edit: (id) => `${ROOTS.DASHBOARD}/liquidityEngine/${id}/edit`,
     },
     user: {
       root: `${ROOTS.DASHBOARD}/user`,
@@ -131,10 +138,6 @@ export const paths = {
       demo: {
         edit: `${ROOTS.DASHBOARD}/user/${MOCK_ID}/edit`,
       },
-    },
-    psp: {
-      root: `${ROOTS.DASHBOARD}/psp`,
-      new: `${ROOTS.DASHBOARD}/psp/new`,
     },
     product: {
       root: `${ROOTS.DASHBOARD}/product`,

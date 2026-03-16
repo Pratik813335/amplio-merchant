@@ -1,65 +1,79 @@
-import { Container, Grid } from "@mui/material";
-import { useSettingsContext } from "src/components/settings";
+import { Container, Grid, Stack } from '@mui/material';
+import { useSettingsContext } from 'src/components/settings';
+import WidgetSummaryCard from '../../../components/card/widget-summary-card';
+import TransactionGraph from '../transaction-graph';
+import TransactionTable from '../transaction-table';
 
-import WidgetSummaryCard from "../../../components/card/widget-summary-card";
-
-
-export function TransectionView() {
+export function TransactionView() {
   const settings = useSettingsContext();
-  const DASHBOARD_CARDS=[
-  {
-    "title": "Total Active Users",
-    "percent": 2.6,
-    "total": 18765446545,
-    "timing": "today",
-    "icon": "codicon:pulse"
-  },
-  {
-    "title": "New Users",
-    "percent": 3.1,
-    "total": 2450,
-    "timing": "today",
-    "icon": "mdi:trending-up"
-  },
-  {
-    "title": "Total Revenue",
-    "percent": 1.8,
-    "total": '54.20%',
-    "timing": "today",
-    "icon": "codicon:pulse"
-  },
-  {
-    "title": "Sales Growth",
-    "percent": 4.5,
-    "total": 1290,
-    "timing": "today",
-    "icon": "mdi:trending-up"
-  },
 
-  
-]
-  return (<>
+  const categories = ['10:00', '11:00', '12:00', '13:00', '14:00', '15:00'];
+
+  const DASHBOARD_CARDS = [
+    {
+      title: "Today's Transaction",
+      percent: 2.6,
+      total: 187,
+      timing: 'Live Count',
+      icon: 'codicon:pulse',
+    },
+    {
+      title: 'Total Volume',
+      percent: 3.1,
+      total: 2450,
+      timing: 'Today',
+      icon: 'mdi:trending-up',
+    },
+    {
+      title: 'Success Rate',
+      total: '54.20%',
+      timing: 'Last 24 hours',
+      icon: 'codicon:pulse',
+    },
+    {
+      title: 'Avg Transaction',
+      percent: 4.5,
+      total: 1290,
+      timing: 'Today',
+      icon: 'mdi:trending-up',
+    },
+  ];
+  return (
     <Container maxWidth={settings.themeStretch ? false : 'xl'}>
-      <Grid container spacing={3}>
-       
-          {DASHBOARD_CARDS.map((card) => (
-             <Grid item xs={12} md={3}>
-            <WidgetSummaryCard
-              key={card.title}
-              title={card.title}
-              percent={card.percent}
-              total={card.total}
-              timing={card.timing}
-              icon={card.icon}
-               chart={{
-              series: [5, 18, 12, 51, 68, 11, 39, 37, 27, 20],
-            }}
-            />
-             </Grid>
-          ))}
-      </Grid>
-
+      <Stack spacing={3}>
+        <Grid container spacing={3}>
+          {DASHBOARD_CARDS.filter((card) => card.total !== undefined && card.total !== null).map(
+            (card, i) => (
+              <Grid key={i} item xs={12} md={3}>
+                <WidgetSummaryCard
+                  title={card.title}
+                  percent={card.percent}
+                  total={card.total}
+                  timing={card.timing}
+                  icon={card.icon}
+                />
+              </Grid>
+            )
+          )}
+        </Grid>
+        <TransactionGraph
+          title="Transaction Volume Timeline (Last 5 Hours)"
+          chart={{
+            categories,
+            series: [
+              {
+                data: [
+                  {
+                    name: 'Transaction Count',
+                    data: [10, 41, 35, 51, 49, 100],
+                  },
+                ],
+              },
+            ],
+          }}
+        />
+        <TransactionTable />
+      </Stack>
     </Container>
-
-  </>)
+  );
 }
