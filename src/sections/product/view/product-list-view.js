@@ -285,6 +285,7 @@ export default function ProductListView() {
             onChangeDense={table.onChangeDense}
           />
         </Card>
+        
       </Container>
 
       <ConfirmDialog
