@@ -32,7 +32,7 @@ export const endpoints = {
   calendar: '/api/calendar',
   auth: {
     me: '/auth/me',
-    login: '/auth/company-login',
+    login: '/auth/merchant-login',
     register: '/register',
     forgotPassword: '/auth/forget-password/send-email-otp',
     newPassword: '/auth/forget-password/verify-email-otp',
