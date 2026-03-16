@@ -1,6 +1,7 @@
 import { Helmet } from 'react-helmet-async';
+import BorrowingListView from 'src/sections/overview/borrowing/view/borrowing-list-view';
 // sections
-import BorrowingListView from 'src/sections/overview/Borrowings/view/borrowing-list-view';
+
 
 // ----------------------------------------------------------------------
 
