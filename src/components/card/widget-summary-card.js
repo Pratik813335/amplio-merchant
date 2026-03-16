@@ -81,40 +81,59 @@ export default function WidgetSummaryCard({ icon, timing, title, percent, total,
 
   return (
     <Card sx={{ display: 'flex', alignItems: 'center', p: 3, ...sx }} {...other}>
-      <Box sx={{ flexGrow: 1 }}>
+      <Box sx={{ flexGrow: 1, minWidth: 0, }}>
 
         {/* Title + Icon */}
         <TruncatedTypography text={title} icon={icon} />
 
         {/* Amount + Percent */}
-        <Stack direction="row" alignItems="center" sx={{ mt: 2, mb: 1 }}>
+        <Stack
+          direction="row"
+          alignItems="center"
+          sx={{
+            mt: 2,
+            mb: 1,
+            width: '100%',
+            minWidth: 0,
+          }}
+        >
+          <Stack
+            direction="row"
+            alignItems="center"
+            spacing={0.5}
+            sx={{
+              flexShrink: 0,
+              whiteSpace: 'nowrap',
+            }}
+          >
+            <Iconify icon="mdi:currency-inr" width={18} />
 
-          {String(total).includes('%') ? (
-            <Stack direction="row" alignItems="center" spacing={0.5}>
-              <Iconify icon="mdi:currency-inr" width={18} />
-              <Typography variant="h4">{total}</Typography>
-            </Stack>
-          ) : (
-            <Stack direction="row" alignItems="center" spacing={0.5}>
-              <Iconify icon="mdi:currency-inr" width={18} />
-              <Typography variant="h4">{formatNumber(total)}</Typography>
-            </Stack>
-          )}
+            <Typography variant="h5" noWrap sx={{ lineHeight: 1 }}>
+              {String(total).includes('%') ? total : formatNumber(total)}
+            </Typography>
+          </Stack>
 
           <Iconify
             width={20}
-            icon={percent < 0 ? 'icons8:arrows-long-down' : 'icons8:arrows-long-up'}
+            icon={percent < 0 ? 'mdi:arrow-down-thin' : 'mdi:arrow-up-thin'}
             sx={{
               ml: 1,
               color: percent < 0 ? 'error.main' : 'success.main',
+              flexShrink: 0,
             }}
           />
 
-          <Typography component="div" variant="subtitle2">
+          <Typography
+            component="div"
+            variant="subtitle2"
+            sx={{
+              ml: 0.5,
+              whiteSpace: 'nowrap',
+            }}
+          >
             {percent > 0 && '+'}
             {fPercent(percent)}
           </Typography>
-
         </Stack>
 
         {/* Timing */}
@@ -152,43 +171,51 @@ export function TruncatedTypography({ text, icon }) {
       sx={{
         display: 'flex',
         alignItems: 'center',
-        gap: 1,
+        width: '100%',
+        minWidth: 0, // allows shrinking
       }}
     >
-      <Tooltip title={isTruncated ? text : ''} arrow disableHoverListener={!isTruncated}>
-        <Typography
-          variant="subtitle2"
-          noWrap
-          sx={{
-            flexGrow: 1,
-            minWidth: 0,
-          }}
+      <Box
+        sx={{
+          flex: 1,
+          minWidth: 0,
+        }}
+      >
+        <Tooltip
+          title={isTruncated ? text : ''}
+          arrow
+          disableHoverListener={!isTruncated}
         >
-          {truncatedText}
-        </Typography>
-      </Tooltip>
+          <Typography
+            variant="subtitle2"
+            noWrap
+          >
+            {truncatedText}
+          </Typography>
+        </Tooltip>
+      </Box>
 
       {icon && (
         <Box
           sx={{
             flexShrink: 0,
-            width: theme.spacing(3.5),
-            height: theme.spacing(3.5),
-            borderRadius: 1,
+            ml: 1,
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
+            width: theme.spacing(3.5),
+            height: theme.spacing(3.5),
+            borderRadius: 1,
             bgcolor: alpha(theme.palette.info.main, 0.08),
             color: theme.palette.primary.main,
           }}
         >
-          <Iconify icon={icon} width={25} height={25} />
+          <Iconify icon={icon} width={20} height={20} />
         </Box>
       )}
     </Box>
   );
 }
-
 TruncatedTypography.propTypes = {
   text: PropTypes.string,
   icon: PropTypes.string,
