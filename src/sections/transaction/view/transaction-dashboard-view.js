@@ -21,8 +21,8 @@ export function TransactionView() {
 
     const DASHBOARD_CARDS = [
         {
-            "title": "Today's Transaction",
-            "percent": 2.6,
+            "title": "Today's TransactionToday's Transaction Today's TransactionToday's Transaction",
+            "percent": -1.6,
             "total": 187,
             "timing": "Live Count",
             "icon": "codicon:pulse"
@@ -36,7 +36,7 @@ export function TransactionView() {
         },
         {
             "title": "Success Rate",
-            "total": '54.20%',
+            "total": 54.20,
             "timing": "Last 24 hours",
             "icon": "codicon:pulse"
         },
@@ -50,21 +50,53 @@ export function TransactionView() {
 
 
     ]
+
+   function formatNumber(num) {
+  const number = Number(num);
+
+  if (number >= 10000000) {
+    return `${(number / 10000000).toFixed(2)} Cr`;
+  }
+
+  if (number >= 100000) {
+    return `${(number / 100000).toFixed(2)} L`;
+  }
+
+  if (number >= 1000) {
+    return `${(number / 1000).toFixed(2)} K`;
+  }
+
+  return number;
+}
+
+const formatTotal = (value, index) => {
+  const formattedNumber = formatNumber(value);
+
+  if (index === 1 || index === 3) {
+    return `₹${formattedNumber}`;
+  }
+
+  if (index === 2) {
+    return `${formattedNumber}%`;
+  }
+
+  return formattedNumber;
+};
     return (<>
         <Container maxWidth={settings.themeStretch ? false : 'xl'}>
             <Stack spacing={3}>
                 <Grid container spacing={3}>
                     {DASHBOARD_CARDS.filter((card) => card.total !== undefined && card.total !== null).map((card, i) => (
-                            <Grid key={i} item xs={12} md={3}>
-                                <WidgetSummaryCard
-                                    title={card.title}
-                                    percent={card.percent}
-                                    total={card.total}
-                                    timing={card.timing}
-                                    icon={card.icon}
-                                />
-                            </Grid>
-                        ))}
+                        <Grid key={i} item xs={12} md={3}>
+                            <WidgetSummaryCard
+                                title={card.title}
+                                percent={card.percent}
+                                total={formatTotal(card.total, i)}
+                                timing={card.timing}
+                                icon={card.icon}
+                            />
+                        </Grid>
+                    ))}
                 </Grid>
                 <TransactionGraph
                     title="Transaction Volume Timeline (Last 5 Hours)"
