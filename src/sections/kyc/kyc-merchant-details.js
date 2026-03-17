@@ -16,8 +16,7 @@ import { RHFSelect } from 'src/components/hook-form/rhf-select';
 import { useForm, useWatch } from 'react-hook-form';
 
 import { enqueueSnackbar } from 'notistack';
-
-import { useGetKycSection } from 'src/api/companyKyc';
+import { useGetKycSection } from 'src/api/merchantKyc';
 import { yupResolver } from '@hookform/resolvers/yup';
 import axiosInstance from 'src/utils/axios';
 import KYCFooter from './kyc-footer';
@@ -34,7 +33,7 @@ const FILE_ACCEPT = {
 //   2: { label: 'Rejected', color: 'error' },
 // };
 
-const SPECIAL_DOC_VALUES = ['certificate_of_incorporation', 'gst_certificate', 'moa', 'aoa'];
+const SPECIAL_DOC_VALUES = ['certificate_of_incorporation', 'gst_certificate'];
 
 function getDocStatusMeta(item, file) {
   const serverDocument = item?.documentFile;
@@ -47,14 +46,14 @@ function getDocStatusMeta(item, file) {
   };
 }
 
-export default function KYCCompanyDetails({
+export default function KYCMerchantDetails({
   percent,
   setActiveStepId,
   dataInitializedSteps,
   setDataInitializedSteps,
 }) {
   const { kycSectionData, kycSectionLoading, kycSectionError, refreshKycSection } =
-    useGetKycSection('company_documents', '/company-kyc/company-details');
+    useGetKycSection('merchant_documents', '/company-kyc/company-details');
 
   const documents = useMemo(
     () => (Array.isArray(kycSectionData?.data) ? kycSectionData.data : []),
@@ -88,7 +87,13 @@ export default function KYCCompanyDetails({
     const values = {};
 
     documents.forEach((item) => {
-      values[`doc_${item.documentId}`] = item?.documentFile?.documentFile ?? null;
+      values[`doc_${item.documentId}`] = item?.documentFile?.documentFile
+        ? {
+          id: item.documentFile.documentFile.id,
+          fileUrl: item.documentFile.documentFile.fileUrl,
+          fileOriginalName: item.documentFile.documentFile.fileOriginalName,
+        }
+        : null;
     });
 
     values.moaAoaType = defaultMoaAoaType;
@@ -237,7 +242,7 @@ export default function KYCCompanyDetails({
 
     const isStepComplete = mandatoryDocumentIds.every((id) => Boolean(values?.[`doc_${id}`]?.id));
 
-    if (isStepComplete && !dataInitializedSteps?.includes('kyc_company_documents')) {
+    if (isStepComplete && !dataInitializedSteps?.includes('kyc_merchant_documents')) {
       setDataInitializedSteps();
       setActiveStepId();
     }
@@ -253,7 +258,7 @@ export default function KYCCompanyDetails({
   const onSubmit = handleSubmit(async (formData) => {
     try {
       const usersId =
-        sessionStorage.getItem('company_user_id') || sessionStorage.getItem('company_profile_id');
+        sessionStorage.getItem('merchant_user_id') || sessionStorage.getItem('merchant_profile_id');
 
       if (!usersId) {
         enqueueSnackbar('User ID missing', { variant: 'error' });
@@ -301,7 +306,7 @@ export default function KYCCompanyDetails({
           if (!uploadedFile?.id) return null;
 
           return {
-            companyKycDocumentRequirementsId: item.documentId,
+            merchantKycDocumentRequirementsId: item.documentId,
             documentsFileId: uploadedFile.id,
             mode: 1,
             status: 0,
@@ -322,8 +327,8 @@ export default function KYCCompanyDetails({
       const hasExistingDocs = documents.some((doc) => doc?.documentFile?.id);
 
       const response = hasExistingDocs
-        ? await axiosInstance.patch('/company-profiles/kyc-upload-documents', payload)
-        : await axiosInstance.post('/company-profiles/kyc-upload-documents', payload);
+        ? await axiosInstance.patch('/merchant-profiles/kyc-upload-documents', payload)
+        : await axiosInstance.post('/merchant-profiles/kyc-upload-documents', payload);
 
       if (!response?.data?.success) {
         enqueueSnackbar(response?.data?.message || 'Unable to upload documents', {
@@ -342,87 +347,87 @@ export default function KYCCompanyDetails({
     }
   });
 
-  const handleAutoFill = async () => {
-    if (!documents.length) {
-      enqueueSnackbar('No document requirements found for autofill', { variant: 'warning' });
-      return;
-    }
+  // const handleAutoFill = async () => {
+  //   if (!documents.length) {
+  //     enqueueSnackbar('No document requirements found for autofill', { variant: 'warning' });
+  //     return;
+  //   }
 
-    setIsAutofilling(true);
+  //   setIsAutofilling(true);
 
-    try {
-      const pdfPool = [
-        'financial_statement_year_1.pdf',
-        'financial_statement_year_2.pdf',
-        'income_tax_return_year_1.pdf',
-        'gstr9_year_1.pdf',
-      ];
+  //   try {
+  //     const pdfPool = [
+  //       'financial_statement_year_1.pdf',
+  //       'financial_statement_year_2.pdf',
+  //       'income_tax_return_year_1.pdf',
+  //       'gstr9_year_1.pdf',
+  //     ];
 
-      let selectedType = moaAoaType || defaultMoaAoaType;
-      if (!selectedType) {
-        if (moaDoc) {
-          selectedType = 'moa';
-        } else if (aoaDoc) {
-          selectedType = 'aoa';
-        }
-      }
-      if (selectedType) {
-        setValue('moaAoaType', selectedType, { shouldValidate: true, shouldDirty: true });
-      }
+  //     let selectedType = moaAoaType || defaultMoaAoaType;
+  //     if (!selectedType) {
+  //       if (moaDoc) {
+  //         selectedType = 'moa';
+  //       } else if (aoaDoc) {
+  //         selectedType = 'aoa';
+  //       }
+  //     }
+  //     if (selectedType) {
+  //       setValue('moaAoaType', selectedType, { shouldValidate: true, shouldDirty: true });
+  //     }
 
-      let selectedDoc = null;
-      if (selectedType === 'aoa') {
-        selectedDoc = aoaDoc;
-      } else if (selectedType === 'moa') {
-        selectedDoc = moaDoc;
-      }
+  //     let selectedDoc = null;
+  //     if (selectedType === 'aoa') {
+  //       selectedDoc = aoaDoc;
+  //     } else if (selectedType === 'moa') {
+  //       selectedDoc = moaDoc;
+  //     }
 
-      const uniqueDocs = [
-        certificateDoc,
-        gstDoc,
-        selectedDoc,
-        ...remainingDocuments,
-      ].filter((item, index, arr) => item?.documentId && arr.findIndex((d) => d?.documentId === item.documentId) === index);
+  //     const uniqueDocs = [
+  //       certificateDoc,
+  //       gstDoc,
+  //       selectedDoc,
+  //       ...remainingDocuments,
+  //     ].filter((item, index, arr) => item?.documentId && arr.findIndex((d) => d?.documentId === item.documentId) === index);
 
-      const uploadedFiles = await Promise.all(
-        uniqueDocs.map(async (item, index) => {
-          const fileName = pdfPool[index % pdfPool.length];
-          try {
-            const response = await fetch(`/pdfs/kyb/${fileName}`);
-            if (!response.ok) return { item, file: null };
+  //     const uploadedFiles = await Promise.all(
+  //       uniqueDocs.map(async (item, index) => {
+  //         const fileName = pdfPool[index % pdfPool.length];
+  //         try {
+  //           const response = await fetch(`/pdfs/kyb/${fileName}`);
+  //           if (!response.ok) return { item, file: null };
 
-            const blob = await response.blob();
-            const file = new File([blob], fileName, { type: 'application/pdf' });
-            const formData = new FormData();
-            formData.append('file', file);
+  //           const blob = await response.blob();
+  //           const file = new File([blob], fileName, { type: 'application/pdf' });
+  //           const formData = new FormData();
+  //           formData.append('file', file);
 
-            const uploadRes = await axiosInstance.post('/files', formData);
-            return { item, file: uploadRes?.data?.files?.[0] || null };
-          } catch (error) {
-            return { item, file: null };
-          }
-        })
-      );
+  //           const uploadRes = await axiosInstance.post('/files', formData);
+  //           return { item, file: uploadRes?.data?.files?.[0] || null };
+  //         } catch (error) {
+  //           return { item, file: null };
+  //         }
+  //       })
+  //     );
 
-      uploadedFiles.forEach(({ item, file }) => {
-        if (!item?.documentId || !file?.id) return;
-        setValue(`doc_${item.documentId}`, file, {
-          shouldValidate: true,
-          shouldDirty: true,
-          shouldTouch: true,
-        });
-      });
+  //     uploadedFiles.forEach(({ item, file }) => {
+  //       if (!item?.documentId || !file?.id) return;
+  //       setValue(`doc_${item.documentId}`, file, {
+  //         shouldValidate: true,
+  //         shouldDirty: true,
+  //         shouldTouch: true,
+  //       });
+  //     });
 
-      const uploadedCount = uploadedFiles.filter((entry) => !!entry.file?.id).length;
-      if (uploadedCount > 0) {
-        enqueueSnackbar(`Autofill uploaded ${uploadedCount} document(s)`, { variant: 'success' });
-      } else {
-        enqueueSnackbar('Autofill could not upload documents', { variant: 'warning' });
-      }
-    } finally {
-      setIsAutofilling(false);
-    }
-  };
+  //     const uploadedCount = uploadedFiles.filter((entry) => !!entry.file?.id).length;
+  //     if (uploadedCount > 0) {
+  //       enqueueSnackbar(`Autofill uploaded ${uploadedCount} document(s)`, { variant: 'success' });
+  //     } else {
+  //       enqueueSnackbar('Autofill could not upload documents', { variant: 'warning' });
+  //     }
+  //   } finally {
+  //     setIsAutofilling(false);
+  //   }
+  // };
 
   const renderDocumentField = (item, mandatory = false) => {
     if (!item?.documentId) return null;
@@ -467,13 +472,13 @@ export default function KYCCompanyDetails({
         <Stack spacing={0.5} alignItems="flex-start" sx={{ mb: 4 }}>
           <Typography
             variant="h3"
+            color='primary'
             sx={{
               fontWeight: 700,
-              color: '#206CFE',
               textAlign: 'left',
             }}
           >
-            Company Details
+            Merchant Details
           </Typography>
           <Typography
             variant="h5"
@@ -483,7 +488,7 @@ export default function KYCCompanyDetails({
               textAlign: 'left',
             }}
           >
-            Submit required company documents.
+            Submit required merchant documents.
           </Typography>
         </Stack>
 
@@ -541,7 +546,7 @@ export default function KYCCompanyDetails({
           </Paper>
 
           <Box sx={{ display: 'flex', justifyContent: 'flex-end', gap: 2, mt: 4 }}>
-            <LoadingButton
+            {/* <LoadingButton
               type="button"
               color="primary"
               variant="contained"
@@ -549,7 +554,7 @@ export default function KYCCompanyDetails({
               onClick={handleAutoFill}
             >
               Autofill
-            </LoadingButton>
+            </LoadingButton> */}
             <LoadingButton type="submit" color="primary" variant="contained" loading={isSubmitting}>
               Next
             </LoadingButton>
@@ -562,7 +567,7 @@ export default function KYCCompanyDetails({
   );
 }
 
-KYCCompanyDetails.propTypes = {
+KYCMerchantDetails.propTypes = {
   percent: PropTypes.func.isRequired,
   setActiveStepId: PropTypes.func.isRequired,
   dataInitializedSteps: PropTypes.array,

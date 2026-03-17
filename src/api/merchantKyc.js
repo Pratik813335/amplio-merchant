@@ -1,5 +1,5 @@
 import useSWR from 'swr';
-import { useEffect, useMemo } from 'react';
+import { useCallback, useEffect, useMemo } from 'react';
 import { fetcher, endpoints } from 'src/utils/axios';
 
 export function useGetKycProgress(sessionId) {
@@ -43,11 +43,12 @@ export function useGetKycSection(section, route = '') {
   });
 
   useEffect(() => {
-    if (section === 'company_documents' && URL) {
-      console.log('[KYC company_documents] request id debug:', {
+    if (['merchant_documents', 'kyc_merchant_documents'].includes(section) && URL) {
+      console.log('[KYC documents] request id debug:', {
         requestId: usersId,
-        company_user_id: sessionStorage.getItem('company_user_id'),
-        company_profile_id: sessionStorage.getItem('company_profile_id'),
+        merchant_user_id: sessionStorage.getItem('merchant_user_id'),
+        merchant_profile_id: sessionStorage.getItem('merchant_profile_id'),
+        section,
         url: URL,
       });
     }
@@ -63,10 +64,10 @@ export function useGetKycSection(section, route = '') {
   };
 }
 export function useGetDetails() {
-  const profileId = sessionStorage.getItem('company_user_id'); // ⬅️ Directly read
+  const profileId = sessionStorage.getItem('merchant_user_id'); // ⬅️ Directly read
 
   const URL = profileId
-    ? endpoints.companyKyc.getSection('company_bank_details', profileId, '')
+    ? endpoints.merchantKyc.getSection('merchant_bank_details', profileId, '')
     : null;
 
   const { data, isLoading, error, isValidating, mutate } = useSWR(URL, fetcher, {
@@ -89,10 +90,10 @@ export function useGetDetails() {
 }
 
 export function useGetKycAddressDetails() {
-  const profileId = sessionStorage.getItem('company_user_id');
+  const profileId = sessionStorage.getItem('merchant_user_id');
 
   const URL = profileId
-    ? endpoints.companyKyc.getSection('company_address_details', profileId, '')
+    ? endpoints.merchantKyc.getSection('merchant_address_details', profileId, '')
     : null;
 
   const { data, isLoading, error, isValidating, mutate } = useSWR(URL, fetcher, {
@@ -123,104 +124,138 @@ export function useGetKycAddressDetails() {
   };
 }
 
-export function useGetSignatories() {
-  const profileId = sessionStorage.getItem('company_user_id');
+export function useGetUBOs() {
+  const profileId = sessionStorage.getItem('merchant_user_id');
 
   const URL = profileId
-    ? endpoints.companyKyc.getSection('company_authorized_signatories', profileId, '')
+    ? endpoints.merchantKyc.getSection('merchant_ubo_details', profileId, '')
     : null;
 
   const { data, isLoading, error, isValidating, mutate } = useSWR(URL, fetcher, {
     keepPreviousData: true,
   });
 
-  const refreshSignatories = () => {
+  const refreshUbos = useCallback(() => {
     mutate();
-  };
+  }, [mutate]);
 
   return {
-    signatories: data?.data || [],
+    ubos: data?.data || [],
     loading: isLoading,
     error,
     validating: isValidating,
     empty: !isLoading && !data?.data?.length,
-    refreshSignatories,
+    refreshUbos,
   };
 }
 
-export function useGetDocuments(companyId) {
-  const URL = endpoints.companyKyc.getDocuments;
+export function useGetPSPs() {
+  const profileId = sessionStorage.getItem('merchant_user_id');
+
+  const URL = profileId
+    ? endpoints.merchantKyc.getSection('merchant_psp_details', profileId, '')
+    : null;
 
   const { data, isLoading, error, isValidating, mutate } = useSWR(URL, fetcher, {
     keepPreviousData: true,
   });
+  // console.log('psp data', data);
 
-  const refreshDocuments = () => {
+  const refreshPsps = useCallback(() => {
     mutate();
-  };
+  }, [mutate]);
 
   return {
-    documents: data?.documents || [],
+    psps: data?.data || [],
     loading: isLoading,
     error,
     validating: isValidating,
-    empty: !isLoading && (!data?.documents || data.documents.length === 0),
-    refreshDocuments,
+    empty: !isLoading && !data?.data?.length,
+    refreshPsps,
   };
 }
 
-export function useGetBankDetails() {
-  const URL = endpoints.companyKyc.getBankDetails;
+// export function useGetDocuments(companyId) {
+//   const URL = endpoints.companyKyc.getDocuments;
 
-  const { data, error, isLoading, isValidating, mutate } = useSWR(URL, fetcher, {
-    keepPreviousData: true,
-    revalidateOnFocus: false,
-  });
+//   const { data, isLoading, error, isValidating, mutate } = useSWR(URL, fetcher, {
+//     keepPreviousData: true,
+//   });
 
-  const refreshBankDetail = () => {
-    mutate();
-  };
+//   const refreshDocuments = () => {
+//     mutate();
+//   };
 
-  return {
-    bankDetails: data?.bankDetails || [],
-    loading: isLoading,
-    error,
-    validating: isValidating,
-    empty: !isLoading && !data?.bankDetails?.length,
-    raw: data,
-    refreshBankDetail,
-  };
-}
+//   return {
+//     documents: data?.documents || [],
+//     loading: isLoading,
+//     error,
+//     validating: isValidating,
+//     empty: !isLoading && (!data?.documents || data.documents.length === 0),
+//     refreshDocuments,
+//   };
+// }
 
-export function useGetBankDetail(id) {
-  const URL = id ? endpoints.companyKyc.details(id) : null;
+// export function useGetBankDetails() {
+//   const URL = endpoints.companyKyc.getBankDetails;
 
-  const { data, error, isLoading, isValidating, mutate } = useSWR(URL, fetcher, {
-    keepPreviousData: true,
-  });
+//   const { data, error, isLoading, isValidating, mutate } = useSWR(URL, fetcher, {
+//     keepPreviousData: true,
+//     revalidateOnFocus: false,
+//   });
 
-  return {
-    bank: data?.bankDetails || null,
-    loading: isLoading,
-    error,
-    validating: isValidating,
-    refreshBank: () => mutate(),
-  };
-}
+//   const refreshBankDetail = () => {
+//     mutate();
+//   };
+
+//   return {
+//     bankDetails: data?.bankDetails || [],
+//     loading: isLoading,
+//     error,
+//     validating: isValidating,
+//     empty: !isLoading && !data?.bankDetails?.length,
+//     raw: data,
+//     refreshBankDetail,
+//   };
+// }
+
+// export function useGetBankDetail(id) {
+//   const URL = id ? endpoints.companyKyc.details(id) : null;
+
+//   const { data, error, isLoading, isValidating, mutate } = useSWR(URL, fetcher, {
+//     keepPreviousData: true,
+//   });
+
+//   return {
+//     bank: data?.bankDetails || null,
+//     loading: isLoading,
+//     error,
+//     validating: isValidating,
+//     refreshBank: () => mutate(),
+//   };
+// }
+//   return {
+//     bank: data?.bankDetails || null,
+//     loading: isLoading,
+//     error,
+//     validating: isValidating,
+//     refreshBank: () => mutate(),
+//   };
+// }
 
 
-export default function useGetProfileData() {
-  const URL = endpoints.companyKyc.getProfileData;
+// export default function useGetProfileData() {
+//   const URL = endpoints.companyKyc.getProfileData;
 
-  const { data, isLoading, error, isValidating } = useSWR(URL, fetcher, {
-    keepPreviousData: true,
-  });
+//   const { data, isLoading, error, isValidating } = useSWR(URL, fetcher, {
+//     keepPreviousData: true,
+//   });
 
-  return {
-    profileData: data?.profile || null,
-    loading: isLoading,
-    error,
-    validating: isValidating,
-  };
-}
+//   return {
+//     profileData: data?.profile || null,
+//     loading: isLoading,
+//     error,
+//     validating: isValidating,
+//   };
+// }
 

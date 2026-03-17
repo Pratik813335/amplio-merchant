@@ -153,10 +153,10 @@ export default function KYCReviewAndSubmit() {
               ]}
             />
 
-            {/* Added Signatories */}
+            {/* Added UBOs */}
             <KYCReviewAndSubmitCard
               isFullWidth={true}
-              title="Added Signatories"
+              title="Added UBOs"
               editPath={paths.kyc.companyDetails} // Make sure this path is defined in your routes
               icon="mdi:account-multiple-plus"
               data={[
@@ -165,7 +165,7 @@ export default function KYCReviewAndSubmit() {
                   value: 'Mr. Anand C. Patil, Mr. Anand C. Patil, Mr. Anand C. Patil',
                 },
                 {
-                  title: 'Signatory',
+                  title: 'UBO',
                   value: 'Mr. Anand C. Patil, Mr. Anand C. Patil, Mr. Anand C. Patil',
                 },
                 {

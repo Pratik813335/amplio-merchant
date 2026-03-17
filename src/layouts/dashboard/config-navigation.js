@@ -43,6 +43,7 @@ const ICONS = {
   ecommerce: icon('ic_ecommerce'),
   analytics: icon('ic_analytics'),
   dashboard: icon('ic_dashboard'),
+  forecasting: icon('ic_forecasting'),
   settings: icon('ic_settings'),
   transaction: icon('ic_transaction'),
 };
@@ -65,7 +66,10 @@ export function useNavData() {
           // { title: t('banking'), path: paths.dashboard.general.banking, icon: ICONS.banking },
           // { title: t('booking'), path: paths.dashboard.general.booking, icon: ICONS.booking },
           // { title: t('file'), path: paths.dashboard.general.file, icon: ICONS.file },
-          { title: t('Dashboard'), path: paths.dashboard.general.analytics, icon: ICONS.dashboard },
+          { title: t('dashboard'), path: paths.dashboard.root, icon: ICONS.dashboard },
+          // { title: t('transaction'), path: paths.dashboard.general.transaction, icon: ICONS.analytics },
+          { title: t('Forecasting'), path: paths.dashboard.general.forecasting, icon: ICONS.forecasting },
+          // { title: t('Dashboard'), path: paths.dashboard.general.analytics, icon: ICONS.dashboard },
           { title: t('transaction'), path: paths.dashboard.general.transaction, icon: ICONS.transaction },
           { title: t('settings'), path: paths.dashboard.general.settings, icon: ICONS.settings },
         ],
@@ -76,6 +80,15 @@ export function useNavData() {
       {
         subheader: t('management'),
         items: [
+          // LIQUIDITY ENGINE
+          {
+            title: t('liquidity engine'),
+            path: paths.dashboard.liquidityEngine.list,
+            icon: ICONS.liquidityEngine,
+            children: [
+              {title: t('list'), path: paths.dashboard.liquidityEngine.list},
+            ]
+          },
           // USER
           // {
           //   title: t('user'),

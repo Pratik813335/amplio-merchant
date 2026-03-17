@@ -226,7 +226,7 @@ const authKyc = {
       element: <CompanyKycPendingPage />,
     },
     {
-      path: 'company-kyc',
+      path: 'merchant-kyc',
       element: <CompanyKycPage />,
     },
   ],

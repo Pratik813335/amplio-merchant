@@ -1,8 +1,9 @@
 import PropTypes from 'prop-types';
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { Controller, useForm, useWatch } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
 import * as Yup from 'yup';
+import { format } from 'date-fns';
 // @mui
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
@@ -12,44 +13,38 @@ import MenuItem from '@mui/material/MenuItem';
 import DialogTitle from '@mui/material/DialogTitle';
 import DialogActions from '@mui/material/DialogActions';
 import DialogContent from '@mui/material/DialogContent';
-// components
-import Iconify from 'src/components/iconify';
 import { useSnackbar } from 'src/components/snackbar';
 import FormProvider, {
   RHFCustomFileUploadBox,
   RHFSelect,
   RHFTextField,
 } from 'src/components/hook-form';
-import axios from 'axios';
-import { useAuthContext } from 'src/auth/hooks';
 import { DatePicker } from '@mui/x-date-pickers';
 import { Typography } from '@mui/material';
 import axiosInstance from 'src/utils/axios';
 
-const ROLES = [
+const UBO_ROLES = [
+  { value: 'proprietor', label: 'Proprietor (Sole Owner)' },
+  { value: 'partner', label: 'Partner' },
+  { value: 'designated_partner', label: 'Designated Partner (LLP)' },
   { value: 'director', label: 'Director' },
+  { value: 'shareholder', label: 'Shareholder' },
   { value: 'authorized_signatory', label: 'Authorized Signatory' },
-  { value: 'cfo', label: 'CFO' },
-  { value: 'ceo', label: 'CEO' },
-  { value: 'proprietor', label: 'Proprietor (if sole prop)' },
-  { value: 'partner', label: 'Partner (if LLP/Partnership)' },
+  { value: 'trustee', label: 'Trustee' },
+  { value: 'beneficiary', label: 'Beneficiary Owner' },
   { value: 'other', label: 'Other' },
 ];
 
-export default function KYCAddSignatoriesForm({
+export default function KYCAddUBOsForm({
   open,
   onClose,
   onSuccess,
-  companyId,
   currentUser,
   isViewMode,
   isEditMode,
 }) {
   const { enqueueSnackbar } = useSnackbar();
   const [extractedPan, setExtractedPan] = useState(null);
-  const [panExtractionStatus, setPanExtractionStatus] = useState('idle');
-  const [skipPanExtractionOnce, setSkipPanExtractionOnce] = useState(false);
-  const [isAutofilling, setIsAutofilling] = useState(false);
 
   const NewUserSchema = Yup.object().shape({
     name: Yup.string()
@@ -67,6 +62,7 @@ export default function KYCAddSignatoriesForm({
       .required('Phone number is required')
       .matches(/^[0-9]{10}$/, 'Please enter a valid 10-digit phone number'),
     role: Yup.string().required('Role is required'),
+    ownershipPercentage: Yup.number().required('Ownership percentage is required'),
     customDesignation: Yup.string().when('role', (role, schema) =>
       role === 'other' ? schema.required('Please enter designation') : schema.notRequired()
     ),
@@ -79,12 +75,10 @@ export default function KYCAddSignatoriesForm({
       .matches(/^[A-Z]{5}[0-9]{4}[A-Z]{1}$/, 'Invalid PAN format')
       .required('PAN Number is required'),
     submittedDateOfBirth: Yup.string().required('DOB is required'),
-    // eslint-disable-next-line prefer-arrow-callback
-    panCard: Yup.mixed().test('fileRequired', 'PAN card is required', function (value) {
+    panCard: Yup.mixed().test('fileRequired', 'PAN card is required', (value) => {
       if (isEditMode) return true;
       return !!value;
     }),
-    boardResolution: Yup.mixed().required('fileRequired', 'Board Resolution is required'),
   });
 
   const defaultValues = useMemo(
@@ -92,13 +86,13 @@ export default function KYCAddSignatoriesForm({
       name: currentUser?.fullName || '',
       email: currentUser?.email || '',
       phoneNumber: currentUser?.phone || '',
-      role: currentUser?.designationType || '',
-      panCard: '',
+      role: currentUser?.designationValue || '',
+      ownershipPercentage: currentUser?.ownershipPercentage || '',
+      panCard: currentUser?.panCard || null,
       customDesignation: '',
-      boardResolution: '',
-      submittedPanFullName: '',
-      submittedPanNumber: '',
-      submittedDateOfBirth: '',
+      submittedPanFullName: currentUser?.submittedPanFullName || '',
+      submittedPanNumber: currentUser?.submittedPanNumber || '',
+      submittedDateOfBirth: currentUser?.submittedDateOfBirth || '',
     }),
     [currentUser]
   );
@@ -140,65 +134,92 @@ export default function KYCAddSignatoriesForm({
 
   const onSubmit = handleSubmit(async (data) => {
     try {
-      const usersId = sessionStorage.getItem('company_user_id');
+      const usersId = sessionStorage.getItem('merchant_user_id');
 
       if (!usersId) {
         enqueueSnackbar('User ID missing. Restart KYC.', { variant: 'error' });
         return;
       }
 
-      const panCardFileId = getFileId(data.panCard);
-      const boardResolutionFileId = getFileId(data.boardResolution) || '';
+      const panCardId = getFileId(data.panCard);
 
-      if (!panCardFileId && !isEditMode) {
+      if (!panCardId && !isEditMode) {
         enqueueSnackbar('PAN card is required', { variant: 'error' });
         return;
       }
-      if (!boardResolutionFileId && !isEditMode) {
-        enqueueSnackbar('Board resolution is required', { variant: 'error' });
-        return;
-      }
 
-      const isCustom = data.role === 'OTHER';
+      const designationValue =
+        data.role === 'other' ? data.customDesignation : data.role;
 
-      const payload = {
-        usersId,
-        signatory: {
-          fullName: data.name,
-          email: data.email,
-          phone: data.phoneNumber,
+      const uboDetail = {
+        fullName: data.name,
+        email: data.email,
+        phone: data.phoneNumber,
+        ownershipPercentage: Number(data.ownershipPercentage),
 
-          // Extracted PAN details (from OCR)
-          extractedPanFullName: extractedPan?.extractedPanFullName || '',
-          extractedPanNumber: extractedPan?.extractedPanNumber || '',
-          extractedDateOfBirth: extractedPan?.extractedDateOfBirth || '',
+        extractedPanFullName: extractedPan?.extractedPanFullName || '',
+        extractedPanNumber: extractedPan?.extractedPanNumber || '',
+        extractedDateOfBirth: extractedPan?.extractedDateOfBirth || '',
 
-          // Submitted PAN details (after human check / edit)
-          submittedPanFullName: data.submittedPanFullName,
-          submittedPanNumber: data.submittedPanNumber,
-          submittedDateOfBirth: data.submittedDateOfBirth,
+        submittedPanFullName: data.submittedPanFullName,
+        submittedPanNumber: data.submittedPanNumber,
+        submittedDateOfBirth: data.submittedDateOfBirth,
 
-          panCardFileId,
-          boardResolutionFileId,
-          designationType: data.role === 'other' ? 'custom' : 'dropdown',
-          designationValue: data.role === 'other' ? data.customDesignation : data.role,
-        },
+        panCardId,
+        designationType: data.role === 'other' ? 'custom' : 'dropdown',
+        designationValue,
+        roleValue: designationValue,
       };
 
-      const res = await axiosInstance.post('/company-profiles/kyc-authorize-signatory', payload);
+      let res;
+
+      // ------------------------
+      // ADD NEW UBO
+      // ------------------------
+      if (!isEditMode) {
+        const payload = {
+          usersId,
+          uboDetails: [uboDetail],
+        };
+
+        res = await axiosInstance.post(
+          '/merchant-profiles/kyc-ubo-details',
+          payload
+        );
+      }
+
+      // ------------------------
+      // UPDATE EXISTING UBO
+      // ------------------------
+      if (isEditMode) {
+        const payload = {
+          usersId,
+          uboId: currentUser.id,
+          uboDetail
+        };
+
+        res = await axiosInstance.patch('/merchant-profiles/kyc-ubo-details', payload);
+      }
 
       if (res?.data?.success) {
-        enqueueSnackbar('Signatory added successfully', { variant: 'success' });
-        onSuccess?.(payload.signatory);
+        enqueueSnackbar(
+          isEditMode ? 'UBO updated successfully' : 'UBO added successfully',
+          { variant: 'success' }
+        );
+
+        onSuccess?.();
         onClose();
       } else {
-        enqueueSnackbar(res?.data?.message || 'Something went wrong', {
+        enqueueSnackbar(res?.error?.message || 'Something went wrong', {
           variant: 'error',
         });
       }
     } catch (err) {
       console.error(err);
-      enqueueSnackbar('Failed to add signatory', { variant: 'error' });
+      enqueueSnackbar(
+        isEditMode ? 'Failed to update UBO' : 'Failed to add UBO',
+        { variant: 'error' }
+      );
     }
   });
 
@@ -208,28 +229,23 @@ export default function KYCAddSignatoriesForm({
         name: currentUser?.fullName || '',
         email: currentUser?.email || '',
         phoneNumber: currentUser?.phone || '',
-        role: currentUser?.designationType || '',
-        panCard: '',
+        role: currentUser?.designationValue || '',
+        ownershipPercentage: currentUser?.ownershipPercentage || '',
+        panCard: currentUser?.panCard || null,
         customDesignation: '',
-        boardResolution: '',
-        submittedPanFullName: '',
-        submittedPanNumber: '',
-        submittedDateOfBirth: '',
+        submittedPanFullName: currentUser?.submittedPanFullName || '',
+        submittedPanNumber: currentUser?.submittedPanNumber || '',
+        submittedDateOfBirth: currentUser?.submittedDateOfBirth || '',
       });
+      setExtractedPan(null);
     }
   }, [open, currentUser, reset]);
 
   useEffect(() => {
     if (!panFile?.id) return;
-    if (skipPanExtractionOnce) {
-      setSkipPanExtractionOnce(false);
-      return;
-    }
 
     const extractPanDetails = async () => {
       try {
-        setPanExtractionStatus('loading');
-
         const response = await axiosInstance.post('/extract/pan-info', {
           fileId: panFile.id,
         });
@@ -241,7 +257,6 @@ export default function KYCAddSignatoriesForm({
         const panDob = data?.extractedDateOfBirth;
 
         if (!panNumber && !panName && !panDob) {
-          setPanExtractionStatus('failed');
           enqueueSnackbar("Couldn't extract PAN details. Please fill manually.", {
             variant: 'error',
           });
@@ -249,33 +264,38 @@ export default function KYCAddSignatoriesForm({
         }
 
         if (panName) {
-          setValue('panHoldersName', panName, {
+          setValue('submittedPanFullName', panName, {
             shouldValidate: true,
             shouldDirty: true,
           });
         }
 
         if (panNumber) {
-          setValue('panNumber', panNumber, {
+          setValue('submittedPanNumber', panNumber, {
             shouldValidate: true,
             shouldDirty: true,
           });
         }
 
         if (panDob) {
-          setValue('submittedDateOfBirth', panDob, {
+          const formattedDob =
+            panDob instanceof Date ? format(panDob, 'yyyy-MM-dd') : String(panDob);
+          setValue('submittedDateOfBirth', formattedDob, {
             shouldValidate: true,
             shouldDirty: true,
           });
         }
 
-        setPanExtractionStatus('success');
+        setExtractedPan({
+          extractedPanFullName: panName || '',
+          extractedPanNumber: panNumber || '',
+          extractedDateOfBirth: panDob || '',
+        });
         enqueueSnackbar('PAN details extracted successfully', {
           variant: 'success',
         });
       } catch (error) {
         console.error(error);
-        setPanExtractionStatus('failed');
         enqueueSnackbar('Unable to extract PAN details. Please fill manually.', {
           variant: 'error',
         });
@@ -283,7 +303,7 @@ export default function KYCAddSignatoriesForm({
     };
 
     extractPanDetails();
-  }, [panFile?.id, skipPanExtractionOnce, enqueueSnackbar, setValue]);
+  }, [panFile?.id, enqueueSnackbar, setValue]);
 
   // const handleAutoFill = async () => {
   //   setIsAutofilling(true);
@@ -366,7 +386,7 @@ export default function KYCAddSignatoriesForm({
       <FormProvider methods={methods} onSubmit={onSubmit}>
         <DialogTitle color="primary">
           {/* eslint-disable-next-line no-nested-ternary */}
-          {isViewMode ? 'View Signatory' : isEditMode ? 'Edit Signatory' : 'Add New Signatory'}
+          {isViewMode ? 'View UBO' : isEditMode ? 'Edit UBO' : 'Add New UBO'}
         </DialogTitle>
 
         <DialogContent
@@ -390,15 +410,20 @@ export default function KYCAddSignatoriesForm({
             <RHFTextField
               name="phoneNumber"
               label="Phone Number*"
-              type="tel"
               disabled={isViewMode}
               inputProps={{ maxLength: 10 }}
+            />
+            <RHFTextField
+              name="ownershipPercentage"
+              label="Ownership Percentage*"
+              disabled={isViewMode}
+              inputProps={{ min: 1, max: 100 }}
             />
             <RHFSelect name="role" label="Designation*" disabled={isViewMode}>
               <MenuItem value="" disabled>
                 Select Designation
               </MenuItem>
-              {ROLES.map((role) => (
+              {UBO_ROLES.map((role) => (
                 <MenuItem key={role.value} value={role.value}>
                   {role.label}
                 </MenuItem>
@@ -417,79 +442,56 @@ export default function KYCAddSignatoriesForm({
               PAN Section
             </Typography>
 
-            {isViewMode ? (
-              <>
-                <RHFTextField name="panNumber" label="PAN Number*" disabled />
-                <RHFTextField name="boardResolution" label="Board Resolution*" disabled />
-              </>
-            ) : (
-              <>
-                <RHFCustomFileUploadBox
-                  name="panCard"
-                  label="Upload PAN*"
-                  fileType="pan"
-                  required={!isEditMode}
-                  error={!!errors.panCard}
-                  accept={{
-                    'application/pdf': ['.pdf'],
-                    'image/png': ['.png'],
-                    'image/jpeg': ['.jpg', '.jpeg'],
+            <RHFCustomFileUploadBox
+              name="panCard"
+              label="Upload PAN*"
+              fileType="pan"
+              required={!isEditMode}
+              error={!!errors.panCard}
+              accept={{
+                'application/pdf': ['.pdf'],
+                'image/png': ['.png'],
+                'image/jpeg': ['.jpg', '.jpeg'],
+              }}
+              disabled={isViewMode}
+            />
+
+
+            <RHFTextField
+              name="submittedPanFullName"
+              label="PAN Holder Full Name*"
+              disabled={isViewMode}
+            />
+
+            <RHFTextField
+              name="submittedPanNumber"
+              label="PAN Number*"
+              disabled={isViewMode}
+            />
+
+            <Controller
+              name="submittedDateOfBirth"
+              control={control}
+              render={({ field, fieldState: { error } }) => (
+                <DatePicker
+                  {...field}
+                  label="PAN Date of Birth*"
+                  disabled={isViewMode}
+                  value={field.value ? new Date(field.value) : null}
+                  onChange={(newValue) =>
+                    field.onChange(newValue ? format(newValue, 'yyyy-MM-dd') : '')
+                  }
+                  format="dd/MM/yyyy"
+                  slotProps={{
+                    textField: {
+                      fullWidth: true,
+                      error: !!error,
+                      helperText: error?.message,
+                    },
                   }}
                 />
-                <RHFTextField
-                  name="submittedPanFullName"
-                  label="PAN Holder Full Name*"
-                  disabled={!isPanUploaded}
-                  inputProps={{ style: { textTransform: 'uppercase' } }}
-                />
-
-                <RHFTextField
-                  name="submittedPanNumber"
-                  label="PAN Number*"
-                  disabled={!isPanUploaded}
-                  inputProps={{ style: { textTransform: 'uppercase' } }}
-                />
-
-                <Controller
-                  name="submittedDateOfBirth"
-                  control={control}
-                  render={({ field, fieldState: { error } }) => (
-                    <DatePicker
-                      {...field}
-                      label="PAN Date of Birth*"
-                      disabled={!isPanUploaded}
-                      value={field.value ? new Date(field.value) : null}
-                      onChange={(newValue) => field.onChange(newValue)}
-                      format="dd/MM/yyyy"
-                      slotProps={{
-                        textField: {
-                          fullWidth: true,
-                          error: !!error,
-                          helperText: error?.message,
-                        },
-                      }}
-                    />
-                  )}
-                />
-
-                <Typography variant="subtitle2" color="primary">
-                  Board Resolution Section
-                </Typography>
-
-                <RHFCustomFileUploadBox
-                  name="boardResolution"
-                  label="Board Resolution*"
-                  fileType="boardResolution"
-                  required={!isEditMode}
-                  error={!!errors.boardResolution}
-                  accept={{
-                    'application/pdf': ['.pdf'],
-                    'image/png': ['.png'],
-                    'image/jpeg': ['.jpg', '.jpeg'],
-                  }}
-                />
-              </>
-            )}
+              )}
+            />
           </Box>
         </DialogContent>
 
@@ -529,12 +531,11 @@ export default function KYCAddSignatoriesForm({
   );
 }
 
-KYCAddSignatoriesForm.propTypes = {
+KYCAddUBOsForm.propTypes = {
   currentUser: PropTypes.object,
   onClose: PropTypes.func.isRequired,
   onSuccess: PropTypes.func,
   open: PropTypes.bool.isRequired,
   isViewMode: PropTypes.bool,
   isEditMode: PropTypes.bool,
-  companyId: PropTypes.string,
 };

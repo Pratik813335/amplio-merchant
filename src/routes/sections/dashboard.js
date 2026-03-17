@@ -6,6 +6,8 @@ import { AuthGuard } from 'src/auth/guard';
 import DashboardLayout from 'src/layouts/dashboard';
 // components
 import { LoadingScreen } from 'src/components/loading-screen';
+import { Layer } from 'react-map-gl';
+import { element } from 'prop-types';
 // import SettingsPage from 'src/pages/dashboard/settings';
 
 
@@ -14,8 +16,10 @@ const SettingsPage = lazy(() => import('src/pages/dashboard/settings'));
 const TransactionPage = lazy(() => import('src/pages/dashboard/transaction'));
 // OVERVIEW
 const IndexPage = lazy(() => import('src/pages/dashboard/app'));
+const OverviewForecastingPage = lazy(() => import('src/pages/dashboard/forecasting'));
 const OverviewEcommercePage = lazy(() => import('src/pages/dashboard/ecommerce'));
 const OverviewAnalyticsPage = lazy(() => import('src/pages/dashboard/analytics'));
+const OverviewDashboardPage = lazy(() => import('src/pages/dashboard/dashboard'))
 const OverviewBankingPage = lazy(() => import('src/pages/dashboard/banking'));
 const OverviewBookingPage = lazy(() => import('src/pages/dashboard/booking'));
 const OverviewFilePage = lazy(() => import('src/pages/dashboard/file'));
@@ -32,6 +36,8 @@ const InvoiceListPage = lazy(() => import('src/pages/dashboard/invoice/list'));
 const InvoiceDetailsPage = lazy(() => import('src/pages/dashboard/invoice/details'));
 const InvoiceCreatePage = lazy(() => import('src/pages/dashboard/invoice/new'));
 const InvoiceEditPage = lazy(() => import('src/pages/dashboard/invoice/edit'));
+// LIQUIDITY-ENGINE
+const LiquidityEngineListPage = lazy(() => import('src/pages/dashboard/liquidityEngine/list'))
 // USER
 const UserProfilePage = lazy(() => import('src/pages/dashboard/user/profile'));
 const UserCardsPage = lazy(() => import('src/pages/dashboard/user/cards'));
@@ -82,6 +88,8 @@ export const dashboardRoutes = [
     ),
     children: [
       { element: <IndexPage />, index: true },
+      { path: 'forecasting', element: <OverviewForecastingPage />},
+      { path: 'dashboard', element: <OverviewDashboardPage /> },
       { path: 'ecommerce', element: <OverviewEcommercePage /> },
       { path: 'analytics', element: <OverviewAnalyticsPage /> },
       { path: 'banking', element: <OverviewBankingPage /> },
@@ -128,6 +136,13 @@ export const dashboardRoutes = [
           { path: ':id/edit', element: <InvoiceEditPage /> },
           { path: 'new', element: <InvoiceCreatePage /> },
         ],
+      },
+      {
+        path: 'liquidityEngine',
+        children: [
+          { element: <LiquidityEngineListPage />, index: true },
+          { path: 'list', element: <LiquidityEngineListPage /> },
+        ]
       },
       {
         path: 'post',

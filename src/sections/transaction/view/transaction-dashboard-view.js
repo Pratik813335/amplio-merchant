@@ -1,23 +1,13 @@
-import { Container, Grid, Stack } from "@mui/material";
-import { useSettingsContext } from "src/components/settings";
-import WidgetSummaryCard from "../../../components/card/widget-summary-card";
-import TransactionGraph from "../transaction-graph";
-import TransactionTable from "../transaction-table";
-
-
-
+import { Container, Grid, Stack } from '@mui/material';
+import { useSettingsContext } from 'src/components/settings';
+import WidgetSummaryCard from '../../../components/card/widget-summary-card';
+import TransactionGraph from '../transaction-graph';
+import TransactionTable from '../transaction-table';
 
 export function TransactionView() {
-    const settings = useSettingsContext();
+  const settings = useSettingsContext();
 
-    const categories = [
-        '10:00',
-        '11:00',
-        '12:00',
-        '13:00',
-        '14:00',
-        '15:00',
-    ];
+  const categories = ['10:00', '11:00', '12:00', '13:00', '14:00', '15:00'];
 
     const DASHBOARD_CARDS = [
         {
