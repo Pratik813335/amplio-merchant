@@ -112,7 +112,7 @@ export default function WidgetSummaryCard({ icon, timing, title, percent, total,
               {String(total).includes('%') ? total : formatNumber(total)}
             </Typography>
           </Stack>
-
+      {percent &&
           <Iconify
             width={20}
             icon={percent < 0 ? 'mdi:arrow-down-thin' : 'mdi:arrow-up-thin'}
@@ -122,6 +122,7 @@ export default function WidgetSummaryCard({ icon, timing, title, percent, total,
               flexShrink: 0,
             }}
           />
+}
 
           <Typography
             component="div"
