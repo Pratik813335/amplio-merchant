@@ -90,10 +90,7 @@ export default function KYCBasicInfo() {
       .matches(/^[A-Za-z\s]+$/, 'Only alphabets allowed'),
     gstin: Yup.string()
       .transform((value) => value?.toUpperCase())
-      .matches(
-        /^[0-9]{2}[A-Z]{5}[0-9]{4}[A-Z][1-9A-Z]Z[0-9A-Z]$/,
-        'Invalid GSTIN format'
-      )
+      .matches(/^[0-9]{2}[A-Z]{5}[0-9]{4}[A-Z][1-9A-Z]Z[0-9A-Z]$/, 'Invalid GSTIN format')
       .required('GSTIN is required'),
     dateOfIncorporation: Yup.date().required('Date of Incorporation is required'),
     msmeUdyamRegistrationNo: Yup.string().matches(
@@ -180,21 +177,21 @@ export default function KYCBasicInfo() {
       // Build extracted PAN object
       const extractedPan = extractedPanDetails
         ? {
-          extractedMerchantName: extractedPanDetails.extractedMerchantName || '',
-          extractedPanNumber: extractedPanDetails.extractedPanNumber || '',
-        }
+            extractedMerchantName: extractedPanDetails.extractedMerchantName || '',
+            extractedPanNumber: extractedPanDetails.extractedPanNumber || '',
+          }
         : undefined;
 
       // Build submitted PAN object
       const submittedPan = humanEdited
         ? {
-          submittedMerchantName: formData.panHoldersName,
-          submittedPanNumber: formData.panNumber,
-        }
+            submittedMerchantName: formData.panHoldersName,
+            submittedPanNumber: formData.panNumber,
+          }
         : {
-          submittedMerchantName: formData.panHoldersName,
-          submittedPanNumber: formData.panNumber,
-        };
+            submittedMerchantName: formData.panHoldersName,
+            submittedPanNumber: formData.panNumber,
+          };
 
       // FINAL API PAYLOAD — 100% MATCHES THE API FORMAT YOU GAVE
       const payload = {
@@ -226,7 +223,7 @@ export default function KYCBasicInfo() {
 
         // ✅ Store it so next page can access it
         if (usersId) {
-          sessionStorage.setItem('company_user_id', usersId);
+          sessionStorage.setItem('merchant_user_id', usersId);
         } else {
           console.warn('No usersId found in /merchant-registration response');
         }
@@ -261,7 +258,7 @@ export default function KYCBasicInfo() {
 
   useEffect(() => {
     if (fetchedProfileId) {
-      sessionStorage.setItem('company_profile_id', fetchedProfileId);
+      sessionStorage.setItem('merchant_profile_id', fetchedProfileId);
     }
   }, [fetchedProfileId]);
 
@@ -373,7 +370,6 @@ export default function KYCBasicInfo() {
         enqueueSnackbar('PAN details extracted successfully', {
           variant: 'success',
         });
-
       } catch (error) {
         console.error(error);
         setPanExtractionStatus('failed');
@@ -385,7 +381,6 @@ export default function KYCBasicInfo() {
     };
 
     extractPanDetails();
-
   }, [panFile?.id, skipPanExtractionOnce, enqueueSnackbar, setValue]);
 
   // const handleAutoFill = async () => {
@@ -516,7 +511,7 @@ export default function KYCBasicInfo() {
                   textAlign: 'left',
                 }}
               >
-                Company Basic Information
+                Merchant Basic Information
               </Typography>
               <Typography
                 variant="h5"
@@ -526,7 +521,7 @@ export default function KYCBasicInfo() {
                   textAlign: 'left',
                 }}
               >
-                Please provide your company details to proceed
+                Please provide your details to proceed
               </Typography>
             </Stack>
 
@@ -719,7 +714,10 @@ export default function KYCBasicInfo() {
             </Grid>
 
             {/* SUBMIT BUTTON */}
-            <Box textAlign="center" sx={{ mt: 4, display: 'flex', justifyContent: 'center', gap: 2 }}>
+            <Box
+              textAlign="center"
+              sx={{ mt: 4, display: 'flex', justifyContent: 'center', gap: 2 }}
+            >
               {/* <Button
                 type="button"
                 variant="contained"

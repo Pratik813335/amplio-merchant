@@ -19,7 +19,6 @@ import { useSettingsContext } from 'src/components/settings';
 import { MotivationIllustration } from 'src/assets/illustrations';
 //
 import WidgetSummaryCard from 'src/components/card/widget-summary-card';
-
 import ForecastingYearlySales from '../forecasting-yearly-sales';
 import ForecastingBankOutage from '../forecasting-bank-outage';
 import ForecastingAppAreaInstalled from '../forecasting-app-area-installed';
@@ -37,35 +36,35 @@ export default function OverviewForecastingView() {
   const settings = useSettingsContext();
 
   const DASHBOARD_CARDS = [
-  {
-    title: "7-Day Forecast Accuracy",
-    percent: 3,
-    total: "94.2%",
-    timing: "Based on last 30 days",
-    icon: "mdi:target"
-  },
-  {
-    title: "Avg Settlement Confidence",
-    percent: 6,
-    total: "85.7%",
-    timing: "Weighted by amount",
-    icon: "mdi:trending-up"
-  },
-  {
-    title: "High Risk Days",
-    percent: 4,
-    total: 2,
-    timing: "Next 7 days",
-    icon: "mdi:alert-outline"
-  },
-  {
-    title: "Expected Net Inflow",
-    percent: 8,
-    total: 44,
-    timing: "Next 7 days (after refunds)",
-    icon: "mdi:trending-up"
-  },
-];
+    {
+      title: "7-Day Forecast Accuracy",
+      percent: 3,
+      total: "94.2%",
+      timing: "Based on last 30 days",
+      icon: "mdi:target"
+    },
+    {
+      title: "Avg Settlement Confidence jhdjfhjkhdhajhfjdfk",
+      percent: 6,
+      total: "85.7%",
+      timing: "Weighted by amount",
+      icon: "mdi:trending-up"
+    },
+    {
+      title: "High Risk Days",
+      percent: 4,
+      total: 2,
+      timing: "Next 7 days",
+      icon: "mdi:alert-outline"
+    },
+    {
+      title: "Expected Net Inflow",
+      percent: 8,
+      total: 44,
+      timing: "Next 7 days (after refunds)",
+      icon: "mdi:trending-up"
+    },
+  ];
 
   return (
     <Container maxWidth={settings.themeStretch ? false : 'xl'}>
@@ -123,9 +122,9 @@ export default function OverviewForecastingView() {
         </Grid>
 
         <Grid xs={12} md={6}>
-          <ForecastingBankOutage 
-                 title="Bank Outage Probability" 
-                 data={_bankOutageProbability} />
+          <ForecastingBankOutage
+            title="Bank Outage Probability"
+            data={_bankOutageProbability} />
         </Grid>
 
         <Grid xs={12} md={12} lg={12}>

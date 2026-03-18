@@ -5,11 +5,11 @@ import BorrowingListView from 'src/sections/overview/borrowing/view/borrowing-li
 
 // ----------------------------------------------------------------------
 
-export default function OverviewDashboardPage() {
+export default function OverviewBorrowingPage() {
     return (
         <>
             <Helmet>
-                <title> Dashboard: Analytics</title>
+                <title> Dashboard: Borrowing</title>
             </Helmet>
 
             <BorrowingListView />

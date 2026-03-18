@@ -19,47 +19,47 @@ import { fNumber, fPercent } from 'src/utils/format-number';
 
 export default function WidgetSummaryCard({ icon, timing, title, percent, total, chart, sx, ...other }) {
   const theme = useTheme();
-
-  const {
-    colors = [theme.palette.primary.light, theme.palette.primary.main],
-    series,
-    options,
-  } = chart;
+  const colors = [theme.palette.primary.light, theme.palette.primary.main]
+  // const {
+  //   colors = [theme.palette.primary.light, theme.palette.primary.main],
+  //   series,
+  //   options,
+  // } = chart;
   // data
-  const chartOptions = {
-    colors: colors.map((color) => color[1]),
-    fill: {
-      type: 'gradient',
-      gradient: {
-        colorStops: [
-          { offset: 0, color: colors[0] },
-          { offset: 100, color: colors[1] },
-        ],
-      },
-    },
-    chart: {
-      sparkline: {
-        enabled: true,
-      },
-    },
-    plotOptions: {
-      bar: {
-        columnWidth: '68%',
-        borderRadius: 2,
-      },
-    },
-    tooltip: {
-      x: { show: false },
-      y: {
-        formatter: (value) => fNumber(value),
-        title: {
-          formatter: () => '',
-        },
-      },
-      marker: { show: false },
-    },
-    ...options,
-  };
+  // const chartOptions = {
+  //   colors: colors.map((color) => color[1]),
+  //   fill: {
+  //     type: 'gradient',
+  //     gradient: {
+  //       colorStops: [
+  //         { offset: 0, color: colors[0] },
+  //         { offset: 100, color: colors[1] },
+  //       ],
+  //     },
+  //   },
+  //   chart: {
+  //     sparkline: {
+  //       enabled: true,
+  //     },
+  //   },
+  //   plotOptions: {
+  //     bar: {
+  //       columnWidth: '68%',
+  //       borderRadius: 2,
+  //     },
+  //   },
+  //   tooltip: {
+  //     x: { show: false },
+  //     y: {
+  //       formatter: (value) => fNumber(value),
+  //       title: {
+  //         formatter: () => '',
+  //       },
+  //     },
+  //     marker: { show: false },
+  //   },
+  //   ...options,
+  // };
 
   function formatNumber(num) {
     const number = Number(num);
@@ -112,7 +112,7 @@ export default function WidgetSummaryCard({ icon, timing, title, percent, total,
               {String(total).includes('%') ? total : formatNumber(total)}
             </Typography>
           </Stack>
-
+      {percent &&
           <Iconify
             width={20}
             icon={percent < 0 ? 'mdi:arrow-down-thin' : 'mdi:arrow-up-thin'}
@@ -122,6 +122,7 @@ export default function WidgetSummaryCard({ icon, timing, title, percent, total,
               flexShrink: 0,
             }}
           />
+}
 
           <Typography
             component="div"
@@ -154,6 +155,10 @@ WidgetSummaryCard.propTypes = {
   timing: PropTypes.string,
   icon: PropTypes.string,
   total: PropTypes.number,
+  iconColor: PropTypes.string,
+  hideArrow: PropTypes.bool,
+  arrowColor: PropTypes.string,
+  arrowSize: PropTypes.string,
 };
 
 

@@ -217,7 +217,13 @@ export default function JwtRegisterByMobileView() {
         justifyContent: 'center',
       }}
     >
-      <Card sx={{ p: 3 }}>
+          <Card
+    sx={{
+      p: 3,
+      width: 420,
+      maxWidth: '100%',
+    }}
+  >
         <Stack spacing={2} sx={{ mb: 3 }}>
           <Typography variant="h4">Get Started Absolutely Free</Typography>
 

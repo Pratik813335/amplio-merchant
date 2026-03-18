@@ -17,8 +17,8 @@ import { useForm, useWatch } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
 import { useSnackbar } from 'notistack';
 import FormProvider, { RHFTextField, RHFSelect, RHFCustomFileUploadBox } from 'src/components/hook-form';
-import { useGetKycAddressDetails } from 'src/api/companyKyc';
 import axiosInstance from 'src/utils/axios';
+import { useGetKycAddressDetails } from 'src/api/merchantKyc';
 import KYCFooter from './kyc-footer';
 // import { NewKycAddressDetails } from 'src/forms-autofilled-script/kyb-script/newkyb';
 
@@ -151,7 +151,7 @@ export default function KYCAddressDetails({
 
   const onSubmit = async (form) => {
     try {
-      const usersId = sessionStorage.getItem('company_user_id');
+      const usersId = sessionStorage.getItem('merchant_user_id');
       if (!usersId) {
         enqueueSnackbar('User ID missing. Please restart KYC process.', { variant: 'error' });
         return;
@@ -162,7 +162,7 @@ export default function KYCAddressDetails({
       const registeredAddressPayload = {
         addressType: 'registered',
         addressLineOne: form.registeredAddressLine1,
-        addressLineTwo: form.registeredAddressLine2 || null,
+        addressLineTwo: form.registeredAddressLine2 || '',
         country: form.registeredCountry,
         city: form.registeredCity,
         state: form.registeredState,
@@ -177,8 +177,8 @@ export default function KYCAddressDetails({
           ? form.registeredAddressLine1
           : form.correspondenceAddressLine1,
         addressLineTwo: form.sameAsRegistered
-          ? form.registeredAddressLine2 || null
-          : form.correspondenceAddressLine2 || null,
+          ? form.registeredAddressLine2 || ''
+          : form.correspondenceAddressLine2 || '',
         country: form.sameAsRegistered ? form.registeredCountry : form.correspondenceCountry,
         city: form.sameAsRegistered ? form.registeredCity : form.correspondenceCity,
         state: form.sameAsRegistered ? form.registeredState : form.correspondenceState,
@@ -190,13 +190,13 @@ export default function KYCAddressDetails({
       let res;
 
       if (registeredAddress) {
-        res = await axiosInstance.patch('/company-profiles/kyc-address-details', {
+        res = await axiosInstance.patch('/merchant-profiles/kyc-address-details', {
           usersId,
           registeredAddress: registeredAddressPayload,
           correspondenceAddress: correspondenceAddressPayload,
         });
       } else {
-        res = await axiosInstance.post('/company-profiles/kyc-address-details', {
+        res = await axiosInstance.post('/merchant-profiles/kyc-address-details', {
           usersId,
           registeredAddress: registeredAddressPayload,
           correspondenceAddress: correspondenceAddressPayload,
@@ -274,13 +274,10 @@ export default function KYCAddressDetails({
         setActiveStepId();
       }
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [
     registeredAddressData,
-    reset,
-    defaultValues,
-    dataInitializedSteps,
-    setDataInitializedSteps,
-    setActiveStepId,
+    reset
   ]);
 
   return (
@@ -297,7 +294,7 @@ export default function KYCAddressDetails({
         }}
       >
         <Stack spacing={0.5} alignItems="flex-start" sx={{ mb: 4 }}>
-          <Typography variant="h3" sx={{ fontWeight: 700, color: '#206CFE', textAlign: 'left' }}>
+          <Typography variant="h3" color='primary' sx={{ fontWeight: 700, textAlign: 'left' }}>
             Address Details
           </Typography>
           <Typography variant="h5" sx={{ fontWeight: 500, color: '#000000', textAlign: 'left' }}>

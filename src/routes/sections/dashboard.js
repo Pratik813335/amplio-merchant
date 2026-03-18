@@ -8,20 +8,28 @@ import DashboardLayout from 'src/layouts/dashboard';
 import { LoadingScreen } from 'src/components/loading-screen';
 import { Layer } from 'react-map-gl';
 import { element } from 'prop-types';
+// import SettingsPage from 'src/pages/dashboard/settings';
 
 
 // ----------------------------------------------------------------------
-const TransectionPage = lazy(() => import('src/pages/dashboard/transaction'));
+const SettingsPage = lazy(() => import('src/pages/dashboard/settings'));
+const TransactionPage = lazy(() => import('src/pages/dashboard/transaction'));
 // OVERVIEW
 const IndexPage = lazy(() => import('src/pages/dashboard/app'));
 const OverviewForecastingPage = lazy(() => import('src/pages/dashboard/forecasting'));
 const OverviewEcommercePage = lazy(() => import('src/pages/dashboard/ecommerce'));
 const OverviewAnalyticsPage = lazy(() => import('src/pages/dashboard/analytics'));
 const OverviewDashboardPage = lazy(() => import('src/pages/dashboard/dashboard'));
-const OverviewBorrowingPage = lazy(() => import('src/pages/dashboard/borrowing'))
+// const OverviewBorrowingPage = lazy(() => import('src/pages/dashboard/borrowing'))
 const OverviewBankingPage = lazy(() => import('src/pages/dashboard/banking'));
 const OverviewBookingPage = lazy(() => import('src/pages/dashboard/booking'));
 const OverviewFilePage = lazy(() => import('src/pages/dashboard/file'));
+
+// Borrowing
+const BorrowingListPage = lazy(() => import('src/pages/dashboard/borrowing/list'));
+const BorrowingDetailsPage = lazy(() => import('src/pages/dashboard/borrowing/details'));
+const BorrowingViewPage = lazy(() => import('src/pages/dashboard/borrowing/view'));
+
 // PRODUCT
 const ProductDetailsPage = lazy(() => import('src/pages/dashboard/product/details'));
 const ProductListPage = lazy(() => import('src/pages/dashboard/product/list'));
@@ -35,6 +43,8 @@ const InvoiceListPage = lazy(() => import('src/pages/dashboard/invoice/list'));
 const InvoiceDetailsPage = lazy(() => import('src/pages/dashboard/invoice/details'));
 const InvoiceCreatePage = lazy(() => import('src/pages/dashboard/invoice/new'));
 const InvoiceEditPage = lazy(() => import('src/pages/dashboard/invoice/edit'));
+// LIQUIDITY-ENGINE
+const LiquidityEngineListPage = lazy(() => import('src/pages/dashboard/liquidityEngine/list'))
 // USER
 const UserProfilePage = lazy(() => import('src/pages/dashboard/user/profile'));
 const UserCardsPage = lazy(() => import('src/pages/dashboard/user/cards'));
@@ -85,15 +95,16 @@ export const dashboardRoutes = [
     ),
     children: [
       { element: <IndexPage />, index: true },
-      { path: 'forecasting', element: <OverviewForecastingPage />},
+      { path: 'forecasting', element: <OverviewForecastingPage /> },
       { path: 'dashboard', element: <OverviewDashboardPage /> },
       { path: 'ecommerce', element: <OverviewEcommercePage /> },
       { path: 'analytics', element: <OverviewAnalyticsPage /> },
       { path: 'banking', element: <OverviewBankingPage /> },
       { path: 'booking', element: <OverviewBookingPage /> },
       { path: 'file', element: <OverviewFilePage /> },
-      { path: 'transaction', element: <TransectionPage /> },
-      { path: 'borrowing', element: <OverviewBorrowingPage /> },
+      { path: 'transaction', element: <TransactionPage /> },
+      // { path: 'borrowing', element: <OverviewBorrowingPage /> },
+      { path: 'settings', element: <SettingsPage /> },
       {
         path: 'user',
         children: [
@@ -105,6 +116,15 @@ export const dashboardRoutes = [
           { path: ':id/edit', element: <UserEditPage /> },
           { path: 'account', element: <UserAccountPage /> },
         ],
+      },
+      {
+        path: 'borrowing',
+        children: [
+          { element: <BorrowingListPage />, index: true },
+          { path: 'list', element: <BorrowingListPage /> },
+          { path: ':id', element: <BorrowingDetailsPage /> },
+          { path: ':id/view', element: <BorrowingViewPage /> },
+        ]
       },
       {
         path: 'product',
@@ -133,6 +153,13 @@ export const dashboardRoutes = [
           { path: ':id/edit', element: <InvoiceEditPage /> },
           { path: 'new', element: <InvoiceCreatePage /> },
         ],
+      },
+      {
+        path: 'liquidityEngine',
+        children: [
+          { element: <LiquidityEngineListPage />, index: true },
+          { path: 'list', element: <LiquidityEngineListPage /> },
+        ]
       },
       {
         path: 'post',
