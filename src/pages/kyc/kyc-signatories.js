@@ -1,6 +1,5 @@
 import { Helmet } from 'react-helmet-async';
-// sections
-import KYCSignatories from 'src/sections/kyc/kyc-signatories';
+import KYCUBOs from 'src/sections/kyc/kyc-ubo-list';
 
 // ----------------------------------------------------------------------
 
@@ -11,7 +10,7 @@ export default function KYCSignatoriesPage() {
         <title> Merchant: KYC Signatories</title>
       </Helmet>
 
-      <KYCSignatories />
+      <KYCUBOs />
     </>
   );
 }

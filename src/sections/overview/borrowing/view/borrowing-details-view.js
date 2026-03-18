@@ -6,7 +6,7 @@ import { Container, Grid } from "@mui/material";
 import { useSettingsContext } from 'src/components/settings';
 import WidgetSummaryCard from 'src/components/card/widget-summary-card';
 import BorrowingDetailsCard from 'src/sections/overview/borrowing/borrowing-details-card';
-import BorrowingDetailsHeader from './borrowing-details-header';
+import BorrowingDetailsHeader from '../borrowing-details-header';
 
 // dummy cards data
 const _Dummy_Cards_Data = [
@@ -92,7 +92,7 @@ const approvalRows = [
 ];
 
 
-export default function BorrowingDetails() {
+export default function BorrowingDetailsView() {
     const settings = useSettingsContext();
     const theme = useTheme();
 

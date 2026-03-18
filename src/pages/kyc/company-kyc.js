@@ -8,7 +8,7 @@ export default function CompanyKycPage() {
   return (
     <>
       <Helmet>
-        <title> Company: KYC</title>
+        <title> Merchant: KYC</title>
       </Helmet>
 
       <KYCView />

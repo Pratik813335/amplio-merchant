@@ -19,7 +19,6 @@ import { useSettingsContext } from 'src/components/settings';
 import { MotivationIllustration } from 'src/assets/illustrations';
 //
 import WidgetSummaryCard from 'src/components/card/widget-summary-card';
-
 import ForecastingYearlySales from '../forecasting-yearly-sales';
 import ForecastingBankOutage from '../forecasting-bank-outage';
 import ForecastingAppAreaInstalled from '../forecasting-app-area-installed';

@@ -17,6 +17,8 @@ import {
 // icon
 import Iconify from 'src/components/iconify';
 import StatusChip from 'src/components/status-chip/status-chip';
+import { useRouter } from 'src/routes/hook';
+import { paths } from 'src/routes/paths';
 
 // ----------------------------------------------------------------------
 
@@ -28,6 +30,7 @@ export default function BorrowingDetailsHeader({
     interestRate = '1% per week',
 }) {
     const theme = useTheme();
+    const router = useRouter()
 
     const handleTransactionsView = () => {
         console.log('Clickk on transaction view');
@@ -41,6 +44,9 @@ export default function BorrowingDetailsHeader({
     const handleDownloadReport = () => {
         console.log('clicked on download report');
 
+    }
+    const handleNavigateBack = () => {
+        router.push(-1);
     }
     return (
         <Stack spacing={3}>
@@ -57,7 +63,7 @@ export default function BorrowingDetailsHeader({
                 {/* Title Section */}
                 <Stack direction="row" spacing={1.5} alignItems="center">
 
-                    <IconButton>
+                    <IconButton onClick={handleNavigateBack}>
                         <Iconify icon="mdi:arrow-left" width={22} />
                     </IconButton>
 
@@ -78,7 +84,7 @@ export default function BorrowingDetailsHeader({
                         variant="outlined"
                         color='primary'
                         startIcon={<Iconify icon="streamline-ultimate:receipt-dollar-bold" />}
-                        onClick={handleTransactionsView}
+                        onClick={(id) => handleTransactionsView}
                     >
                         View Transactions
                     </Button>
@@ -115,22 +121,6 @@ export default function BorrowingDetailsHeader({
                 >
 
                     {/* Status */}
-
-                    {/* <Chip
-                        variant='outline'
-                        startIcon={
-                            (status === 'success' && <Iconify icon="mdi:check-circle-outline" />) ||
-                            (status === 'error' && <Iconify icon="mdi:check-download-outline" />)
-
-                        }
-                        label={status}
-                        color={
-                            (status === 'success' && 'success') ||
-                            (status === 'failed' && 'error') ||
-                            'warning'
-                        }
-                    /> */}
-
                     <StatusChip status={status} />
 
                     {/* Borrowing Date */}
