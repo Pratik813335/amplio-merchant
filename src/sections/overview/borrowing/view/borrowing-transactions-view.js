@@ -8,13 +8,16 @@ import { useMockedUser } from 'src/hooks/use-mocked-user';
 import { useSettingsContext } from 'src/components/settings';
 // assets
 //
+import { paths } from 'src/routes/paths';
+import { useRouter } from 'src/routes/hook';
 import WidgetSummaryCard from 'src/components/card/widget-summary-card';
 import Iconify from 'src/components/iconify';
-import BorrowingTransactionsListView from './borrowing-transactions-list-view';
+import BorrowingTransactionsList from '../borrowing-transactions-list';
 // ----------------------------------------------------------------------
 
-export default function BorrowingTransactions() {
+export default function BorrowingTransactionsView() {
   const { user } = useMockedUser();
+  const router = useRouter();
 
   const theme = useTheme();
 
@@ -39,6 +42,10 @@ export default function BorrowingTransactions() {
     },
   ];
 
+  const handleBack = () => {
+    router.push(-1);
+  }
+
   return (
     <Container maxWidth={settings.themeStretch ? false : 'xl'}>
       <Grid container spacing={3}>
@@ -51,7 +58,7 @@ export default function BorrowingTransactions() {
             spacing={2}
           >
             <Stack direction="row" spacing={2} alignItems="center">
-              <IconButton>
+              <IconButton onClick={handleBack}>
                 <Iconify icon="eva:arrow-back-fill" width={24} />
               </IconButton>
 
@@ -94,7 +101,7 @@ export default function BorrowingTransactions() {
         ))}
 
         <Grid item xs={12}>
-          <BorrowingTransactionsListView />
+          <BorrowingTransactionsList />
         </Grid>
       </Grid>
     </Container>

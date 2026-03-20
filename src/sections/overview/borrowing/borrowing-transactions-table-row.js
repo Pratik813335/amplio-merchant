@@ -21,6 +21,7 @@ import Label from 'src/components/label';
 import Iconify from 'src/components/iconify';
 import { ConfirmDialog } from 'src/components/custom-dialog';
 import CustomPopover, { usePopover } from 'src/components/custom-popover';
+import { StatusChip } from 'src/components/status-chip';
 
 // ----------------------------------------------------------------------
 
@@ -90,17 +91,8 @@ export default function BorrowingTransactionsTableRow({
         </TableCell>
 
         <TableCell>
-          <Label
-            variant="soft"
-            color={
-              (status === 'financed' && 'success') ||
-              (status === 'eligible' && 'warning') ||
-              (status === 'ineligible' && 'error') ||
-              'default'
-            }
-          >
-            {status}
-          </Label>
+            <StatusChip status={status} />
+
         </TableCell>
 
         <TableCell>
@@ -110,9 +102,8 @@ export default function BorrowingTransactionsTableRow({
         </TableCell>
 
         <TableCell>
-          <Label variant="soft" color="success">
-            {amlStatus}
-          </Label>
+           <StatusChip status={amlStatus} />
+
         </TableCell>
 
         {/* <TableCell align="right" sx={{ px: 1 }}>

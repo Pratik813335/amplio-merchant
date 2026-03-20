@@ -19,6 +19,7 @@ import Iconify from 'src/components/iconify';
 import StatusChip from 'src/components/status-chip/status-chip';
 import { useRouter } from 'src/routes/hook';
 import { paths } from 'src/routes/paths';
+import { useCallback } from 'react';
 
 // ----------------------------------------------------------------------
 
@@ -32,10 +33,13 @@ export default function BorrowingDetailsHeader({
     const theme = useTheme();
     const router = useRouter()
 
-    const handleTransactionsView = () => {
-        console.log('Clickk on transaction view');
+    const handleTransactionsView = useCallback(
+        (id) => {
+            router.push(paths.dashboard.borrowing.view(id));
+        },
+        [router]
+    );
 
-    }
     const handleGenerateInvoice = () => {
         console.log('Clicked on generate invoice');
 
@@ -84,7 +88,7 @@ export default function BorrowingDetailsHeader({
                         variant="outlined"
                         color='primary'
                         startIcon={<Iconify icon="streamline-ultimate:receipt-dollar-bold" />}
-                        onClick={(id) => handleTransactionsView}
+                        onClick={() => handleTransactionsView(transactionId)}
                     >
                         View Transactions
                     </Button>

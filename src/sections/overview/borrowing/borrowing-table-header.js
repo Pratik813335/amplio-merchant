@@ -43,7 +43,7 @@ export default function BorrowingTableHeader() {
     },
   ];
   return (
-    <Container maxWidth={settings.themeStretch ? false : 'xl'}>
+    <>
 
       <Box display="flex" justifyContent="space-between" pb={3}>
         <Box>
@@ -52,15 +52,33 @@ export default function BorrowingTableHeader() {
           </Typography>
           <Typography variant='subtitle2'>One borrowing per day - Complete borrowing history with deductions and repayments. </Typography>
         </Box>
-        <Box display="flex" justifyContent="flex-end" alignContent="center" >
-          <Button variant="outlined" startIcon={<Iconify icon="fa7-solid:rotate" />}>
+        <Box
+          display="flex"
+          justifyContent="flex-end"
+          alignItems="center"
+          gap={2}   
+        >
+          <Button
+            variant="outlined"
+            startIcon={<Iconify icon="fa7-solid:rotate" />}
+            sx={{ width: 140, height: 40 }}   
+          >
             Refresh
           </Button>
-          <Button variant='contained' sx={{ ml: 2 }} color='primary' startIcon={<Iconify icon="tabler:download-filled" />}>Export</Button>
+
+          <Button
+            variant="contained"
+            color="primary"
+            startIcon={<Iconify icon="tabler:download-filled" />}
+            sx={{ width: 140, height: 40 }}  
+          >
+            Export
+          </Button>
         </Box>
       </Box>
+
       <Stack spacing={3}>
-        <Grid container spacing={3}>
+        <Grid container spacing={3} mb={3}>
           {DASHBOARD_CARDS.filter((card) => card.total !== undefined && card.total !== null).map(
             (card, i) => (
               <Grid key={i} item xs={12} md={4}>
@@ -78,6 +96,6 @@ export default function BorrowingTableHeader() {
 
         {/* <BorrowingListView /> */}
       </Stack>
-    </Container>
+    </>
   );
 }
