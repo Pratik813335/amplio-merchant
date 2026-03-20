@@ -91,20 +91,31 @@ export default function BorrowingUploadTableToolbar({
                 />
 
                 {/* Date Filter */}
-                <FormControl sx={{ width: 200 }}>
-                    <InputLabel>
-                        <Box  sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                            <Iconify icon="material-symbols-light:calendar-today-outline" width={22} />
-                            Day
-                        </Box>
-                    </InputLabel>          <Select
+                <FormControl sx={{ width: 390 }}>
+                    <Select
                         multiple
-                        sx={{ height: 46 }}
                         value={filters.bank}
-
                         onChange={handleFilterBank}
-                        input={<OutlinedInput label="Date" />}
-                        renderValue={(selected) => selected.join(', ')}
+                        displayEmpty
+                        input={
+                            <OutlinedInput
+                                startAdornment={
+                                    <Iconify
+                                        icon="material-symbols-light:calendar-today-outline"
+                                        width={49}
+                                        style={{ marginRight: 8 }}
+                                    />
+                                }
+                            />
+                        }
+                        renderValue={(selected) =>
+                            selected.length === 0 ? (
+                                <span style={{ color: '#999' }}>Today</span>
+                            ) : (
+                                selected.join(', ')
+                            )
+                        }
+                        sx={{ height: 46 }}
                     >
                         {bankOptions.map((option) => (
                             <MenuItem key={option.value} value={option.value}>
@@ -116,13 +127,14 @@ export default function BorrowingUploadTableToolbar({
                 </FormControl>
 
                 {/* Status Filter */}
-                <FormControl sx={{ width: 200 }}>
-                    <InputLabel>All Status</InputLabel>
+                <FormControl sx={{ width: 220 }}>
+                    <InputLabel id="status-label">All Status</InputLabel>
                     <Select
+                        labelId="status-label"
                         multiple
                         value={filters.status}
                         onChange={handleFilterStatus}
-                        input={<OutlinedInput label="Status" />}
+                        input={<OutlinedInput label="All Status" />}
                         renderValue={(selected) => selected.join(', ')}
                         sx={{ height: 46 }}
                     >
@@ -156,11 +168,12 @@ export default function BorrowingUploadTableToolbar({
                 >
                     {/* Account Filter */}
                     <FormControl sx={{ width: 400 }}>
-                        <InputLabel>Account Filter</InputLabel>
+                        <InputLabel id="account-label">Account Filter</InputLabel>
                         <Select
+                            labelId="account-label"
                             value={filters.account || ''}
                             onChange={(e) => onFilters('account', e.target.value)}
-                            input={<OutlinedInput label="Account" />}
+                            input={<OutlinedInput label="Account Filter" />}
                         >
                             <MenuItem value="source">Source</MenuItem>
                             <MenuItem value="pool">Pool</MenuItem>

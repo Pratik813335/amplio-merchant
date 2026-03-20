@@ -106,7 +106,7 @@ export default function WidgetSummaryCard({ icon, timing, title, percent, total,
               whiteSpace: 'nowrap',
             }}
           >
-            <Iconify icon="mdi:currency-inr" width={18} />
+            {/* <Iconify icon="mdi:currency-inr" width={18} /> */}
 
             <Typography variant="h5" noWrap sx={{ lineHeight: 1 }}>
               {String(total).includes('%') ? total : formatNumber(total)}
