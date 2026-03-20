@@ -49,9 +49,6 @@ export function useGetKycSection(section, route = '') {
         merchant_user_id: sessionStorage.getItem('merchant_user_id'),
         merchant_profile_id: sessionStorage.getItem('merchant_profile_id'),
         section,
-        merchant_user_id: sessionStorage.getItem('merchant_user_id'),
-        merchant_profile_id: sessionStorage.getItem('merchant_profile_id'),
-        section,
         url: URL,
       });
     }
