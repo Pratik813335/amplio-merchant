@@ -30,6 +30,8 @@ import Scrollbar from 'src/components/scrollbar';
 import { ConfirmDialog } from 'src/components/custom-dialog';
 import { useSettingsContext } from 'src/components/settings';
 import CustomBreadcrumbs from 'src/components/custom-breadcrumbs';
+import { useParams } from 'react-router';
+
 import {
   useTable,
   getComparator,
@@ -44,6 +46,7 @@ import {
 import BorrowingTransactionsTableRow from './borrowing-transactions-table-row';
 import BorrowingTransactionsTableToolbar from './borrowing-transactions-table-toolbar';
 import BorrowingTransactionsTableFiltersResult from './borrowing-transactions-table-filters-result';
+import BorrowingDummyData from './borrowing-dummy-data';
 
 // ----------------------------------------------------------------------
 
@@ -80,204 +83,12 @@ export default function BorrowingTransactionsList() {
   const table = useTable({ defaultOrderBy: 'createDate' });
 
   const confirm = useBoolean();
+  const { id } = useParams();
+  const currentBorrowing = BorrowingDummyData.find(
+    (item) => item.id === id
+  );
+  const DUMMY_DATA = currentBorrowing?.transactions?.list || [];
 
-  const DUMMY_DATA = [
-  {
-    id: 'TXN001',
-    transactionId: 'TXN001',
-    amount: 12000,
-    rail: 'UPI',
-    bank: 'HDFC',
-    settlementTiming: 'T+1',
-    expectedSettlement: '2026-03-18',
-    status: 'financed',
-    fraudScore: 12,
-    amlStatus: 'clear',
-  },
-  {
-    id: 'TXN002',
-    transactionId: 'TXN002',
-    amount: 8000,
-    rail: 'IMPS',
-    bank: 'ICICI',
-    settlementTiming: 'Instant',
-    expectedSettlement: '2026-03-17',
-    status: 'eligible',
-    fraudScore: 5,
-    amlStatus: 'clear',
-  },
-  {
-    id: 'TXN003',
-    transactionId: 'TXN003',
-    amount: 15000,
-    rail: 'NEFT',
-    bank: 'SBI',
-    settlementTiming: 'T+2',
-    expectedSettlement: '2026-03-19',
-    status: 'ineligible',
-    fraudScore: 45,
-    amlStatus: 'review',
-  },
-  {
-    id: 'TXN004',
-    transactionId: 'TXN004',
-    amount: 5000,
-    rail: 'RTGS',
-    bank: 'Axis',
-    settlementTiming: 'Same Day',
-    expectedSettlement: '2026-03-17',
-    status: 'delayed',
-    fraudScore: 22,
-    amlStatus: 'pending',
-  },
-
-  // NEW DATA
-  {
-    id: 'TXN005',
-    transactionId: 'TXN005',
-    amount: 22000,
-    rail: 'UPI',
-    bank: 'Kotak',
-    settlementTiming: 'T+1',
-    expectedSettlement: '2026-03-18',
-    status: 'financed',
-    fraudScore: 9,
-    amlStatus: 'clear',
-  },
-  {
-    id: 'TXN006',
-    transactionId: 'TXN006',
-    amount: 3000,
-    rail: 'IMPS',
-    bank: 'Yes Bank',
-    settlementTiming: 'Instant',
-    expectedSettlement: '2026-03-17',
-    status: 'eligible',
-    fraudScore: 3,
-    amlStatus: 'clear',
-  },
-  {
-    id: 'TXN007',
-    transactionId: 'TXN007',
-    amount: 18000,
-    rail: 'NEFT',
-    bank: 'PNB',
-    settlementTiming: 'T+2',
-    expectedSettlement: '2026-03-20',
-    status: 'ineligible',
-    fraudScore: 55,
-    amlStatus: 'review',
-  },
-  {
-    id: 'TXN008',
-    transactionId: 'TXN008',
-    amount: 9500,
-    rail: 'RTGS',
-    bank: 'Axis',
-    settlementTiming: 'Same Day',
-    expectedSettlement: '2026-03-17',
-    status: 'delayed',
-    fraudScore: 28,
-    amlStatus: 'pending',
-  },
-  {
-    id: 'TXN009',
-    transactionId: 'TXN009',
-    amount: 11000,
-    rail: 'UPI',
-    bank: 'HDFC',
-    settlementTiming: 'T+1',
-    expectedSettlement: '2026-03-18',
-    status: 'financed',
-    fraudScore: 14,
-    amlStatus: 'clear',
-  },
-  {
-    id: 'TXN010',
-    transactionId: 'TXN010',
-    amount: 6700,
-    rail: 'IMPS',
-    bank: 'ICICI',
-    settlementTiming: 'Instant',
-    expectedSettlement: '2026-03-17',
-    status: 'eligible',
-    fraudScore: 6,
-    amlStatus: 'clear',
-  },
-  {
-    id: 'TXN011',
-    transactionId: 'TXN011',
-    amount: 25000,
-    rail: 'NEFT',
-    bank: 'SBI',
-    settlementTiming: 'T+2',
-    expectedSettlement: '2026-03-21',
-    status: 'ineligible',
-    fraudScore: 60,
-    amlStatus: 'review',
-  },
-  {
-    id: 'TXN012',
-    transactionId: 'TXN012',
-    amount: 4000,
-    rail: 'RTGS',
-    bank: 'Axis',
-    settlementTiming: 'Same Day',
-    expectedSettlement: '2026-03-17',
-    status: 'delayed',
-    fraudScore: 18,
-    amlStatus: 'pending',
-  },
-  {
-    id: 'TXN013',
-    transactionId: 'TXN013',
-    amount: 14500,
-    rail: 'UPI',
-    bank: 'Kotak',
-    settlementTiming: 'T+1',
-    expectedSettlement: '2026-03-18',
-    status: 'financed',
-    fraudScore: 11,
-    amlStatus: 'clear',
-  },
-  {
-    id: 'TXN014',
-    transactionId: 'TXN014',
-    amount: 5200,
-    rail: 'IMPS',
-    bank: 'Yes Bank',
-    settlementTiming: 'Instant',
-    expectedSettlement: '2026-03-17',
-    status: 'eligible',
-    fraudScore: 4,
-    amlStatus: 'clear',
-  },
-  {
-    id: 'TXN015',
-    transactionId: 'TXN015',
-    amount: 17500,
-    rail: 'NEFT',
-    bank: 'PNB',
-    settlementTiming: 'T+2',
-    expectedSettlement: '2026-03-22',
-    status: 'ineligible',
-    fraudScore: 48,
-    amlStatus: 'review',
-  },
-  {
-    id: 'TXN016',
-    transactionId: 'TXN016',
-    amount: 8800,
-    rail: 'RTGS',
-    bank: 'Axis',
-    settlementTiming: 'Same Day',
-    expectedSettlement: '2026-03-17',
-    status: 'delayed',
-    fraudScore: 25,
-    amlStatus: 'pending',
-  },
-];
-  
   const RAIL_OPTIONS = ['UPI', 'IMPS', 'NEFT', 'RTGS'];
   const BANK_OPTIONS = ['HDFC', 'ICICI', 'SBI', 'Axis'];
   const TIMING_OPTIONS = ['T+1', 'T+2', 'Instant', 'Same Day'];
@@ -352,8 +163,8 @@ export default function BorrowingTransactionsList() {
   );
 
   const handleDeleteRow = useCallback(
-    (id) => {
-      const deleteRow = tableData.filter((row) => row.id !== id);
+    (rowId) => {
+      const deleteRow = tableData.filter((row) => row.id !== rowId);
       setTableData(deleteRow);
 
       table.onUpdatePageDeleteRow(dataInPage.length);
@@ -371,20 +182,22 @@ export default function BorrowingTransactionsList() {
       totalRowsFiltered: dataFiltered.length,
     });
   }, [dataFiltered.length, dataInPage.length, table, tableData]);
-
   const handleEditRow = useCallback(
-    (id) => {
-      router.push(paths.dashboard.invoice.edit(id));
+    (rowId) => {
+      router.push(paths.dashboard.invoice.edit(rowId));
     },
     [router]
   );
 
-  const handleViewRow = useCallback(
-    (id) => {
-      router.push(paths.dashboard.invoice.details(id));
-    },
-    [router]
-  );
+  // const handleViewRow = useCallback(
+  //   (id) => {
+  //     router.push(paths.dashboard.invoice.details(id));
+  //   },
+  //   [router]
+  // );
+  const handleViewRow = () => {
+    router.push(paths.dashboard.borrowing.details(id));
+  };
 
   const handleFilterStatus = useCallback(
     (event, newValue) => {
@@ -590,33 +403,33 @@ function applyFilter({ inputData, comparator, filters, dateError }) {
   inputData = stabilizedThis.map((el) => el[0]);
 
   if (name) {
-  inputData = inputData.filter(
-    (item) =>
-      item.transactionId?.toLowerCase().includes(name.toLowerCase()) ||
-      item.bank?.toLowerCase().includes(name.toLowerCase()) ||
-      item.rail?.toLowerCase().includes(name.toLowerCase())
-  );
-}
+    inputData = inputData.filter(
+      (item) =>
+        item.transactionId?.toLowerCase().includes(name.toLowerCase()) ||
+        item.bank?.toLowerCase().includes(name.toLowerCase()) ||
+        item.rail?.toLowerCase().includes(name.toLowerCase())
+    );
+  }
 
   if (status !== 'all') {
     inputData = inputData.filter((invoice) => invoice.status === status);
   }
 
   if (allrail.length) {
-  inputData = inputData.filter((item) => allrail.includes(item.rail));
-}
+    inputData = inputData.filter((item) => allrail.includes(item.rail));
+  }
 
-if (allbanks.length) {
-  inputData = inputData.filter((item) => allbanks.includes(item.bank));
-}
+  if (allbanks.length) {
+    inputData = inputData.filter((item) => allbanks.includes(item.bank));
+  }
 
-if (alltimings.length) {
-  inputData = inputData.filter((item) => alltimings.includes(item.settlementTiming));
-}
+  if (alltimings.length) {
+    inputData = inputData.filter((item) => alltimings.includes(item.settlementTiming));
+  }
 
-if (allstatuses.length) {
-  inputData = inputData.filter((item) => allstatuses.includes(item.status));
-}
+  if (allstatuses.length) {
+    inputData = inputData.filter((item) => allstatuses.includes(item.status));
+  }
 
   return inputData;
 }

@@ -1,6 +1,7 @@
 // @mui
 import { useTheme } from '@mui/material/styles';
 import { Container, Grid, Typography, Button, Stack, IconButton } from '@mui/material';
+import { useParams } from 'react-router';
 
 // hooks
 import { useMockedUser } from 'src/hooks/use-mocked-user';
@@ -13,6 +14,7 @@ import { useRouter } from 'src/routes/hook';
 import WidgetSummaryCard from 'src/components/card/widget-summary-card';
 import Iconify from 'src/components/iconify';
 import BorrowingTransactionsList from '../borrowing-transactions-list';
+import BorrowingDummyData from '../borrowing-dummy-data';
 // ----------------------------------------------------------------------
 
 export default function BorrowingTransactionsView() {
@@ -23,22 +25,29 @@ export default function BorrowingTransactionsView() {
 
   const settings = useSettingsContext();
 
+  const { id } = useParams();
+
+  const currentBorrowing = BorrowingDummyData.find(
+    (item) => item.id === id
+  );
+  const summary = currentBorrowing?.transactions?.summary;
+
   const DASHBOARD_CARDS = [
     {
       title: 'Total Transactions',
-      total: 5,
+      total: summary?.totalTransactions,
     },
     {
       title: 'Total Value',
-      total: 811000,
+      total: summary?.totalValue,
     },
     {
       title: 'Financed',
-      total: 3,
+      total: summary?.financed,
     },
     {
       title: 'Ineligible',
-      total: 2,
+      total: summary?.ineligible,
     },
   ];
 
@@ -65,7 +74,7 @@ export default function BorrowingTransactionsView() {
               <Stack>
                 <Typography variant="h4">Borrowing Transactions</Typography>
                 <Typography variant="body2" color="text.secondary">
-                  Borrowing ID : <strong>TXN001234572</strong>
+                  Borrowing ID : <strong>{currentBorrowing?.id}</strong>
                 </Typography>
               </Stack>
             </Stack>

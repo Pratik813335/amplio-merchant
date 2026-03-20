@@ -24,21 +24,18 @@ import { useCallback } from 'react';
 // ----------------------------------------------------------------------
 
 export default function BorrowingDetailsHeader({
-    transactionId = 'TXN001234570',
-    status = 'success',
-    borrowingDate = '2026-03-03 at 12:30:56',
-    tenor = '7 days',
-    interestRate = '1% per week',
+  id,
+  transactionId,
+  status,
+  borrowingDate,
+  tenor,
+  interestRate,
 }) {
     const theme = useTheme();
     const router = useRouter()
-
-    const handleTransactionsView = useCallback(
-        (id) => {
-            router.push(paths.dashboard.borrowing.view(id));
-        },
-        [router]
-    );
+    const handleTransactionsView = useCallback(() => {
+        router.push(paths.dashboard.borrowing.view(id));
+      }, [router, id]);
 
     const handleGenerateInvoice = () => {
         console.log('Clicked on generate invoice');
@@ -88,7 +85,7 @@ export default function BorrowingDetailsHeader({
                         variant="outlined"
                         color='primary'
                         startIcon={<Iconify icon="streamline-ultimate:receipt-dollar-bold" />}
-                        onClick={() => handleTransactionsView(transactionId)}
+                        onClick={handleTransactionsView}
                     >
                         View Transactions
                     </Button>
@@ -172,6 +169,7 @@ export default function BorrowingDetailsHeader({
 // ----------------------------------------------------------------------
 
 BorrowingDetailsHeader.propTypes = {
+    id: PropTypes.string,
     transactionId: PropTypes.string,
     status: PropTypes.string,
     borrowingDate: PropTypes.string,

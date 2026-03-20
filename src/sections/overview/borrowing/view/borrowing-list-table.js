@@ -1,6 +1,7 @@
 import isEqual from 'lodash/isEqual';
 import { useState, useEffect, useCallback } from 'react';
 // @mui
+
 import Card from '@mui/material/Card';
 import Table from '@mui/material/Table';
 import Tooltip from '@mui/material/Tooltip';
@@ -27,15 +28,18 @@ import {
   TableSelectedAction,
   TablePaginationCustom,
 } from 'src/components/table';
+
 import Iconify from 'src/components/iconify';
 import Scrollbar from 'src/components/scrollbar';
 
 //
 import { paths } from 'src/routes/paths';
 import { useRouter } from 'src/routes/hook';
+import BorrowingTableHeader from '../borrowing-table-header';
 import BorrowingUploadTableToolbar from '../borrowing-upload-table-tool-bar';
 import BorrowingTableRow from '../borrowing-table-row';
-import BorrowingTableHeader from '../borrowing-table-header';
+import BorrowingDummyData from '../borrowing-dummy-data';
+
 
 // ----------------------------------------------------------------------
 
@@ -52,118 +56,118 @@ const TABLE_HEAD = [
   { id: 'actions', label: 'Actions' },
 ];
 
-const products = [
-  {
-    id: 'TXN001234572',
-    time: '2026-03-01 14:20:18',
-    transerred: 1500000,
-    fromaccount: 'XXXXXX2468',
-    toaccount: 'XXXXXX-001',
-    poolid: 'POOL-001',
-    expectedamount: 1485000,
-    expectedreceipt: '2026-03-01 19:00:00',
-    status: 'Completed',
-  },
-  {
-    id: 'TXN001234571',
-    time: '2026-03-02 13:45:33',
-    transerred: 4200000,
-    fromaccount: 'XXXXXX7890',
-    toaccount: 'XXXXXX-002',
-    poolid: 'POOL-002',
-    expectedamount: 4158000,
-    expectedreceipt: '2026-03-02 18:00:00',
-    status: 'Failed',
-  },
-  {
-    id: 'TXN001234570',
-    time: '2026-03-03 12:30:56',
-    transerred: 950000,
-    fromaccount: 'XXXXXX3456',
-    toaccount: 'XXXXXX-001',
-    poolid: 'POOL-001',
-    expectedamount: 940500,
-    expectedreceipt: '2026-03-03 17:00:00',
-    status: 'Completed',
-  },
-  {
-    id: 'TXN001234569',
-    time: '2026-03-04 11:05:12',
-    transerred: 3200000,
-    fromaccount: 'XXXXXX9012',
-    toaccount: 'XXXXXX-002',
-    poolid: 'POOL-002',
-    expectedamount: 3168000,
-    expectedreceipt: '2026-03-04 16:00:00',
-    status: 'Settled',
-  },
-  {
-    id: 'TXN001234568',
-    time: '2026-03-05 10:22:45',
-    transerred: 1800000,
-    fromaccount: 'XXXXXX5678',
-    toaccount: 'XXXXXX-001',
-    poolid: 'POOL-001',
-    expectedamount: 1782000,
-    expectedreceipt: '2026-03-05 15:30:00',
-    status: 'Settled',
-  },
-  {
-    id: 'TXN001234567',
-    time: '2026-03-06 09:15:23',
-    transerred: 2500000,
-    fromaccount: 'XXXXXX1234',
-    toaccount: 'XXXXXX-001',
-    poolid: 'POOL-001',
-    expectedamount: 2475000,
-    expectedreceipt: '2026-03-06 14:00:00',
-    status: 'Completed',
-  },
-  {
-    id: 'TXN001234566',
-    time: '2026-03-07 16:40:10',
-    transerred: 1200000,
-    fromaccount: 'XXXXXX4321',
-    toaccount: 'XXXXXX-003',
-    poolid: 'POOL-003',
-    expectedamount: 1188000,
-    expectedreceipt: '2026-03-07 20:00:00',
-    status: 'Pending',
-  },
-  {
-    id: 'TXN001234565',
-    time: '2026-03-08 15:10:55',
-    transerred: 800000,
-    fromaccount: 'XXXXXX8765',
-    toaccount: 'XXXXXX-002',
-    poolid: 'POOL-002',
-    expectedamount: 792000,
-    expectedreceipt: '2026-03-08 18:30:00',
-    status: 'Failed',
-  },
-  {
-    id: 'TXN001234564',
-    time: '2026-03-09 14:05:42',
-    transerred: 2000000,
-    fromaccount: 'XXXXXX6543',
-    toaccount: 'XXXXXX-001',
-    poolid: 'POOL-001',
-    expectedamount: 1980000,
-    expectedreceipt: '2026-03-09 19:30:00',
-    status: 'Completed',
-  },
-  {
-    id: 'TXN001234563',
-    time: '2026-03-10 12:55:11',
-    transerred: 550000,
-    fromaccount: 'XXXXXX2109',
-    toaccount: 'XXXXXX-003',
-    poolid: 'POOL-003',
-    expectedamount: 544500,
-    expectedreceipt: '2026-03-10 16:00:00',
-    status: 'Pending',
-  },
-];
+// const products = [
+//   {
+//     id: 'TXN001234572',
+//     time: '2026-03-01 14:20:18',
+//     transerred: 1500000,
+//     fromaccount: 'XXXXXX2468',
+//     toaccount: 'XXXXXX-001',
+//     poolid: 'POOL-001',
+//     expectedamount: 1485000,
+//     expectedreceipt: '2026-03-01 19:00:00',
+//     status: 'Completed',
+//   },
+//   {
+//     id: 'TXN001234571',
+//     time: '2026-03-02 13:45:33',
+//     transerred: 4200000,
+//     fromaccount: 'XXXXXX7890',
+//     toaccount: 'XXXXXX-002',
+//     poolid: 'POOL-002',
+//     expectedamount: 4158000,
+//     expectedreceipt: '2026-03-02 18:00:00',
+//     status: 'Failed',
+//   },
+//   {
+//     id: 'TXN001234570',
+//     time: '2026-03-03 12:30:56',
+//     transerred: 950000,
+//     fromaccount: 'XXXXXX3456',
+//     toaccount: 'XXXXXX-001',
+//     poolid: 'POOL-001',
+//     expectedamount: 940500,
+//     expectedreceipt: '2026-03-03 17:00:00',
+//     status: 'Completed',
+//   },
+//   {
+//     id: 'TXN001234569',
+//     time: '2026-03-04 11:05:12',
+//     transerred: 3200000,
+//     fromaccount: 'XXXXXX9012',
+//     toaccount: 'XXXXXX-002',
+//     poolid: 'POOL-002',
+//     expectedamount: 3168000,
+//     expectedreceipt: '2026-03-04 16:00:00',
+//     status: 'Settled',
+//   },
+//   {
+//     id: 'TXN001234568',
+//     time: '2026-03-05 10:22:45',
+//     transerred: 1800000,
+//     fromaccount: 'XXXXXX5678',
+//     toaccount: 'XXXXXX-001',
+//     poolid: 'POOL-001',
+//     expectedamount: 1782000,
+//     expectedreceipt: '2026-03-05 15:30:00',
+//     status: 'Settled',
+//   },
+//   {
+//     id: 'TXN001234567',
+//     time: '2026-03-06 09:15:23',
+//     transerred: 2500000,
+//     fromaccount: 'XXXXXX1234',
+//     toaccount: 'XXXXXX-001',
+//     poolid: 'POOL-001',
+//     expectedamount: 2475000,
+//     expectedreceipt: '2026-03-06 14:00:00',
+//     status: 'Completed',
+//   },
+//   {
+//     id: 'TXN001234566',
+//     time: '2026-03-07 16:40:10',
+//     transerred: 1200000,
+//     fromaccount: 'XXXXXX4321',
+//     toaccount: 'XXXXXX-003',
+//     poolid: 'POOL-003',
+//     expectedamount: 1188000,
+//     expectedreceipt: '2026-03-07 20:00:00',
+//     status: 'Pending',
+//   },
+//   {
+//     id: 'TXN001234565',
+//     time: '2026-03-08 15:10:55',
+//     transerred: 800000,
+//     fromaccount: 'XXXXXX8765',
+//     toaccount: 'XXXXXX-002',
+//     poolid: 'POOL-002',
+//     expectedamount: 792000,
+//     expectedreceipt: '2026-03-08 18:30:00',
+//     status: 'Failed',
+//   },
+//   {
+//     id: 'TXN001234564',
+//     time: '2026-03-09 14:05:42',
+//     transerred: 2000000,
+//     fromaccount: 'XXXXXX6543',
+//     toaccount: 'XXXXXX-001',
+//     poolid: 'POOL-001',
+//     expectedamount: 1980000,
+//     expectedreceipt: '2026-03-09 19:30:00',
+//     status: 'Completed',
+//   },
+//   {
+//     id: 'TXN001234563',
+//     time: '2026-03-10 12:55:11',
+//     transerred: 550000,
+//     fromaccount: 'XXXXXX2109',
+//     toaccount: 'XXXXXX-003',
+//     poolid: 'POOL-003',
+//     expectedamount: 544500,
+//     expectedreceipt: '2026-03-10 16:00:00',
+//     status: 'Pending',
+//   },
+// ];
 const RAIL_OPTIONS = [
   { value: 'UPI', label: 'UPI' },
   { value: 'IMPS', label: 'IMPS' },
@@ -198,7 +202,6 @@ export default function BorrowingListView() {
       const settings = useSettingsContext();
     
   const table = useTable();
-  const [tableData, setTableData] = useState([]);
   const router = useRouter();
 
   const [filters, setFilters] = useState(defaultFilters);
@@ -207,10 +210,8 @@ export default function BorrowingListView() {
 
   const confirm = useBoolean();
 
-  useEffect(() => {
-    setTableData(products);
-  }, []);
 
+  const tableData = BorrowingDummyData;
   const dataFiltered = applyFilter({
     inputData: tableData,
     comparator: getComparator(table.order, table.orderBy),
@@ -393,7 +394,7 @@ function applyFilter({ inputData, comparator, filters }) {
 
       return bank.some((filter) => {
         if (filter === 'Today') {
-          return itemDate.toDateString() === Today.toDateString();
+          return itemDate.toDateString() === today.toDateString();
         }
 
         if (filter === 'yesterday') {

@@ -1,12 +1,15 @@
 import { useTheme } from '@mui/material/styles';
+import { useParams } from 'react-router';
 
 import { Container, Grid } from "@mui/material";
 
 // components
 import { useSettingsContext } from 'src/components/settings';
+
 import WidgetSummaryCard from 'src/components/card/widget-summary-card';
 import BorrowingDetailsCard from 'src/sections/overview/borrowing/borrowing-details-card';
 import BorrowingDetailsHeader from '../borrowing-details-header';
+import BorrowingDummyData from '../borrowing-dummy-data';
 
 // dummy cards data
 const _Dummy_Cards_Data = [
@@ -34,27 +37,28 @@ const _Dummy_Cards_Data = [
 ]
 
 // merchantInfo 
-const merchantRows = [
-    { label: "Merchant Name", value: 'Dhanesh' },
-    { label: "Merchant ID", value: 'ABC123' },
-    { label: "Source Account", value: 'MERCHANT-ACC-7890' }
-];
+// const merchantRows = [
+//     { label: "Merchant Name", value: 'Dhanesh' },
+//     { label: "Merchant ID", value: 'ABC123' },
+//     { label: "Source Account", value: 'MERCHANT-ACC-7890' }
+// ];
 
 // AccountDetails
-const poolRows = [
-    { label: "Pool ID", value: 'POOL-002' },
-    { label: "Destination Account", value: "POOL-SPV-002" },
-    { label: "Reference ID", value: 'REF-2026-001238' }
-];
+// const poolRows = [
+//     { label: "Pool ID", value: 'POOL-002' },
+//     { label: "Destination Account", value: "POOL-SPV-002" },
+//     { label: "Reference ID", value: 'REF-2026-001238' }
+// ];
+
 
 // deduction breakDown
-const deductionRows = [
-    { label: "Platform Fee (0.5%)", value: '-21,000', type: "amount" },
-    { label: "Processing Fee (0.3%)", value: '-12600', type: "amount" },
-    { label: "GST (18% on fees)", value: '-6048', type: "amount" },
-    { label: "Interest Charge", value: '-2352', type: "amount" },
-    { label: "Total Deductions", value: '-42000', type: "amount" }
-];
+// const deductionRows = [
+//     { label: "Platform Fee (0.5%)", value: '-21,000', type: "amount" },
+//     { label: "Processing Fee (0.3%)", value: '-12600', type: "amount" },
+//     { label: "GST (18% on fees)", value: '-6048', type: "amount" },
+//     { label: "Interest Charge", value: '-2352', type: "amount" },
+//     { label: "Total Deductions", value: '-42000', type: "amount" }
+// ];
 
 // timeline rows 
 
@@ -93,6 +97,24 @@ const approvalRows = [
 
 
 export default function BorrowingDetailsView() {
+    const { id } = useParams();
+    const data = BorrowingDummyData.find((item) => item.id === id);
+    const merchantRows = [
+        { label: "Merchant Name", value: data?.merchant.name },
+        { label: "Merchant ID", value: data?.merchant.id },
+        { label: "Source Account", value: data?.merchant.account }
+    ];
+    const poolRows = [
+        { label: "Pool ID", value: data?.poolid },
+        { label: "Destination Account", value: data?.toaccount },
+        { label: "Reference ID", value: data?.id }
+    ];
+    const deductionRows = [
+        { label: "Platform Fee", value: data?.deductions.platformFee, type: "amount" },
+        { label: "Processing Fee", value: data?.deductions.processingFee, type: "amount" },
+        { label: "GST", value: data?.deductions.gst, type: "amount" },
+        { label: "Interest", value: data?.deductions.interest, type: "amount" }
+    ];
     const settings = useSettingsContext();
     const theme = useTheme();
 
@@ -103,7 +125,14 @@ export default function BorrowingDetailsView() {
 
                 {/* Card Header */}
                 <Grid item xs={12} md={12}>
-                    <BorrowingDetailsHeader />
+                <BorrowingDetailsHeader
+  id={data?.id}
+  transactionId={data?.transactionId}
+  status={data?.details?.status}
+  borrowingDate={data?.details?.borrowingDate}
+  tenor={data?.details?.tenor}
+  interestRate={data?.details?.interestRate}
+/>
                 </Grid>
 
                 {/* Cards */}

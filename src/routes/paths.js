@@ -132,6 +132,7 @@ export const paths = {
       list: `${ROOTS.DASHBOARD}/borrowing/list`,
       details: (id) => `${ROOTS.DASHBOARD}/borrowing/${id}`,
       view: (id) => `${ROOTS.DASHBOARD}/borrowing/${id}/view`,
+      
     },
     user: {
       root: `${ROOTS.DASHBOARD}/user`,
