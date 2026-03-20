@@ -1,5 +1,6 @@
 // @mui
 import { useTheme } from '@mui/material/styles';
+
 import { Container, Grid, Typography, Button, Stack, IconButton } from '@mui/material';
 import { useParams } from 'react-router';
 
@@ -10,46 +11,47 @@ import { useSettingsContext } from 'src/components/settings';
 // assets
 //
 import { paths } from 'src/routes/paths';
-import { useRouter } from 'src/routes/hook';
+import { useRouter, useParams } from 'src/routes/hook';
 import WidgetSummaryCard from 'src/components/card/widget-summary-card';
 import Iconify from 'src/components/iconify';
 import BorrowingTransactionsList from '../borrowing-transactions-list';
-import BorrowingDummyData from '../borrowing-dummy-data';
+import BorrowingDummyData from './borrowing-dummy-data';
 // ----------------------------------------------------------------------
 
 export default function BorrowingTransactionsView() {
-  const { user } = useMockedUser();
+  const { id } = useParams();
   const router = useRouter();
-
   const theme = useTheme();
 
   const settings = useSettingsContext();
 
-  const { id } = useParams();
+  const selectedData = BorrowingDummyData?.find(
+  (item) => item.transactionId === id
+);
 
-  const currentBorrowing = BorrowingDummyData.find(
-    (item) => item.id === id
-  );
-  const summary = currentBorrowing?.transactions?.summary;
+if (!selectedData) return <div>No Data Found</div>;
 
-  const DASHBOARD_CARDS = [
-    {
-      title: 'Total Transactions',
-      total: summary?.totalTransactions,
-    },
-    {
-      title: 'Total Value',
-      total: summary?.totalValue,
-    },
-    {
-      title: 'Financed',
-      total: summary?.financed,
-    },
-    {
-      title: 'Ineligible',
-      total: summary?.ineligible,
-    },
-  ];
+const transactions = selectedData.transactions;
+
+
+const DASHBOARD_CARDS = [
+  {
+    title: 'Total Transactions',
+    total: transactions.summary.totalTransactions,
+  },
+  {
+    title: 'Total Value',
+    total: transactions.summary.totalValue,
+  },
+  {
+    title: 'Financed',
+    total: transactions.summary.financed,
+  },
+  {
+    title: 'Ineligible',
+    total: transactions.summary.ineligible,
+  },
+];
 
   const handleBack = () => {
     router.push(-1);
@@ -74,7 +76,7 @@ export default function BorrowingTransactionsView() {
               <Stack>
                 <Typography variant="h4">Borrowing Transactions</Typography>
                 <Typography variant="body2" color="text.secondary">
-                  Borrowing ID : <strong>{currentBorrowing?.id}</strong>
+                  Borrowing ID : <strong>{id}</strong>
                 </Typography>
               </Stack>
             </Stack>
@@ -86,6 +88,7 @@ export default function BorrowingTransactionsView() {
                 borderRadius: 2,
                 textTransform: 'none',
                 px: 3,
+                bgcolor: theme.palette.primary.main,
               }}
             >
               Export Transactions
@@ -110,7 +113,7 @@ export default function BorrowingTransactionsView() {
         ))}
 
         <Grid item xs={12}>
-          <BorrowingTransactionsList />
+          <BorrowingTransactionsList data={transactions.list} />
         </Grid>
       </Grid>
     </Container>

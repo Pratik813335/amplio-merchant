@@ -1,5 +1,6 @@
+/* eslint-disable react/prop-types */
 import sumBy from 'lodash/sumBy';
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 // @mui
 import { useTheme, alpha } from '@mui/material/styles';
 import Tab from '@mui/material/Tab';
@@ -51,7 +52,7 @@ import BorrowingDummyData from './borrowing-dummy-data';
 // ----------------------------------------------------------------------
 
 const TABLE_HEAD = [
-  { id: 'transactionId', label: 'Transaction ID' },
+  { id: 'txnId', label: 'Transaction ID' },
   { id: 'amount', label: 'Amount' },
   { id: 'rail', label: 'Rail' },
   { id: 'bank', label: 'Bank' },
@@ -73,7 +74,7 @@ const defaultFilters = {
 
 // ----------------------------------------------------------------------
 
-export default function BorrowingTransactionsList() {
+export default function BorrowingTransactionsList({ data }) {
   const theme = useTheme();
 
   const settings = useSettingsContext();
@@ -94,7 +95,13 @@ export default function BorrowingTransactionsList() {
   const TIMING_OPTIONS = ['T+1', 'T+2', 'Instant', 'Same Day'];
   const STATUS_OPTIONS = ['financed', 'eligible', 'ineligible', 'delayed'];
 
-  const [tableData, setTableData] = useState(DUMMY_DATA);
+  const [tableData, setTableData] = useState(data || []);
+
+  useEffect(() => {
+    setTableData(data || []);
+  }, [data]);
+
+  console.log(data);
 
   const [filters, setFilters] = useState(defaultFilters);
 
@@ -128,7 +135,8 @@ export default function BorrowingTransactionsList() {
 
   const notFound = (!dataFiltered.length && canReset) || !dataFiltered.length;
 
-  const getInvoiceLength = (status) => tableData.filter((item) => item.status === status).length;
+  const getTransactionLength = (status) =>
+    tableData.filter((item) => item.status?.toLowerCase() === status.toLowerCase()).length;
 
   const getTotalAmount = (status) =>
     sumBy(
@@ -136,19 +144,34 @@ export default function BorrowingTransactionsList() {
       'amount'
     );
 
-  const getPercentByStatus = (status) => (getInvoiceLength(status) / tableData.length) * 100;
+  const getPercentByStatus = (status) => (getTransactionLength(status) / tableData.length) * 100;
 
   const TABS = [
     { value: 'all', label: 'All', color: 'default', count: tableData.length },
-    { value: 'financed', label: 'Financed', color: 'success', count: getInvoiceLength('financed') },
-    { value: 'eligible', label: 'Eligible', color: 'warning', count: getInvoiceLength('eligible') },
+    {
+      value: 'financed',
+      label: 'Financed',
+      color: 'success',
+      count: getTransactionLength('financed'),
+    },
+    {
+      value: 'eligible',
+      label: 'Eligible',
+      color: 'warning',
+      count: getTransactionLength('eligible'),
+    },
     {
       value: 'ineligible',
       label: 'Ineligible',
       color: 'error',
-      count: getInvoiceLength('ineligible'),
+      count: getTransactionLength('ineligible'),
     },
-    { value: 'delayed', label: 'Delayed', color: 'default', count: getInvoiceLength('delayed') },
+    {
+      value: 'delayed',
+      label: 'Delayed',
+      color: 'default',
+      count: getTransactionLength('delayed'),
+    },
   ];
 
   const handleFilters = useCallback(
@@ -412,7 +435,7 @@ function applyFilter({ inputData, comparator, filters, dateError }) {
   }
 
   if (status !== 'all') {
-    inputData = inputData.filter((invoice) => invoice.status === status);
+    inputData = inputData.filter((item) => item.status?.toLowerCase() === status.toLowerCase());
   }
 
   if (allrail.length) {

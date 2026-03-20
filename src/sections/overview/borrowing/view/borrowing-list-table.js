@@ -11,7 +11,6 @@ import TableContainer from '@mui/material/TableContainer';
 import { useSettingsContext } from 'src/components/settings';
 import { Container, Grid } from '@mui/material';
 
-
 // routes
 
 // hooks
@@ -35,7 +34,7 @@ import Scrollbar from 'src/components/scrollbar';
 //
 import { paths } from 'src/routes/paths';
 import { useRouter } from 'src/routes/hook';
-import BorrowingTableHeader from '../borrowing-table-header';
+import BorrowingDummyData  from './borrowing-dummy-data';
 import BorrowingUploadTableToolbar from '../borrowing-upload-table-tool-bar';
 import BorrowingTableRow from '../borrowing-table-row';
 import BorrowingDummyData from '../borrowing-dummy-data';
@@ -44,135 +43,16 @@ import BorrowingDummyData from '../borrowing-dummy-data';
 // ----------------------------------------------------------------------
 
 const TABLE_HEAD = [
-  { id: 'id', label: 'Transaction ID' },
-  { id: 'time', label: 'Date & Time' },
-  { id: 'transerred', label: 'Amount Transerred' },
-  { id: 'fromaccount', label: 'From Account' },
+  { id: 'transactionId', label: 'Transaction ID' },
+  { id: 'listView.dateTime', label: 'Date & Time' },
+  { id: 'listView.amountTransferred', label: 'Amount Transferred' },
+  { id: 'listView.fromAccount', label: 'From Account' },
   { id: 'toaccount', label: 'To Account' },
-  { id: 'poolid', label: 'Pool Id' },
-  { id: 'expectedamount', label: 'Expected Amount' },
-  { id: 'expectedreceipt', label: 'Expected Receipt' },
-  { id: 'status', label: 'Status' },
+  { id: 'listView.poolId', label: 'Pool Id' },
+  { id: 'listView.expectedAmount', label: 'Expected Amount' },
+  { id: 'listView.expectedReceipt', label: 'Expected Receipt' },
+  { id: 'listView.status', label: 'Status' },
   { id: 'actions', label: 'Actions' },
-];
-
-// const products = [
-//   {
-//     id: 'TXN001234572',
-//     time: '2026-03-01 14:20:18',
-//     transerred: 1500000,
-//     fromaccount: 'XXXXXX2468',
-//     toaccount: 'XXXXXX-001',
-//     poolid: 'POOL-001',
-//     expectedamount: 1485000,
-//     expectedreceipt: '2026-03-01 19:00:00',
-//     status: 'Completed',
-//   },
-//   {
-//     id: 'TXN001234571',
-//     time: '2026-03-02 13:45:33',
-//     transerred: 4200000,
-//     fromaccount: 'XXXXXX7890',
-//     toaccount: 'XXXXXX-002',
-//     poolid: 'POOL-002',
-//     expectedamount: 4158000,
-//     expectedreceipt: '2026-03-02 18:00:00',
-//     status: 'Failed',
-//   },
-//   {
-//     id: 'TXN001234570',
-//     time: '2026-03-03 12:30:56',
-//     transerred: 950000,
-//     fromaccount: 'XXXXXX3456',
-//     toaccount: 'XXXXXX-001',
-//     poolid: 'POOL-001',
-//     expectedamount: 940500,
-//     expectedreceipt: '2026-03-03 17:00:00',
-//     status: 'Completed',
-//   },
-//   {
-//     id: 'TXN001234569',
-//     time: '2026-03-04 11:05:12',
-//     transerred: 3200000,
-//     fromaccount: 'XXXXXX9012',
-//     toaccount: 'XXXXXX-002',
-//     poolid: 'POOL-002',
-//     expectedamount: 3168000,
-//     expectedreceipt: '2026-03-04 16:00:00',
-//     status: 'Settled',
-//   },
-//   {
-//     id: 'TXN001234568',
-//     time: '2026-03-05 10:22:45',
-//     transerred: 1800000,
-//     fromaccount: 'XXXXXX5678',
-//     toaccount: 'XXXXXX-001',
-//     poolid: 'POOL-001',
-//     expectedamount: 1782000,
-//     expectedreceipt: '2026-03-05 15:30:00',
-//     status: 'Settled',
-//   },
-//   {
-//     id: 'TXN001234567',
-//     time: '2026-03-06 09:15:23',
-//     transerred: 2500000,
-//     fromaccount: 'XXXXXX1234',
-//     toaccount: 'XXXXXX-001',
-//     poolid: 'POOL-001',
-//     expectedamount: 2475000,
-//     expectedreceipt: '2026-03-06 14:00:00',
-//     status: 'Completed',
-//   },
-//   {
-//     id: 'TXN001234566',
-//     time: '2026-03-07 16:40:10',
-//     transerred: 1200000,
-//     fromaccount: 'XXXXXX4321',
-//     toaccount: 'XXXXXX-003',
-//     poolid: 'POOL-003',
-//     expectedamount: 1188000,
-//     expectedreceipt: '2026-03-07 20:00:00',
-//     status: 'Pending',
-//   },
-//   {
-//     id: 'TXN001234565',
-//     time: '2026-03-08 15:10:55',
-//     transerred: 800000,
-//     fromaccount: 'XXXXXX8765',
-//     toaccount: 'XXXXXX-002',
-//     poolid: 'POOL-002',
-//     expectedamount: 792000,
-//     expectedreceipt: '2026-03-08 18:30:00',
-//     status: 'Failed',
-//   },
-//   {
-//     id: 'TXN001234564',
-//     time: '2026-03-09 14:05:42',
-//     transerred: 2000000,
-//     fromaccount: 'XXXXXX6543',
-//     toaccount: 'XXXXXX-001',
-//     poolid: 'POOL-001',
-//     expectedamount: 1980000,
-//     expectedreceipt: '2026-03-09 19:30:00',
-//     status: 'Completed',
-//   },
-//   {
-//     id: 'TXN001234563',
-//     time: '2026-03-10 12:55:11',
-//     transerred: 550000,
-//     fromaccount: 'XXXXXX2109',
-//     toaccount: 'XXXXXX-003',
-//     poolid: 'POOL-003',
-//     expectedamount: 544500,
-//     expectedreceipt: '2026-03-10 16:00:00',
-//     status: 'Pending',
-//   },
-// ];
-const RAIL_OPTIONS = [
-  { value: 'UPI', label: 'UPI' },
-  { value: 'IMPS', label: 'IMPS' },
-  { value: 'NEFT', label: 'NEFT' },
-  { value: 'RTGS', label: 'RTGS' },
 ];
 
 const BANK_OPTIONS = [
@@ -199,8 +79,8 @@ const defaultFilters = {
 // ----------------------------------------------------------------------
 
 export default function BorrowingListView() {
-      const settings = useSettingsContext();
-    
+  const settings = useSettingsContext();
+
   const table = useTable();
   const router = useRouter();
 
@@ -210,6 +90,9 @@ export default function BorrowingListView() {
 
   const confirm = useBoolean();
 
+  useEffect(() => {
+    setTableData(BorrowingDummyData);
+  }, []);
 
   const tableData = BorrowingDummyData;
   const dataFiltered = applyFilter({
@@ -230,9 +113,7 @@ export default function BorrowingListView() {
     [router]
   );
   const denseHeight = table.dense ? 60 : 80;
-
   const canReset = !isEqual(defaultFilters, filters);
-
   const notFound = !dataFiltered.length && canReset;
   // || productsEmpty
 
@@ -263,8 +144,6 @@ export default function BorrowingListView() {
             <BorrowingUploadTableToolbar
               filters={filters}
               onFilters={handleFilters}
-              //
-              railOptions={RAIL_OPTIONS}
               bankOptions={BANK_OPTIONS}
               statusOptions={STATUS_OPTIONS}
             />
@@ -312,7 +191,7 @@ export default function BorrowingListView() {
                           row={row}
                           selected={table.selected.includes(row.id)}
                           onSelectRow={() => table.onSelectRow(row.id)}
-                          onViewRow={() => handleView(row.id)}
+                          onViewRow={() => handleView(row.transactionId)}
                         />
                       ))}
 
@@ -360,62 +239,69 @@ function applyFilter({ inputData, comparator, filters }) {
   inputData = stabilizedThis.map((el) => el[0]);
 
   if (name) {
-    const search = name.toLowerCase();
+  const search = name.toLowerCase();
 
-    inputData = inputData.filter(
-      (item) =>
-        (item.id || '').toLowerCase().includes(search) ||
-        (item.time || '').toLowerCase().includes(search) ||
-        String(item.transerred || '').includes(String(search)) ||
-        (item.poolid || '').toLowerCase().includes(search) ||
-        String(item.expectedamount || '').includes(String(search)) ||
-        (item.expectedreceipt || '').toLowerCase().includes(search)
+  inputData = inputData.filter((item) => {
+    const lv = item.listView || {};
+
+    return (
+      (item.transactionId || '').toLowerCase().includes(search) ||
+      (lv.dateTime || '').toLowerCase().includes(search) ||
+      String(lv.amountTransferred || '').includes(search) ||
+      (lv.fromAccount || '').toLowerCase().includes(search) ||
+      (lv.poolId || '').toLowerCase().includes(search) ||
+      String(lv.expectedAmount || '').includes(search) ||
+      (lv.expectedReceipt || '').toLowerCase().includes(search)
     );
-  }
+  });
+}
 
   if (status.length) {
-    inputData = inputData.filter((item) =>
-      status.some((s) => {
-        if (s === 'completed') return item.status === 'Completed';
-        if (s === 'failed') return item.status === 'Failed';
-        if (s === 'pending') return item.status === 'Pending';
-        if (s === 'expected') return item.status === 'Expected';
-        if (s === 'settled') return item.status === 'Settled';
-        return false;
-      })
-    );
-  }
+  inputData = inputData.filter((item) =>
+    status.some((s) => {
+      const st = item.listView?.status;
+
+      if (s === 'completed') return st === 'Completed';
+      if (s === 'failed') return st === 'Failed';
+      if (s === 'pending') return st === 'Pending';
+      if (s === 'expected') return st === 'Expected';
+      if (s === 'settled') return st === 'Settled';
+      return false;
+    })
+  );
+}
 
   if (bank.length) {
-    const today = new Date();
+  const today = new Date();
 
-    inputData = inputData.filter((item) => {
-      const itemDate = new Date(item.time.replace(' ', 'T'));
+  inputData = inputData.filter((item) => {
+    const dateStr = item.listView?.dateTime;
+    if (!dateStr) return false;
 
-      return bank.some((filter) => {
-        if (filter === 'Today') {
-          return itemDate.toDateString() === today.toDateString();
-        }
+    const itemDate = new Date(dateStr.replace(' ', 'T'));
 
-        if (filter === 'yesterday') {
-          const yesterday = new Date();
-          yesterday.setDate(today.getDate() - 1);
-          return itemDate.toDateString() === yesterday.toDateString();
-        }
+    return bank.some((filter) => {
+      if (filter === 'today') {
+        return itemDate.toDateString() === today.toDateString();
+      }
 
-        if (filter === 'beforeyesterday') {
-          const beforeYesterday = new Date();
-          beforeYesterday.setDate(today.getDate() - 2);
-          return itemDate.toDateString() === beforeYesterday.toDateString();
-        }
+      if (filter === 'yesterday') {
+        const yesterday = new Date();
+        yesterday.setDate(today.getDate() - 1);
+        return itemDate.toDateString() === yesterday.toDateString();
+      }
 
-        return false;
-      });
+      if (filter === 'beforeyesterday') {
+        const beforeYesterday = new Date();
+        beforeYesterday.setDate(today.getDate() - 2);
+        return itemDate.toDateString() === beforeYesterday.toDateString();
+      }
+
+      return false;
     });
-  }
-  if (rail.length) {
-    inputData = inputData.filter((product) => rail.includes(product.rail));
-  }
+  });
+}
+
 
   return inputData;
 }

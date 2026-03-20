@@ -24,12 +24,11 @@ import { useCallback } from 'react';
 // ----------------------------------------------------------------------
 
 export default function BorrowingDetailsHeader({
-  id,
-  transactionId,
-  status,
-  borrowingDate,
-  tenor,
-  interestRate,
+    transactionId,
+    status = 'success',
+    borrowingDate,
+    tenor = '7 days',
+    interestRate = '1% per week',
 }) {
     const theme = useTheme();
     const router = useRouter()

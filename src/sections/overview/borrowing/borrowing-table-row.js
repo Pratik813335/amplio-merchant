@@ -15,22 +15,28 @@ import Iconify from 'src/components/iconify';
 import { Button, IconButton, Tooltip, Typography } from '@mui/material';
 import numeral from 'numeral';
 import { fCurrencyindia } from 'src/utils/format-number';
+import { isNaN } from 'lodash';
 // ----------------------------------------------------------------------
 export default function BorrowingTableRow({ row, selected,onViewRow }) {
+  const { transactionId, listView = {} } = row;
+
   const {
-    id,
-    time,
-    transerred,
-    fromaccount,
-    toaccount,
-    poolid,
-    expectedamount,
-    expectedreceipt,
+    dateTime,
+    amountTransferred,
+    fromAccount,
+    toAccount,
+    poolId,
+    expectedAmount,
+    expectedReceipt,
     status,
-  } = row;
+  } = listView;
+
   const safeFormat = (date, formatStr) => {
     try {
-      return format(new Date(date.replace(' ', 'T')), formatStr);
+      if (!date) return '-';
+      const parsed = new Date(date);
+      if (isNaN(parsed)) return date;
+      return format(parsed, formatStr);
     } catch {
       return '-';
     }
@@ -40,29 +46,29 @@ export default function BorrowingTableRow({ row, selected,onViewRow }) {
   return (
     <TableRow hover selected={selected}>
 
-      <TableCell   >{id}</TableCell>
+      <TableCell>{transactionId}</TableCell>
 
       <TableCell >
         <ListItemText sx={{ width: 92 }}
-          primary={format(new Date(time), 'dd MMM yyyy')}
-          secondary={format(new Date(time), 'p')}
+          primary={safeFormat((dateTime), 'dd MMM yyyy')}
+          secondary={safeFormat((dateTime), 'p')}
         />
       </TableCell>
 
-      <TableCell>₹{fCurrencyindia(transerred)}</TableCell>
+      <TableCell>₹{fCurrencyindia(amountTransferred)}</TableCell>
 
-      <TableCell >{fromaccount}</TableCell>
+      <TableCell >{fromAccount}</TableCell>
 
-      <TableCell>{(toaccount)}</TableCell>
+      <TableCell>{(toAccount)}</TableCell>
 
       <TableCell sx={{ color: "info.dark" }}  >
-        {poolid}
+        {poolId}
       </TableCell>
 
-      <TableCell sx={{ color: "success.dark" }}>₹{fCurrencyindia(expectedamount)}</TableCell>
+      <TableCell sx={{ color: "success.dark" }}>₹{fCurrencyindia(expectedAmount)}</TableCell>
 
       <TableCell >
-        {safeFormat(expectedreceipt, 'dd MMM yyyy, p')}
+        {safeFormat(expectedReceipt, 'dd MMM yyyy, p')}
       </TableCell>
 
       <TableCell>
