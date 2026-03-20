@@ -49,9 +49,6 @@ export function useGetKycSection(section, route = '') {
         merchant_user_id: sessionStorage.getItem('merchant_user_id'),
         merchant_profile_id: sessionStorage.getItem('merchant_profile_id'),
         section,
-        merchant_user_id: sessionStorage.getItem('merchant_user_id'),
-        merchant_profile_id: sessionStorage.getItem('merchant_profile_id'),
-        section,
         url: URL,
       });
     }
@@ -127,7 +124,6 @@ export function useGetKycAddressDetails() {
   };
 }
 
-
 export function useGetUBOs() {
   const profileId = sessionStorage.getItem('merchant_user_id');
 
@@ -153,7 +149,31 @@ export function useGetUBOs() {
   };
 }
 
+export function useGetPSPs() {
+  const profileId = sessionStorage.getItem('merchant_user_id');
 
+  const URL = profileId
+    ? endpoints.merchantKyc.getSection('merchant_psp_details', profileId, '')
+    : null;
+
+  const { data, isLoading, error, isValidating, mutate } = useSWR(URL, fetcher, {
+    keepPreviousData: true,
+  });
+  // console.log('psp data', data);
+
+  const refreshPsps = useCallback(() => {
+    mutate();
+  }, [mutate]);
+
+  return {
+    psps: data?.data || [],
+    loading: isLoading,
+    error,
+    validating: isValidating,
+    empty: !isLoading && !data?.data?.length,
+    refreshPsps,
+  };
+}
 
 // export function useGetDocuments(companyId) {
 //   const URL = endpoints.companyKyc.getDocuments;
@@ -206,6 +226,14 @@ export function useGetUBOs() {
 //     keepPreviousData: true,
 //   });
 
+//   return {
+//     bank: data?.bankDetails || null,
+//     loading: isLoading,
+//     error,
+//     validating: isValidating,
+//     refreshBank: () => mutate(),
+//   };
+// }
 //   return {
 //     bank: data?.bankDetails || null,
 //     loading: isLoading,
