@@ -68,12 +68,11 @@ export function useNavData() {
           // { title: t('booking'), path: paths.dashboard.general.booking, icon: ICONS.booking },
           // { title: t('file'), path: paths.dashboard.general.file, icon: ICONS.file },
           { title: t('dashboard'), path: paths.dashboard.root, icon: ICONS.dashboard },
-          // { title: t('transaction'), path: paths.dashboard.general.transaction, icon: ICONS.analytics },
           { title: t('Forecasting'), path: paths.dashboard.general.forecasting, icon: ICONS.forecasting },
           // { title: t('Dashboard'), path: paths.dashboard.general.analytics, icon: ICONS.dashboard },
           { title: t('transaction'), path: paths.dashboard.general.transaction, icon: ICONS.transaction },
           { title: t('settings'), path: paths.dashboard.general.settings, icon: ICONS.settings },
-          { title: t('borrowing'), path: paths.dashboard.general.borrowing, icon: ICONS.settings },
+          // { title: t('borrowing'), path: paths.dashboard.general.borrowing, icon: ICONS.borrowing },
         ],
       },
 
@@ -88,8 +87,13 @@ export function useNavData() {
             path: paths.dashboard.liquidityEngine.list,
             icon: ICONS.liquidityEngine,
             children: [
-              {title: t('list'), path: paths.dashboard.liquidityEngine.list},
+              { title: t('list'), path: paths.dashboard.liquidityEngine.list },
             ]
+          },
+          {
+            title: t('borrowing'),
+            path: paths.dashboard.borrowing.root,
+            icon: ICONS.borrowing,
           },
           // USER
           // {

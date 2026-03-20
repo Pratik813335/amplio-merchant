@@ -107,7 +107,7 @@ export const paths = {
     blank: `${ROOTS.DASHBOARD}/blank`,
     kanban: `${ROOTS.DASHBOARD}/kanban`,
     calendar: `${ROOTS.DASHBOARD}/calendar`,
-    fileManager: `${ROOTS.DASHBOARD}/file-manager`, 
+    fileManager: `${ROOTS.DASHBOARD}/file-manager`,
     permission: `${ROOTS.DASHBOARD}/permission`,
     general: {
       app: `${ROOTS.DASHBOARD}/app`,
@@ -115,7 +115,7 @@ export const paths = {
       settings: `${ROOTS.DASHBOARD}/settings`,
       transaction: `${ROOTS.DASHBOARD}/transaction`,
       dashboard: `${ROOTS.DASHBOARD}/dashboard`,
-      borrowing: `${ROOTS.DASHBOARD}/borrowing`,
+      // borrowing: `${ROOTS.DASHBOARD}/borrowing`,
       ecommerce: `${ROOTS.DASHBOARD}/ecommerce`,
       analytics: `${ROOTS.DASHBOARD}/analytics`,
       banking: `${ROOTS.DASHBOARD}/banking`,
@@ -126,6 +126,12 @@ export const paths = {
       list: `${ROOTS.DASHBOARD}/liquidityEngine/list`,
       new: `${ROOTS.DASHBOARD}/liquidityEngine/new`,
       edit: (id) => `${ROOTS.DASHBOARD}/liquidityEngine/${id}/edit`,
+    },
+    borrowing: {
+      root: `${ROOTS.DASHBOARD}/borrowing`,
+      list: `${ROOTS.DASHBOARD}/borrowing/list`,
+      details: (id) => `${ROOTS.DASHBOARD}/borrowing/${id}`,
+      view: (id) => `${ROOTS.DASHBOARD}/borrowing/${id}/view`,
     },
     user: {
       root: `${ROOTS.DASHBOARD}/user`,

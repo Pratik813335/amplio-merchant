@@ -4,9 +4,7 @@ import Grid from '@mui/material/Unstable_Grid2';
 import Container from '@mui/material/Container';
 import Typography from '@mui/material/Typography';
 // _mock
-import {
-    _ecommerceSalesOverview,
-} from 'src/_mock';
+
 // components
 import { useSettingsContext } from 'src/components/settings';
 
@@ -164,22 +162,6 @@ export default function OverviewDashboardView() {
                 </Grid>
 
                 {/* Live Transactions Feed  */}
-                {/* <Grid xs={12} md={12} >
-                    <DashboardTransactionsFeed
-                        title="Live Transactions Feed"
-                        tableData={_transactions_feed}
-                        tableLabels={[
-                            { id: 'id', label: 'Transaction ID' },
-                            { id: 'amount', label: 'Amount' },
-                            { id: 'rail', label: 'Rail' },
-                            { id: 'bank', label: 'Bank' },
-                            { id: 'time', label: 'Time' },
-                            { id: 'status', label: 'Status' },
-                            { id: '' },
-                        ]}
-                    />
-                </Grid> */}
-
                 <Grid xs={12} md={12} >
                     <DashboardTransactionTable />
                 </Grid>

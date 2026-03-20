@@ -1,15 +1,14 @@
 import { Helmet } from 'react-helmet-async';
-import BorrowingListView from 'src/sections/overview/borrowing/view/borrowing-list-view';
 // sections
-
+import { BorrowingListView } from 'src/sections/overview/borrowing/view/';
 
 // ----------------------------------------------------------------------
 
-export default function OverviewBorrowingPage() {
+export default function BorrowingListPage() {
     return (
         <>
             <Helmet>
-                <title> Dashboard: Borrowing</title>
+                <title> Dashboard: Borrowing List</title>
             </Helmet>
 
             <BorrowingListView />

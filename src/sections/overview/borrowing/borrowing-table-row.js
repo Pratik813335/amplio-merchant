@@ -12,13 +12,13 @@ import LinearProgress from '@mui/material/LinearProgress';
 // components
 import Label from 'src/components/label';
 import Iconify from 'src/components/iconify';
-import { Button, Typography } from '@mui/material';
+import { Button, IconButton, Tooltip, Typography } from '@mui/material';
 import numeral from 'numeral';
 import { fCurrencyindia } from 'src/utils/format-number';
 // ----------------------------------------------------------------------
-export default function BorrowingTableRow({ row, selected }) {
+export default function BorrowingTableRow({ row, selected,onViewRow }) {
   const {
-    txnId,
+    id,
     time,
     transerred,
     fromaccount,
@@ -40,7 +40,7 @@ export default function BorrowingTableRow({ row, selected }) {
   return (
     <TableRow hover selected={selected}>
 
-      <TableCell   >{txnId}</TableCell>
+      <TableCell   >{id}</TableCell>
 
       <TableCell >
         <ListItemText sx={{ width: 92 }}
@@ -88,9 +88,11 @@ export default function BorrowingTableRow({ row, selected }) {
       </TableCell>
 
       <TableCell >
-        <Button  >
-          <Iconify icon="solar:eye-bold" />
-        </Button>
+        <Tooltip title="View" placement="top" arrow>
+            <IconButton onClick={onViewRow}>
+              <Iconify icon="mdi:eye" width={20} />
+            </IconButton>
+          </Tooltip> 
       </TableCell>
 
 
@@ -101,5 +103,6 @@ export default function BorrowingTableRow({ row, selected }) {
 BorrowingTableRow.propTypes = {
   row: PropTypes.object,
   selected: PropTypes.bool,
+  onViewRow: PropTypes.func
 };
 
