@@ -54,6 +54,7 @@ export default function KYCMerchantDetails({
 }) {
   const { kycSectionData, kycSectionLoading, kycSectionError, refreshKycSection } =
     useGetKycSection('merchant_documents', '/company-kyc/company-details');
+    useGetKycSection('merchant_documents', '/company-kyc/company-details');
 
   const documents = useMemo(
     () => (Array.isArray(kycSectionData?.data) ? kycSectionData.data : []),
