@@ -88,8 +88,8 @@ export default function PspDetailsCard({ psp, onViewRow }) {
                     <Iconify icon={status.icon} width={16} />
                     {status.label}
                 </Label>
+                
             </Stack>
-
             <Divider />
             <Box
 
@@ -111,7 +111,7 @@ export default function PspDetailsCard({ psp, onViewRow }) {
                         </Grid>
                     )}
 
-                    {psp?.requestedBy && (
+                    {(psp?.status === 0 || psp?.status === 1) && (
                         <Grid item xs={6}>
                             <Typography variant="body2" color="text.secondary">
                                 Requested by
