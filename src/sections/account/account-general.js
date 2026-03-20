@@ -28,36 +28,42 @@ import FormProvider, {
 
 // ----------------------------------------------------------------------
 
-export default function AccountGeneral() {
+export default function BusinessProfile() {
   const { enqueueSnackbar } = useSnackbar();
 
   const { user } = useMockedUser();
 
   const UpdateUserSchema = Yup.object().shape({
-    displayName: Yup.string().required('Name is required'),
+    businessName: Yup.string().required('Name is required'),
+    entityType: Yup.string().required('Entity Type is required'),
+    panNo: Yup.string().required('Pan No is required'),
+    gstNo: Yup.string().required('GST No is required'),
     email: Yup.string().required('Email is required').email('Email must be a valid email address'),
     photoURL: Yup.mixed().nullable().required('Avatar is required'),
     phoneNumber: Yup.string().required('Phone number is required'),
-    country: Yup.string().required('Country is required'),
     address: Yup.string().required('Address is required'),
-    state: Yup.string().required('State is required'),
-    city: Yup.string().required('City is required'),
-    zipCode: Yup.string().required('Zip code is required'),
+    uboName: Yup.string().required('UBO Name is required'),
+    uboPan: Yup.string().required('UBO Pan is required'),
+    ownership: Yup.string().required('Ownership % is required'),
+    contactNumber: Yup.string().required('Contact is required'),
     about: Yup.string().required('About is required'),
     // not required
     isPublic: Yup.boolean(),
   });
 
   const defaultValues = {
-    displayName: user?.displayName || '',
+    businessName: user?.displayName || '',
+    entityType: user?.entityType || '',
+    panNo: user?.panNo || '',
+    gstNo: user?.gstNo || '',
     email: user?.email || '',
     photoURL: user?.photoURL || null,
     phoneNumber: user?.phoneNumber || '',
-    country: user?.country || '',
+    uboName: user?.uboName || '',
     address: user?.address || '',
-    state: user?.state || '',
-    city: user?.city || '',
-    zipCode: user?.zipCode || '',
+    uboPan: user?.uboPan || '',
+    ownership: user?.ownership || '',
+    contactNumber: user?.contactNumber || '',
     about: user?.about || '',
     isPublic: user?.isPublic || false,
   };
@@ -100,7 +106,11 @@ export default function AccountGeneral() {
 
   return (
     <FormProvider methods={methods} onSubmit={onSubmit}>
+      <Stack pb={3}>
+       <Typography variant='h4'>Business Profile Details</Typography>
+       </Stack>
       <Grid container spacing={3}>
+        
         <Grid xs={12} md={4}>
           <Card sx={{ pt: 10, pb: 5, px: 3, textAlign: 'center' }}>
             <RHFUploadAvatar
@@ -139,6 +149,7 @@ export default function AccountGeneral() {
 
         <Grid xs={12} md={8}>
           <Card sx={{ p: 3 }}>
+             <Stack spacing={3}>
             <Box
               rowGap={3}
               columnGap={2}
@@ -148,48 +159,39 @@ export default function AccountGeneral() {
                 sm: 'repeat(2, 1fr)',
               }}
             >
-              <RHFTextField name="displayName" label="Name" />
+              <RHFTextField name="businessName" label="Business Name" />
+              <RHFTextField name="entityType" label="Legal Entity Type" />
+              <RHFTextField name="panNo" label="Pan No" />
+              <RHFTextField name="gstNo" label="GST No" />
               <RHFTextField name="email" label="Email Address" />
               <RHFTextField name="phoneNumber" label="Phone Number" />
               <RHFTextField name="address" label="Address" />
+              </Box>
+             
+              <Typography variant='h5'>Ultimate Beneficial Owner(UBO)</Typography>
+              
+               <Box
+              rowGap={3}
+              columnGap={2}
+              display="grid"
+              gridTemplateColumns={{
+                xs: 'repeat(1, 1fr)',
+                sm: 'repeat(2, 1fr)',
+              }}
+            >
+              
 
-              <RHFAutocomplete
-                name="country"
-                label="Country"
-                options={countries.map((country) => country.label)}
-                getOptionLabel={(option) => option}
-                renderOption={(props, option) => {
-                  const { code, label, phone } = countries.filter(
-                    (country) => country.label === option
-                  )[0];
-
-                  if (!label) {
-                    return null;
-                  }
-
-                  return (
-                    <li {...props} key={label}>
-                      <Iconify
-                        key={label}
-                        icon={`circle-flags:${code.toLowerCase()}`}
-                        width={28}
-                        sx={{ mr: 1 }}
-                      />
-                      {label} ({code}) +{phone}
-                    </li>
-                  );
-                }}
-              />
-
-              <RHFTextField name="state" label="State/Region" />
-              <RHFTextField name="city" label="City" />
-              <RHFTextField name="zipCode" label="Zip/Code" />
+              <RHFTextField name="uboName" label="UBO Name" />
+              <RHFTextField name="uboPan" label="UBO pan" />
+              <RHFTextField name="ownership" label="Ownership%" />
+              <RHFTextField name="contactNumber" label="Contact Number" />
             </Box>
+            </Stack>
 
             <Stack spacing={3} alignItems="flex-end" sx={{ mt: 3 }}>
               <RHFTextField name="about" multiline rows={4} label="About" />
 
-              <LoadingButton type="submit" variant="contained" loading={isSubmitting}>
+              <LoadingButton type="submit" variant="contained" color="primary" loading={isSubmitting}>
                 Save Changes
               </LoadingButton>
             </Stack>

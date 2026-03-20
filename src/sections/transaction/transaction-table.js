@@ -3,24 +3,17 @@ import { useState, useEffect, useCallback } from 'react';
 // @mui
 import Card from '@mui/material/Card';
 import Table from '@mui/material/Table';
-import Button from '@mui/material/Button';
 import Tooltip from '@mui/material/Tooltip';
-import Container from '@mui/material/Container';
 import TableBody from '@mui/material/TableBody';
 import IconButton from '@mui/material/IconButton';
 import TableContainer from '@mui/material/TableContainer';
 // routes
-import { paths } from 'src/routes/paths';
-import { useRouter } from 'src/routes/hook';
-import { RouterLink } from 'src/routes/components';
+
+
 // hooks
 import { useBoolean } from 'src/hooks/use-boolean';
-// _mock
-import { PRODUCT_STOCK_OPTIONS } from 'src/_mock';
-// api
-import { useGetProducts } from 'src/api/product';
-// components
-import { useSettingsContext } from 'src/components/settings';
+
+
 import {
   useTable,
   getComparator,
@@ -34,57 +27,198 @@ import {
 } from 'src/components/table';
 import Iconify from 'src/components/iconify';
 import Scrollbar from 'src/components/scrollbar';
-import { ConfirmDialog } from 'src/components/custom-dialog';
-import CustomBreadcrumbs from 'src/components/custom-breadcrumbs';
+
 //
-import ProductTableRow from '../product-table-row';
-import ProductTableToolbar from '../product-table-toolbar';
-import ProductTableFiltersResult from '../product-table-filters-result';
+import TransactionTableRow from './transaction-table-row';
+import TransactionTableToolbar from './transaction-table-toolbar';
+import TransactionTableFiltersResult from './transaction-table-filter-result';
+
 
 // ----------------------------------------------------------------------
 
 const TABLE_HEAD = [
-  { id: 'name', label: 'Product' },
-  { id: 'createdAt', label: 'Create at', width: 160 },
-  { id: 'inventoryType', label: 'Stock', width: 160 },
-  { id: 'price', label: 'Price', width: 140 },
-  { id: 'publish', label: 'Publish', width: 110 },
-  { id: '', width: 88 },
+  { id: 'txnId', label: 'Txn ID' },
+  { id: 'amount', label: 'Amount' },
+  { id: 'rail', label: 'Rail' },
+  { id: 'bank', label: 'Bank' },
+  { id: 'psp', label: 'PSP' },
+  { id: 'merchant', label: 'Merchant' },
+  { id: 'status', label: 'Status' },
+  { id: 'risk', label: 'Risk' },
+  { id: 'location', label: 'Location' },
+  { id: 'time', label: 'Time' },
+ 
 ];
 
-const PUBLISH_OPTIONS = [
-  { value: 'published', label: 'Published' },
-  { value: 'draft', label: 'Draft' },
+const products=[
+  {
+    "txnId": "TXN100001",
+    "amount": 2500,
+    "rail": "UPI",
+    "bank": "HDFC Bank",
+    "psp": "Razorpay",
+    "merchant": "Amazon",
+    "status": "SUCCESS",
+    "risk": 30,
+    "location": "Mumbai",
+    "time": "2026-03-12 10:15:22"
+  },
+  {
+    "txnId": "TXN100002",
+    "amount": 12000,
+    "rail": "IMPS",
+    "bank": "ICICI Bank",
+    "psp": "Paytm",
+    "merchant": "Flipkart",
+    "status": "SUCCESS",
+    "risk": 50,
+    "location": "Delhi",
+    "time": "2026-03-12 10:20:15"
+  },
+  {
+    "txnId": "TXN100003",
+    "amount": 540,
+    "rail": "UPI",
+    "bank": "SBI",
+    "psp": "PhonePe",
+    "merchant": "Swiggy",
+    "status": "FAILED",
+    "risk": 40,
+    "location": "Pune",
+    "time": "2026-03-12 10:22:41"
+  },
+  {
+    "txnId": "TXN100004",
+    "amount": 9800,
+    "rail": "NEFT",
+    "bank": "Axis Bank",
+    "psp": "Razorpay",
+    "merchant": "Croma",
+    "status": "PENDING",
+    "risk": 60,
+    "location": "Bangalore",
+    "time": "2026-03-12 10:25:12"
+  },
+  {
+    "txnId": "TXN100005",
+    "amount": 3200,
+    "rail": "UPI",
+    "bank": "Kotak Bank",
+    "psp": "Google Pay",
+    "merchant": "Zomato",
+    "status": "SUCCESS",
+    "risk": 30,
+    "location": "Hyderabad",
+    "time": "2026-03-12 10:28:55"
+  },
+  {
+    "txnId": "TXN100006",
+    "amount": 15000,
+    "rail": "IMPS",
+    "bank": "HDFC Bank",
+    "psp": "Paytm",
+    "merchant": "Reliance Digital",
+    "status": "SUCCESS",
+    "risk": 20,
+    "location": "Chennai",
+    "time": "2026-03-12 10:31:20"
+  },
+  {
+    "txnId": "TXN100007",
+    "amount": 760,
+    "rail": "UPI",
+    "bank": "SBI",
+    "psp": "PhonePe",
+    "merchant": "Uber",
+    "status": "FAILED",
+    "risk": 70,
+    "location": "Kolkata",
+    "time": "2026-03-12 10:35:44"
+  },
+  {
+    "txnId": "TXN100008",
+    "amount": 4500,
+    "rail": "NEFT",
+    "bank": "ICICI Bank",
+    "psp": "Razorpay",
+    "merchant": "Myntra",
+    "status": "SUCCESS",
+    "risk": 25,
+    "location": "Ahmedabad",
+    "time": "2026-03-12 10:40:18"
+  },
+  {
+    "txnId": "TXN100009",
+    "amount": 2100,
+    "rail": "UPI",
+    "bank": "Axis Bank",
+    "psp": "Google Pay",
+    "merchant": "BookMyShow",
+    "status": "SUCCESS",
+    "risk": 90,
+    "location": "Jaipur",
+    "time": "2026-03-12 10:45:03"
+  },
+  {
+    "txnId": "TXN100010",
+    "amount": 6700,
+    "rail": "IMPS",
+    "bank": "Kotak Bank",
+    "psp": "Paytm",
+    "merchant": "Tata Cliq",
+    "status": "PENDING",
+    "risk": 10,
+    "location": "Surat",
+    "time": "2026-03-12 10:50:29"
+  }
+]
+
+const RAIL_OPTIONS = [
+  { value: 'UPI', label: 'UPI' },
+  { value: 'IMPS', label: 'IMPS' },
+  { value: 'NEFT', label: 'NEFT' },
+  { value: 'RTGS', label: 'RTGS' },
+];
+
+const BANK_OPTIONS = [
+  { value: 'HDFC Bank', label: 'HDFC Bank' },
+  { value: 'ICICI Bank', label: 'ICICI Bank' },
+  { value: 'SBI', label: 'SBI' },
+  { value: 'Axis Bank', label: 'Axis Bank' },
+  { value: 'Kotak Bank', label: 'Kotak Bank' },
+];
+
+const STATUS_OPTIONS = [
+  { value: 'SUCCESS', label: 'Success' },
+  { value: 'FAILED', label: 'Failed' },
+  { value: 'PENDING', label: 'Pending' },
 ];
 
 const defaultFilters = {
   name: '',
-  publish: [],
-  stock: [],
+  bank: [],
+  status: [],
+  rail:[]
 };
 
 // ----------------------------------------------------------------------
 
-export default function ProductListView() {
-  const router = useRouter();
+export default function TransactionTable() {
 
   const table = useTable();
-
-  const settings = useSettingsContext();
-
   const [tableData, setTableData] = useState([]);
 
   const [filters, setFilters] = useState(defaultFilters);
 
-  const { products, productsLoading, productsEmpty } = useGetProducts();
+   // const { products, productsLoading, productsEmpty } = useGetProducts();
 
   const confirm = useBoolean();
 
   useEffect(() => {
-    if (products.length) {
+   
       setTableData(products);
-    }
-  }, [products]);
+    
+  }, []);
 
   const dataFiltered = applyFilter({
     inputData: tableData,
@@ -101,7 +235,9 @@ export default function ProductListView() {
 
   const canReset = !isEqual(defaultFilters, filters);
 
-  const notFound = (!dataFiltered.length && canReset) || productsEmpty;
+  const notFound = (!dataFiltered.length && canReset
+   // || productsEmpty
+  );
 
   const handleFilters = useCallback(
     (name, value) => {
@@ -114,87 +250,28 @@ export default function ProductListView() {
     [table]
   );
 
-  const handleDeleteRow = useCallback(
-    (id) => {
-      const deleteRow = tableData.filter((row) => row.id !== id);
-      setTableData(deleteRow);
-
-      table.onUpdatePageDeleteRow(dataInPage.length);
-    },
-    [dataInPage.length, table, tableData]
-  );
-
-  const handleDeleteRows = useCallback(() => {
-    const deleteRows = tableData.filter((row) => !table.selected.includes(row.id));
-    setTableData(deleteRows);
-
-    table.onUpdatePageDeleteRows({
-      totalRows: tableData.length,
-      totalRowsInPage: dataInPage.length,
-      totalRowsFiltered: dataFiltered.length,
-    });
-  }, [dataFiltered.length, dataInPage.length, table, tableData]);
-
-  const handleEditRow = useCallback(
-    (id) => {
-      router.push(paths.dashboard.product.edit(id));
-    },
-    [router]
-  );
-
-  const handleViewRow = useCallback(
-    (id) => {
-      router.push(paths.dashboard.product.details(id));
-    },
-    [router]
-  );
-
   const handleResetFilters = useCallback(() => {
     setFilters(defaultFilters);
   }, []);
 
   return (
-    <>
-      <Container maxWidth={settings.themeStretch ? false : 'lg'}>
-        <CustomBreadcrumbs
-          heading="List"
-          links={[
-            { name: 'Dashboard', href: paths.dashboard.root },
-            {
-              name: 'Product',
-              href: paths.dashboard.product.root,
-            },
-            { name: 'List' },
-          ]}
-          action={
-            <Button
-              component={RouterLink}
-              href={paths.dashboard.product.new}
-              variant="contained"
-              startIcon={<Iconify icon="mingcute:add-line" />}
-            >
-              New Product
-            </Button>
-          }
-          sx={{ mb: { xs: 3, md: 5 } }}
-        />
-
+    
         <Card>
-          <ProductTableToolbar
+          <TransactionTableToolbar
             filters={filters}
             onFilters={handleFilters}
             //
-            stockOptions={PRODUCT_STOCK_OPTIONS}
-            publishOptions={PUBLISH_OPTIONS}
+            railOptions={RAIL_OPTIONS}
+            bankOptions={BANK_OPTIONS}
+            statusOptions={STATUS_OPTIONS}
+            
           />
 
           {canReset && (
-            <ProductTableFiltersResult
+            <TransactionTableFiltersResult
               filters={filters}
               onFilters={handleFilters}
-              //
               onResetFilters={handleResetFilters}
-              //
               results={dataFiltered.length}
               sx={{ p: 2.5, pt: 0 }}
             />
@@ -229,39 +306,26 @@ export default function ProductListView() {
                   rowCount={tableData.length}
                   numSelected={table.selected.length}
                   onSort={table.onSort}
-                  onSelectAllRows={(checked) =>
-                    table.onSelectAllRows(
-                      checked,
-                      tableData.map((row) => row.id)
-                    )
-                  }
+    
                 />
 
                 <TableBody>
-                  {productsLoading ? (
-                    [...Array(table.rowsPerPage)].map((i, index) => (
-                      <TableSkeleton key={index} sx={{ height: denseHeight }} />
-                    ))
-                  ) : (
-                    <>
+                 
                       {dataFiltered
                         .slice(
                           table.page * table.rowsPerPage,
                           table.page * table.rowsPerPage + table.rowsPerPage
                         )
                         .map((row) => (
-                          <ProductTableRow
+                          <TransactionTableRow
                             key={row.id}
                             row={row}
                             selected={table.selected.includes(row.id)}
                             onSelectRow={() => table.onSelectRow(row.id)}
-                            onDeleteRow={() => handleDeleteRow(row.id)}
-                            onEditRow={() => handleEditRow(row.id)}
-                            onViewRow={() => handleViewRow(row.id)}
+                            
                           />
                         ))}
-                    </>
-                  )}
+                  
 
                   <TableEmptyRows
                     height={denseHeight}
@@ -285,39 +349,15 @@ export default function ProductListView() {
             onChangeDense={table.onChangeDense}
           />
         </Card>
-        
-      </Container>
-
-      <ConfirmDialog
-        open={confirm.value}
-        onClose={confirm.onFalse}
-        title="Delete"
-        content={
-          <>
-            Are you sure want to delete <strong> {table.selected.length} </strong> items?
-          </>
-        }
-        action={
-          <Button
-            variant="contained"
-            color="error"
-            onClick={() => {
-              handleDeleteRows();
-              confirm.onFalse();
-            }}
-          >
-            Delete
-          </Button>
-        }
-      />
-    </>
+      
+    
   );
 }
 
 // ----------------------------------------------------------------------
 
 function applyFilter({ inputData, comparator, filters }) {
-  const { name, stock, publish } = filters;
+  const { name, status, bank, rail } = filters;
 
   const stabilizedThis = inputData.map((el, index) => [el, index]);
 
@@ -331,16 +371,19 @@ function applyFilter({ inputData, comparator, filters }) {
 
   if (name) {
     inputData = inputData.filter(
-      (product) => product.name.toLowerCase().indexOf(name.toLowerCase()) !== -1
+      (product) => product.txnId.toLowerCase().indexOf(name.toLowerCase()) !== -1
     );
   }
 
-  if (stock.length) {
-    inputData = inputData.filter((product) => stock.includes(product.inventoryType));
+  if (status.length) {
+    inputData = inputData.filter((product) => status.includes(product.status));
   }
 
-  if (publish.length) {
-    inputData = inputData.filter((product) => publish.includes(product.publish));
+  if (bank.length) {
+    inputData = inputData.filter((product) => bank.includes(product.bank));
+  }
+  if (rail.length) {
+    inputData = inputData.filter((product) => rail.includes(product.rail));
   }
 
   return inputData;
