@@ -123,7 +123,7 @@ export const dashboardRoutes = [
           { element: <BorrowingListPage />, index: true },
           { path: 'list', element: <BorrowingListPage /> },
           { path: ':id', element: <BorrowingDetailsPage /> },
-          { path: ':id/view', element: <BorrowingViewPage /> },
+          { path: ':id/transactions', element: <BorrowingViewPage /> },
         ]
       },
       {

@@ -24,9 +24,9 @@ import { useCallback } from 'react';
 // ----------------------------------------------------------------------
 
 export default function BorrowingDetailsHeader({
-    transactionId = 'TXN001234570',
+    transactionId,
     status = 'success',
-    borrowingDate = '2026-03-03 at 12:30:56',
+    borrowingDate,
     tenor = '7 days',
     interestRate = '1% per week',
 }) {

@@ -34,7 +34,7 @@ export default function BorrowingTransactionsTableRow({
   onDeleteRow,
 }) {
   const {
-    transactionId,
+    txnId,
     amount,
     rail,
     bank,
@@ -48,6 +48,8 @@ export default function BorrowingTransactionsTableRow({
   const confirm = useBoolean();
 
   const popover = usePopover();
+
+  console.log(expectedSettlement);
 
   return (
     <>
@@ -63,7 +65,7 @@ export default function BorrowingTransactionsTableRow({
             onClick={onViewRow}
             sx={{ color: 'text.disabled', cursor: 'pointer' }}
           >
-            {transactionId}
+            {txnId}
           </Link>
         </TableCell>
 
@@ -79,16 +81,16 @@ export default function BorrowingTransactionsTableRow({
 
         <TableCell>{settlementTiming}</TableCell>
 
-        {/* <TableCell>
-          {format(new Date(expectedSettlement), 'yyyy-MM-dd')}
-        </TableCell> */}
-
         <TableCell>
+          {format(new Date(expectedSettlement), 'yyyy-MM-dd')}
+        </TableCell>
+
+        {/* <TableCell>
           <ListItemText
             primary={format(new Date(expectedSettlement), 'dd MMM yyyy')}
             primaryTypographyProps={{ typography: 'body2', noWrap: true }}
           />
-        </TableCell>
+        </TableCell> */}
 
         <TableCell>
             <StatusChip status={status} />
@@ -97,7 +99,7 @@ export default function BorrowingTransactionsTableRow({
 
         <TableCell>
           <Label variant="soft" color="success">
-            Low Risk {fraudScore}
+         {fraudScore}
           </Label>
         </TableCell>
 

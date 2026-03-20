@@ -1,5 +1,6 @@
 // @mui
 import { useTheme } from '@mui/material/styles';
+
 import { Container, Grid, Typography, Button, Stack, IconButton } from '@mui/material';
 
 // hooks
@@ -9,38 +10,47 @@ import { useSettingsContext } from 'src/components/settings';
 // assets
 //
 import { paths } from 'src/routes/paths';
-import { useRouter } from 'src/routes/hook';
+import { useRouter, useParams } from 'src/routes/hook';
 import WidgetSummaryCard from 'src/components/card/widget-summary-card';
 import Iconify from 'src/components/iconify';
 import BorrowingTransactionsList from '../borrowing-transactions-list';
+import BorrowingDummyData from './borrowing-dummy-data';
 // ----------------------------------------------------------------------
 
 export default function BorrowingTransactionsView() {
-  const { user } = useMockedUser();
+  const { id } = useParams();
   const router = useRouter();
-
   const theme = useTheme();
 
   const settings = useSettingsContext();
 
-  const DASHBOARD_CARDS = [
-    {
-      title: 'Total Transactions',
-      total: 5,
-    },
-    {
-      title: 'Total Value',
-      total: 811000,
-    },
-    {
-      title: 'Financed',
-      total: 3,
-    },
-    {
-      title: 'Ineligible',
-      total: 2,
-    },
-  ];
+  const selectedData = BorrowingDummyData?.find(
+  (item) => item.transactionId === id
+);
+
+if (!selectedData) return <div>No Data Found</div>;
+
+const transactions = selectedData.transactions;
+
+
+const DASHBOARD_CARDS = [
+  {
+    title: 'Total Transactions',
+    total: transactions.summary.totalTransactions,
+  },
+  {
+    title: 'Total Value',
+    total: transactions.summary.totalValue,
+  },
+  {
+    title: 'Financed',
+    total: transactions.summary.financed,
+  },
+  {
+    title: 'Ineligible',
+    total: transactions.summary.ineligible,
+  },
+];
 
   const handleBack = () => {
     router.push(-1);
@@ -65,7 +75,7 @@ export default function BorrowingTransactionsView() {
               <Stack>
                 <Typography variant="h4">Borrowing Transactions</Typography>
                 <Typography variant="body2" color="text.secondary">
-                  Borrowing ID : <strong>TXN001234572</strong>
+                  Borrowing ID : <strong>{id}</strong>
                 </Typography>
               </Stack>
             </Stack>
@@ -77,6 +87,7 @@ export default function BorrowingTransactionsView() {
                 borderRadius: 2,
                 textTransform: 'none',
                 px: 3,
+                bgcolor: theme.palette.primary.main,
               }}
             >
               Export Transactions
@@ -101,7 +112,7 @@ export default function BorrowingTransactionsView() {
         ))}
 
         <Grid item xs={12}>
-          <BorrowingTransactionsList />
+          <BorrowingTransactionsList data={transactions.list} />
         </Grid>
       </Grid>
     </Container>
