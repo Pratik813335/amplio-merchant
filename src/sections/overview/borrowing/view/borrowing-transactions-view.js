@@ -2,6 +2,7 @@
 import { useTheme } from '@mui/material/styles';
 
 import { Container, Grid, Typography, Button, Stack, IconButton } from '@mui/material';
+import { fNumber } from 'src/utils/format-number';
 
 // components
 import { useSettingsContext } from 'src/components/settings';
@@ -26,20 +27,16 @@ export default function BorrowingTransactionsView() {
 
   const DASHBOARD_CARDS = [
     {
-      title: 'Total Transactions',
-      total: transactions.summary.totalTransactions,
-    },
-    {
-      title: 'Total Value',
-      total: transactions.summary.totalValue,
-    },
-    {
-      title: 'Financed',
-      total: transactions.summary.financed,
-    },
-    {
-      title: 'Ineligible',
-      total: transactions.summary.ineligible,
+      transactionsTotal: transactions.summary.totalTransactions,
+    
+  
+      valueTotal: transactions.summary.totalValue,
+    
+  
+      financedTotal: transactions.summary.financed,
+    
+  
+      ineligibleTotal: transactions.summary.ineligible,
     },
   ];
 
@@ -87,19 +84,60 @@ export default function BorrowingTransactionsView() {
         </Grid>
 
         {DASHBOARD_CARDS.map((card) => (
+          <>
           <Grid item xs={12} sm={6} md={3}>
             <WidgetSummaryCard
-              key={card.title}
-              title={card.title}
-              percent={card.percent}
-              total={card.total}
-              timing={card.timing}
-              icon={card.icon}
+              // key={card.title}
+              title='Total Transactions'
+              // percent={card.percent}
+              total={card.transactionsTotal}
+              // timing={card.timing}
+              // icon={card.icon}
               chart={{
                 series: [5, 18, 12, 51, 68, 11, 39, 37, 27, 20],
               }}
             />
           </Grid>
+          <Grid item xs={12} sm={6} md={3}>
+            <WidgetSummaryCard
+              // key={card.title}
+              title='Total Value'
+              // percent={card.percent}
+              total={` ₹${fNumber(card.valueTotal)}`}
+              // timing={card.timing}
+              // icon={card.icon}
+              chart={{
+                series: [5, 18, 12, 51, 68, 11, 39, 37, 27, 20],
+              }}
+            />
+          </Grid>
+          <Grid item xs={12} sm={6} md={3}>
+            <WidgetSummaryCard
+              // key={card.title}
+              title='Financed'
+              // percent={card.percent}
+              total={card.financedTotal}
+              // timing={card.timing}
+              // icon={card.icon}
+              chart={{
+                series: [5, 18, 12, 51, 68, 11, 39, 37, 27, 20],
+              }}
+            />
+          </Grid>
+          <Grid item xs={12} sm={6} md={3}>
+            <WidgetSummaryCard
+              // key={card.title}
+              title='Ineligible'
+              // percent={card.percent}
+              total={card.ineligibleTotal}
+              // timing={card.timing}
+              // icon={card.icon}
+              chart={{
+                series: [5, 18, 12, 51, 68, 11, 39, 37, 27, 20],
+              }}
+            />
+          </Grid>
+          </>
         ))}
 
         <Grid item xs={12}>
