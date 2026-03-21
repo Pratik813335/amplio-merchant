@@ -13,7 +13,7 @@ import IconButton from '@mui/material/IconButton';
 import ListItemText from '@mui/material/ListItemText';
 import LinearProgress from '@mui/material/LinearProgress';
 // utils
-import { fCurrency } from 'src/utils/format-number';
+import {fCurrencyindia } from 'src/utils/format-number';
 // hooks
 import { useBoolean } from 'src/hooks/use-boolean';
 // components
@@ -43,7 +43,7 @@ export default function DashboardTransactionTableRow({
 
                 <TableCell>{transactionId}</TableCell>
 
-                <TableCell>{fCurrency(amount)}</TableCell>
+                <TableCell>₹{fCurrencyindia(amount)}</TableCell>
 
                 <TableCell>{rail}</TableCell>
 
