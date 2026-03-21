@@ -1,4 +1,3 @@
-import { useTheme } from '@mui/material/styles';
 import { useParams } from 'src/routes/hook';
 
 import { Container, Grid } from '@mui/material';
@@ -8,16 +7,18 @@ import { useSettingsContext } from 'src/components/settings';
 import WidgetSummaryCard from 'src/components/card/widget-summary-card';
 import BorrowingDetailsCard from 'src/sections/overview/borrowing/borrowing-details-card';
 import BorrowingDetailsHeader from '../borrowing-details-header';
-import BorrowingDummyData from './borrowing-dummy-data';
+import borrowingDummyData from '../borrowing-dummy-data';
 
 export default function BorrowingDetailsView() {
   const { id } = useParams();
   const settings = useSettingsContext();
-  const theme = useTheme();
 
-  const selectedData = BorrowingDummyData.find((item) => item.transactionId === id);
+  const selectedBorrowing = borrowingDummyData.find((item) => item.transactionId === id);
+  const details = selectedBorrowing?.details;
 
-  const details = selectedData.details;
+  if (!details) {
+    return <div>No Data Found</div>;
+  }
 
   const cardsData = [
     {

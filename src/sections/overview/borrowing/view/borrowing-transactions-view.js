@@ -3,18 +3,13 @@ import { useTheme } from '@mui/material/styles';
 
 import { Container, Grid, Typography, Button, Stack, IconButton } from '@mui/material';
 
-// hooks
-import { useMockedUser } from 'src/hooks/use-mocked-user';
 // components
 import { useSettingsContext } from 'src/components/settings';
-// assets
-//
-import { paths } from 'src/routes/paths';
 import { useRouter, useParams } from 'src/routes/hook';
 import WidgetSummaryCard from 'src/components/card/widget-summary-card';
 import Iconify from 'src/components/iconify';
 import BorrowingTransactionsList from '../borrowing-transactions-list';
-import BorrowingDummyData from './borrowing-dummy-data';
+import borrowingDummyData from '../borrowing-dummy-data';
 // ----------------------------------------------------------------------
 
 export default function BorrowingTransactionsView() {
@@ -24,37 +19,33 @@ export default function BorrowingTransactionsView() {
 
   const settings = useSettingsContext();
 
-  const selectedData = BorrowingDummyData?.find(
-  (item) => item.transactionId === id
-);
+  const selectedBorrowing = borrowingDummyData.find((item) => item.transactionId === id);
+  const transactions = selectedBorrowing?.transactions;
 
-if (!selectedData) return <div>No Data Found</div>;
+  if (!transactions) return <div>No Data Found</div>;
 
-const transactions = selectedData.transactions;
-
-
-const DASHBOARD_CARDS = [
-  {
-    title: 'Total Transactions',
-    total: transactions.summary.totalTransactions,
-  },
-  {
-    title: 'Total Value',
-    total: transactions.summary.totalValue,
-  },
-  {
-    title: 'Financed',
-    total: transactions.summary.financed,
-  },
-  {
-    title: 'Ineligible',
-    total: transactions.summary.ineligible,
-  },
-];
+  const DASHBOARD_CARDS = [
+    {
+      title: 'Total Transactions',
+      total: transactions.summary.totalTransactions,
+    },
+    {
+      title: 'Total Value',
+      total: transactions.summary.totalValue,
+    },
+    {
+      title: 'Financed',
+      total: transactions.summary.financed,
+    },
+    {
+      title: 'Ineligible',
+      total: transactions.summary.ineligible,
+    },
+  ];
 
   const handleBack = () => {
     router.push(-1);
-  }
+  };
 
   return (
     <Container maxWidth={settings.themeStretch ? false : 'xl'}>

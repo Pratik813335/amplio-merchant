@@ -1,206 +1,577 @@
-export const BorrowingDummyData = {
-  dashboardSummary: {
-    totalTransactions: 6,
-    amountTransferred: 14150000,
-    amountExpected: 14008500,
-    pendingReceivables: 0,
-    settledTransactions: 5
-  },
-
-  borrowings: [
-    {
-      transactionId: "TXN001234572",
-      dateTime: "2026-03-01T14:20:18",
-      amountTransferred: 1500000,
-      fromAccount: "XXXXXX2468",
-      toAccount: "XXXXXX001",
-      poolId: "POOL-001",
-      amountExpected: 1485000,
-      expectedReceipt: "2026-03-01T19:00:00",
-      status: "Completed"
-    },
-    {
-      transactionId: "TXN001234571",
-      dateTime: "2026-03-02T13:45:33",
-      amountTransferred: 4200000,
-      fromAccount: "XXXXXX7890",
-      toAccount: "XXXXXX002",
-      poolId: "POOL-002",
-      amountExpected: 4158000,
-      expectedReceipt: "2026-03-02T18:00:00",
-      status: "Failed"
-    },
-    {
-      transactionId: "TXN001234570",
-      dateTime: "2026-03-03T12:30:56",
+const BORROWING_DUMMY_DATA = [
+  {
+    transactionId: 'TXN001234570',
+    listView: {
+      dateTime: '2026-03-03T12:30:56',
       amountTransferred: 950000,
-      fromAccount: "XXXXXX3456",
-      toAccount: "XXXXXX001",
-      poolId: "POOL-001",
-      amountExpected: 940500,
-      expectedReceipt: "2026-03-03T17:00:00",
-      status: "Completed"
+      fromAccount: 'XXXXXX3456',
+      toAccount: 'XXXXXX-001',
+      poolId: 'POOL-001',
+      expectedAmount: 940500,
+      expectedReceipt: '2026-03-03T17:00:00',
+      status: 'Completed',
     },
-    {
-      transactionId: "TXN001234569",
-      dateTime: "2026-03-04T11:05:12",
-      amountTransferred: 3200000,
-      fromAccount: "XXXXXX9012",
-      toAccount: "XXXXXX002",
-      poolId: "POOL-002",
-      amountExpected: 3168000,
-      expectedReceipt: "2026-03-04T16:00:00",
-      status: "Settled"
-    }
-  ],
-
-  borrowingDetails: {
-    borrowingId: "TXN001234572",
-    status: "Completed",
-    borrowingDate: "2026-03-01T14:20:18",
-    tenor: "7 days",
-    interestRate: "1% per week",
-
-    amounts: {
-      borrowingAmount: 1500000,
-      netDisbursed: 1485000,
-      expectedRepayment: 1515000
-    },
-
-    merchantInformation: {
-      merchantName: "Sports Equipment Co",
-      merchantId: "MERCH-2468",
-      sourceAccount: "MERCHANT-ACC-2468"
-    },
-
-    poolAccountDetails: {
-      poolId: "POOL-001",
-      destinationAccount: "POOL-SPV-001",
-      referenceId: "REF-2026-001239"
-    },
-
-    deductionsBreakdown: {
-      platformFee: 7500,
-      processingFee: 4500,
-      gst: 2160,
-      interestCharge: 840,
-      totalDeductions: 15000
-    },
-
-    repaymentDetails: {
-      principalRepaid: 1500000,
-      interestRepaid: 15000,
-      totalRepaid: 1515000,
-      outstandingAmount: 0
-    },
-
-    approvalDetails: {
-      initiatedBy: "Trustee",
-      approvedBy: "Manual Review",
-      approvalStatus: "Approved"
-    },
-
-    settlementTimeline: [
-      {
-        stage: "Borrowing Initiated",
-        date: "2026-03-01T14:20:18",
-        initiatedBy: "Trustee"
+    details: {
+      status: 'Success',
+      borrowingDate: '03 Mar 2026, 12:30 PM',
+      tenor: '7 days',
+      interestRate: '1% per week',
+      summary: {
+        borrowingAmount: 950000,
+        netDisbursed: 908000,
+        expectedRepayment: 982000,
       },
-      {
-        stage: "Amount Disbursed",
-        date: "2026-03-01T14:20:18",
-        amount: 1485000
+      merchantInfo: {
+        name: 'Dhanesh',
+        merchantId: 'ABC123',
+        sourceAccount: 'MERCHANT-ACC-7890',
       },
-      {
-        stage: "Expected Settlement",
-        date: "2026-03-08",
-        amountExpected: 1515000
+      poolAccount: {
+        poolId: 'POOL-001',
+        destinationAccount: 'POOL-SPV-001',
+        referenceId: 'REF-2026-001238',
       },
-      {
-        stage: "Settlement Completed",
-        date: "2026-03-08",
-        amountReceived: 1515000
-      }
-    ]
+      deductions: {
+        platformFee: -21000,
+        processingFee: -12600,
+        gst: -6048,
+        interestCharge: -2352,
+        total: -42000,
+      },
+      settlementTimeline: {
+        initiatedBy: 'System Auto',
+        amountDisbursed: 908000,
+        expectedRepayment: 982000,
+        status: 'In Progress',
+      },
+      repayment: {
+        principalRepaid: 0,
+        interestRepaid: 0,
+        totalRepaid: 0,
+        outstanding: 982000,
+      },
+      approval: {
+        initiatedBy: 'Settlement Service',
+        approvedBy: 'Risk Assessment Engine',
+        status: 'Approved',
+      },
+    },
+    transactions: {
+      summary: {
+        totalTransactions: 5,
+        totalValue: 62000,
+        financed: 3,
+        ineligible: 2,
+      },
+      list: [
+        {
+          txnId: 'TXN001-A',
+          amount: 12000,
+          rail: 'UPI',
+          bank: 'HDFC',
+          settlementTiming: 'T+1',
+          expectedSettlement: '2026-03-18',
+          status: 'Financed',
+          fraudScore: 'Low Risk 12',
+          amlStatus: 'Clear',
+        },
+        {
+          txnId: 'TXN001-B',
+          amount: 8000,
+          rail: 'IMPS',
+          bank: 'ICICI',
+          settlementTiming: 'Instant',
+          expectedSettlement: '2026-03-17',
+          status: 'Pending',
+          fraudScore: 'Low Risk 5',
+          amlStatus: 'Clear',
+        },
+        {
+          txnId: 'TXN001-C',
+          amount: 15000,
+          rail: 'NEFT',
+          bank: 'SBI',
+          settlementTiming: 'T+2',
+          expectedSettlement: '2026-03-19',
+          status: 'Ineligible',
+          fraudScore: 'Low Risk 45',
+          amlStatus: 'Pending',
+        },
+        {
+          txnId: 'TXN001-D',
+          amount: 5000,
+          rail: 'RTGS',
+          bank: 'Axis',
+          settlementTiming: 'Same Day',
+          expectedSettlement: '2026-03-17',
+          status: 'Pending',
+          fraudScore: 'Low Risk 22',
+          amlStatus: 'Pending',
+        },
+        {
+          txnId: 'TXN001-E',
+          amount: 22000,
+          rail: 'UPI',
+          bank: 'Kotak',
+          settlementTiming: 'T+1',
+          expectedSettlement: '2026-03-18',
+          status: 'Financed',
+          fraudScore: 'Low Risk 9',
+          amlStatus: 'Clear',
+        },
+      ],
+    },
   },
-
-  borrowingTransactions: {
-    borrowingId: "TXN001234572",
-
-    summary: {
-      totalTransactions: 6,
-      totalValue: 1322000,
-      financed: 4,
-      ineligible: 2
+  {
+    transactionId: 'TXN001234571',
+    listView: {
+      dateTime: '2026-03-02T13:45:10',
+      amountTransferred: 4200000,
+      fromAccount: 'XXXXXX7890',
+      toAccount: 'XXXXXX-002',
+      poolId: 'POOL-002',
+      expectedAmount: 4158000,
+      expectedReceipt: '2026-03-02T18:00:00',
+      status: 'Failed',
     },
+    details: {
+      status: 'Failed',
+      borrowingDate: '02 Mar 2026, 1:45 PM',
+      tenor: '10 days',
+      interestRate: '1.2% per week',
+      summary: {
+        borrowingAmount: 4200000,
+        netDisbursed: 0,
+        expectedRepayment: 0,
+      },
+      merchantInfo: {
+        name: 'Rahul',
+        merchantId: 'XYZ567',
+        sourceAccount: 'MERCHANT-ACC-4567',
+      },
+      poolAccount: {
+        poolId: 'POOL-002',
+        destinationAccount: 'POOL-SPV-002',
+        referenceId: 'REF-2026-001239',
+      },
+      deductions: {
+        platformFee: 0,
+        processingFee: 0,
+        gst: 0,
+        interestCharge: 0,
+        total: 0,
+      },
+      settlementTimeline: {
+        initiatedBy: 'Manual',
+        amountDisbursed: 0,
+        expectedRepayment: 0,
+        status: 'Failed',
+      },
+      repayment: {
+        principalRepaid: 0,
+        interestRepaid: 0,
+        totalRepaid: 0,
+        outstanding: 0,
+      },
+      approval: {
+        initiatedBy: 'Admin',
+        approvedBy: 'Risk Engine',
+        status: 'Rejected',
+      },
+    },
+    transactions: {
+      summary: {
+        totalTransactions: 2,
+        totalValue: 15000,
+        financed: 0,
+        ineligible: 2,
+      },
+      list: [
+        {
+          txnId: 'TXN002-A',
+          amount: 10000,
+          rail: 'UPI',
+          bank: 'Axis',
+          settlementTiming: 'T+1',
+          expectedSettlement: '2026-03-18',
+          status: 'Ineligible',
+          fraudScore: 'High Risk',
+          amlStatus: 'Pending',
+        },
+        {
+          txnId: 'TXN002-B',
+          amount: 5000,
+          rail: 'IMPS',
+          bank: 'SBI', 
+          settlementTiming: 'Instant',
+          expectedSettlement: '2026-03-17',
+          status: 'Ineligible',
+          fraudScore: 'High Risk',
+          amlStatus: 'Pending',
+        },
+      ],
+    },
+  },
+  {
+    transactionId: 'TXN001234572',
+    listView: {
+      dateTime: '2026-03-01T14:20:00',
+      amountTransferred: 1500000,
+      fromAccount: 'XXXXXX2468',
+      toAccount: 'XXXXXX-001',
+      poolId: 'POOL-001',
+      expectedAmount: 1485000,
+      expectedReceipt: '2026-03-01T19:00:00',
+      status: 'Completed',
+    },
+    details: {
+      status: 'Success',
+      borrowingDate: '01 Mar 2026, 2:20 PM',
+      tenor: '5 days',
+      interestRate: '0.8% per week',
+      summary: {
+        borrowingAmount: 1500000,
+        netDisbursed: 1450000,
+        expectedRepayment: 1520000,
+      },
+      merchantInfo: {
+        name: 'Amit',
+        merchantId: 'DEF789',
+        sourceAccount: 'MERCHANT-ACC-9999',
+      },
+      poolAccount: {
+        poolId: 'POOL-001',
+        destinationAccount: 'POOL-SPV-001',
+        referenceId: 'REF-2026-001240',
+      },
+      deductions: {
+        platformFee: -15000,
+        processingFee: -8000,
+        gst: -4000,
+        interestCharge: -2000,
+        total: -29000,
+      },
+      settlementTimeline: {
+        initiatedBy: 'System',
+        amountDisbursed: 1450000,
+        expectedRepayment: 1520000,
+        status: 'Completed',
+      },
+      repayment: {
+        principalRepaid: 500000,
+        interestRepaid: 20000,
+        totalRepaid: 520000,
+        outstanding: 1000000,
+      },
+      approval: {
+        initiatedBy: 'Auto',
+        approvedBy: 'Engine',
+        status: 'Approved',
+      },
+    },
+    transactions: {
+      summary: {
+        totalTransactions: 2,
+        totalValue: 20000,
+        financed: 2,
+        ineligible: 0,
+      },
+      list: [
+        {
+          txnId: 'TXN003-A',
+          amount: 12000,
+          rail: 'UPI',
+          bank: 'HDFC',
+          settlementTiming: 'T+1',
+          expectedSettlement: '2026-03-18',
+          status: 'Financed',
+          fraudScore: 'Low Risk',
+          amlStatus: 'Clear',
+        },
+        {
+          txnId: 'TXN003-B',
+          amount: 8000,
+          rail: 'IMPS',
+          bank: 'ICICI',
+          settlementTiming: 'Instant',
+          expectedSettlement: '2026-03-17',
+          status: 'Financed',
+          fraudScore: 'Low Risk',
+          amlStatus: 'Clear',
+        },
+      ],
+    },
+  },
+  {
+    transactionId: 'TXN001234573',
+    listView: {
+      dateTime: '2026-03-04T11:05:00',
+      amountTransferred: 3200000,
+      fromAccount: 'XXXXXX9012',
+      toAccount: 'XXXXXX-002',
+      poolId: 'POOL-002',
+      expectedAmount: 3168000,
+      expectedReceipt: '2026-03-04T16:00:00',
+      status: 'Settled',
+    },
+    details: {
+      status: 'Success',
+      borrowingDate: '04 Mar 2026, 11:05 AM',
+      tenor: '8 days',
+      interestRate: '1.1% per week',
+      summary: {
+        borrowingAmount: 3200000,
+        netDisbursed: 3100000,
+        expectedRepayment: 3300000,
+      },
+      merchantInfo: {
+        name: 'Suresh',
+        merchantId: 'GHI456',
+        sourceAccount: 'MERCHANT-ACC-1111',
+      },
+      poolAccount: {
+        poolId: 'POOL-002',
+        destinationAccount: 'POOL-SPV-002',
+        referenceId: 'REF-2026-001241',
+      },
+      deductions: {
+        platformFee: -20000,
+        processingFee: -10000,
+        gst: -5000,
+        interestCharge: -3000,
+        total: -38000,
+      },
+      settlementTimeline: {
+        initiatedBy: 'System',
+        amountDisbursed: 3100000,
+        expectedRepayment: 3300000,
+        status: 'Settled',
+      },
+      repayment: {
+        principalRepaid: 3200000,
+        interestRepaid: 100000,
+        totalRepaid: 3300000,
+        outstanding: 0,
+      },
+      approval: {
+        initiatedBy: 'System',
+        approvedBy: 'Engine',
+        status: 'Approved',
+      },
+    },
+    transactions: {
+      summary: {
+        totalTransactions: 1,
+        totalValue: 10000,
+        financed: 1,
+        ineligible: 0,
+      },
+      list: [
+        {
+          txnId: 'TXN004-A',
+          amount: 10000,
+          rail: 'UPI',
+          bank: 'Kotak',
+          settlementTiming: 'T+1',
+          expectedSettlement: '2026-03-18',
+          status: 'Financed',
+          fraudScore: 'Low Risk',
+          amlStatus: 'Clear',
+        },
+      ],
+    },
+  },
+  {
+    transactionId: 'TXN001234574',
+    listView: {
+      dateTime: '2026-03-05T10:22:00',
+      amountTransferred: 1800000,
+      fromAccount: 'XXXXXX5678',
+      toAccount: 'XXXXXX-001',
+      poolId: 'POOL-001',
+      expectedAmount: 1782000,
+      expectedReceipt: '2026-03-05T15:30:00',
+      status: 'Settled',
+    },
+    details: {
+      status: 'Success',
+      borrowingDate: '05 Mar 2026, 10:22 AM',
+      tenor: '6 days',
+      interestRate: '1% per week',
+      summary: {
+        borrowingAmount: 1800000,
+        netDisbursed: 1750000,
+        expectedRepayment: 1850000,
+      },
+      merchantInfo: {
+        name: 'Vikas',
+        merchantId: 'JKL321',
+        sourceAccount: 'MERCHANT-ACC-2222',
+      },
+      poolAccount: {
+        poolId: 'POOL-001',
+        destinationAccount: 'POOL-SPV-001',
+        referenceId: 'REF-2026-001242',
+      },
+      deductions: {
+        platformFee: -12000,
+        processingFee: -7000,
+        gst: -3000,
+        interestCharge: -2000,
+        total: -24000,
+      },
+      settlementTimeline: {
+        initiatedBy: 'System',
+        amountDisbursed: 1750000,
+        expectedRepayment: 1850000,
+        status: 'Settled',
+      },
+      repayment: {
+        principalRepaid: 1800000,
+        interestRepaid: 50000,
+        totalRepaid: 1850000,
+        outstanding: 0,
+      },
+      approval: {
+        initiatedBy: 'Auto',
+        approvedBy: 'Engine',
+        status: 'Approved',
+      },
+    },
+    transactions: {
+      summary: {
+        totalTransactions: 2,
+        totalValue: 15000,
+        financed: 2,
+        ineligible: 0,
+      },
+      list: [
+        {
+          txnId: 'TXN005-A',
+          amount: 7000,
+          rail: 'UPI',
+          bank: 'HDFC',
+          settlementTiming: 'T+1',
+          expectedSettlement: '2026-03-18',
+          status: 'Financed',
+          fraudScore: 'Low Risk',
+          amlStatus: 'Clear',
+        },
+        {
+          txnId: 'TXN005-B',
+          amount: 8000,
+          rail: 'IMPS',
+          bank: 'ICICI',
+          settlementTiming: 'Instant',
+          expectedSettlement: '2026-03-17',
+          status: 'Financed',
+          fraudScore: 'Low Risk',
+          amlStatus: 'Clear',
+        },
+      ],
+    },
+  },
+  {
+    transactionId: 'TXN001234575',
+    listView: {
+      dateTime: '2026-03-06T09:30:00',
+      amountTransferred: 2500000,
+      fromAccount: 'XXXXXX8888',
+      toAccount: 'XXXXXX-003',
+      poolId: 'POOL-003',
+      expectedAmount: 2450000,
+      expectedReceipt: '2026-03-06T16:30:00',
+      status: 'Pending',
+    },
+    details: {
+      status: 'Pending',
+      borrowingDate: '06 Mar 2026, 9:30 AM',
+      tenor: '9 days',
+      interestRate: '1.3% per week',
+      summary: {
+        borrowingAmount: 2500000,
+        netDisbursed: 0,
+        expectedRepayment: 0,
+      },
+      merchantInfo: {
+        name: 'Kiran',
+        merchantId: 'MNO654',
+        sourceAccount: 'MERCHANT-ACC-3333',
+      },
+      poolAccount: {
+        poolId: 'POOL-003',
+        destinationAccount: 'POOL-SPV-003',
+        referenceId: 'REF-2026-001243',
+      },
+      deductions: {
+        platformFee: 0,
+        processingFee: 0,
+        gst: 0,
+        interestCharge: 0,
+        total: 0,
+      },
+      settlementTimeline: {
+        initiatedBy: 'Manual',
+        amountDisbursed: 0,
+        expectedRepayment: 0,
+        status: 'Pending',
+      },
+      repayment: {
+        principalRepaid: 0,
+        interestRepaid: 0,
+        totalRepaid: 0,
+        outstanding: 2500000,
+      },
+      approval: {
+        initiatedBy: 'Admin',
+        approvedBy: 'Pending',
+        status: 'Under Review',
+      },
+    },
+    transactions: {
+      summary: {
+        totalTransactions: 3,
+        totalValue: 25000,
+        financed: 1,
+        ineligible: 1,
+      },
+      list: [
+        {
+          txnId: 'TXN006-A',
+          amount: 10000,
+          rail: 'UPI',
+          bank: 'HDFC',
+          settlementTiming: 'T+1',
+          expectedSettlement: '2026-03-18',
+          status: 'Pending',
+          fraudScore: 'Medium Risk',
+          amlStatus: 'Pending',
+        },
+        {
+          txnId: 'TXN006-B',
+          amount: 8000,
+          rail: 'IMPS',
+          bank: 'ICICI',
+          settlementTiming: 'Instant',
+          expectedSettlement: '2026-03-17',
+          status: 'Financed',
+          fraudScore: 'Low Risk',
+          amlStatus: 'Clear',
+        },
+        {
+          txnId: 'TXN006-C',
+          amount: 7000,
+          rail: 'NEFT',
+          bank: 'SBI',
+          settlementTiming: 'T+2',
+          expectedSettlement: '2026-03-19',
+          status: 'Ineligible',
+          fraudScore: 'High Risk',
+          amlStatus: 'Blocked',
+        },
+      ],
+    },
+  },
+];
 
-    transactions: [
-      {
-        transactionId: "RCV-2026-041",
-        amount: 189000,
-        rail: "UPI",
-        bank: "HDFC",
-        settlementTiming: "T+0",
-        expectedSettlement: "2026-03-01",
-        status: "Ineligible",
-        fraudScore: 9,
-        amlStatus: "Clear"
-      },
-      {
-        transactionId: "RCV-2026-042",
-        amount: 234000,
-        rail: "Card",
-        bank: "ICICI",
-        settlementTiming: "T+1",
-        expectedSettlement: "2026-03-02",
-        status: "Financed",
-        fraudScore: 10,
-        amlStatus: "Clear"
-      },
-      {
-        transactionId: "RCV-2026-043",
-        amount: 278000,
-        rail: "QR",
-        bank: "Axis",
-        settlementTiming: "T+2",
-        expectedSettlement: "2026-03-03",
-        status: "Financed",
-        fraudScore: 11,
-        amlStatus: "Clear"
-      },
-      {
-        transactionId: "RCV-2026-044",
-        amount: 198000,
-        rail: "UPI",
-        bank: "SBI",
-        settlementTiming: "T+1",
-        expectedSettlement: "2026-03-02",
-        status: "Financed",
-        fraudScore: 8,
-        amlStatus: "Clear"
-      },
-      {
-        transactionId: "RCV-2026-045",
-        amount: 267000,
-        rail: "Card",
-        bank: "HDFC",
-        settlementTiming: "T+1",
-        expectedSettlement: "2026-03-02",
-        status: "Ineligible",
-        fraudScore: 12,
-        amlStatus: "Clear"
-      },
-      {
-        transactionId: "RCV-2026-046",
-        amount: 156000,
-        rail: "UPI",
-        bank: "ICICI",
-        settlementTiming: "T+3",
-        expectedSettlement: "2026-03-04",
-        status: "Financed",
-        fraudScore: 7,
-        amlStatus: "Clear"
-      }
-    ]
-  }
-};
+export default BORROWING_DUMMY_DATA;
