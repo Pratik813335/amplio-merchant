@@ -47,17 +47,35 @@ const DASHBOARD_CARDS = [
     {
         "liquiditPercent": 12,
         "liquidityTotal": 480000,
-        "receivablesPercent": 3.1,
-        "receivablesTotal": 24550,
+        "receivablestiming": 5280000,
+        "receivablesTotal": 6500000,
         "outstandingPercent": -1.8,
         "outstandingTotal": 78787878,
+        "outstandingTiming":3,
         "settlementPercent": 4.5,
-        "settlementTotal": "98.5%",
+        "settlementTotal": 98.5,
+        "settlementTiming": 90,
     },
 
 
 ]
+function formatNumber(num) {
+    const number = Number(num);
 
+    if (number >= 10000000) {
+      return `${(number / 10000000).toFixed(2)} Cr`;
+    }
+
+    if (number >= 100000) {
+      return `${(number / 100000).toFixed(2)} L`;
+    }
+
+    if (number >= 1000) {
+      return `${(number / 1000).toFixed(2)} K`;
+    }
+
+    return number;
+  }
 // ----------------------------------------------------------------------
 
 export default function OverviewDashboardView() {
@@ -80,21 +98,23 @@ export default function OverviewDashboardView() {
                     const {
                         liquiditPercent,
                         liquidityTotal,
-                        receivablesPercent,
+                        receivablestiming,
                         receivablesTotal,
                         outstandingPercent,
                         outstandingTotal,
+                        outstandingTiming,
                         settlementPercent,
                         settlementTotal,
+                        settlementTiming
                     } = card;
-
+                    // {`₹${formatNumber(card.pendingTotal)}`}
                     return (
                         <>
                             <Grid item xs={12} md={3}>
                                 <WidgetSummaryCard
                                     title="Instant Liquidity Available"
                                     percent={liquiditPercent}
-                                    total={liquidityTotal}
+                                    total={`₹${formatNumber(liquidityTotal)}`}
                                     timing="Ready to disburse"
                                     icon="mdi:drop-outline"
                                 />
@@ -103,9 +123,8 @@ export default function OverviewDashboardView() {
                             <Grid item xs={12} md={3}>
                                 <WidgetSummaryCard
                                     title="Eligible Receivables (Today)"
-                                    percent={receivablesPercent}
-                                    total={receivablesTotal}
-                                    timing="Auto-financed"
+                                    total={`₹${formatNumber(receivablesTotal)}`}
+                                    timing={`Auto-financed: ₹${formatNumber(receivablestiming)}`}
                                     icon="mdi:trending-up"
                                 />
                             </Grid>
@@ -114,8 +133,8 @@ export default function OverviewDashboardView() {
                                 <WidgetSummaryCard
                                     title="Outstanding Financed"
                                     percent={outstandingPercent}
-                                    total={outstandingTotal}
-                                    timing="Across 3 buckets"
+                                    total={`₹${formatNumber(outstandingTotal)}`}
+                                    timing={`Acroos ${formatNumber(outstandingTiming)} buckets`}
                                     icon="mdi:clock-outline"
                                 />
                             </Grid>
@@ -124,8 +143,8 @@ export default function OverviewDashboardView() {
                                 <WidgetSummaryCard
                                     title="Bank Settlement Score"
                                     percent={settlementPercent}
-                                    total={settlementTotal}
-                                    timing="Based on 90-day history"
+                                    total={`${formatNumber(settlementTotal)}%`}
+                                    timing={`Based on ${formatNumber(settlementTiming)}-day history`}
                                     icon="mdi:check-circle-outline"
                                 />
                             </Grid>

@@ -15,7 +15,7 @@ export default function BorrowingTableHeader() {
       transferredTotal: 14250000,
       transferredPercent: 12,
       expectedTotal: '14008500',
-      pendingTotal: 798,
+      pendingTotal: 79854368,
       settledPercent: 95,
       settledTotal: 5,
  
@@ -92,7 +92,7 @@ export default function BorrowingTableHeader() {
         <WidgetSummaryCard
           title="Amount Transferred"
           percent={card.transferredPercent}
-          total={formatNumber(card.transferredTotal)}
+          total={`₹${formatNumber(card.transferredTotal)}`}
           timing="Total outflow"
           icon="mdi:trending-up"
         />
@@ -101,7 +101,7 @@ export default function BorrowingTableHeader() {
       <Grid item xs={12} md={4}>
         <WidgetSummaryCard
           title="Amount Expected"
-          total={formatNumber(card.expectedTotal)}
+          total={`₹${formatNumber(card.expectedTotal)}`}
           timing="Total receivables"
           icon="mynaui:dollar"
         />
