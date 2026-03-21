@@ -89,30 +89,36 @@ export default function WidgetSummaryCard({
   }
 
   return (
-    <Card
-      sx={{
-        display: 'flex',
-        alignItems: 'center',
-        p: 3,
-        minHeight: 120,
-        ...sx,
-      }}
-      {...other}
-    >
-      <Box sx={{ flexGrow: 1, minWidth: 0 }}>
-        <Box display="flex" justifyContent="space-between" alignItems="center">
-          <Tooltip title={title || ''} arrow>
-            <Typography
-              variant="subtitle2"
-              sx={{
-                maxWidth: '75%',
-                overflow: 'hidden',
-                textOverflow: 'ellipsis',
-                whiteSpace: 'nowrap',
-                cursor: 'pointer',
-              }}
-            >
-              {title}
+    <Card sx={{ display: 'flex', alignItems: 'center', p: 3, ...sx }} {...other}>
+      <Box sx={{ flexGrow: 1, minWidth: 0, }}>
+
+        {/* Title + Icon */}
+        <TruncatedTypography text={title} icon={icon} />
+
+        {/* Amount + Percent */}
+        <Stack
+          direction="row"
+          alignItems="center"
+          sx={{
+            mt: 2,
+            mb: 1,
+            width: '100%',
+            minWidth: 0,
+          }}
+        >
+          <Stack
+            direction="row"
+            alignItems="center"
+            spacing={0.5}
+            sx={{
+              flexShrink: 0,
+              whiteSpace: 'nowrap',
+            }}
+          >
+            {/* <Iconify icon="mdi:currency-inr" width={18} /> */}
+
+            <Typography variant="h5" noWrap sx={{ lineHeight: 1 }}>
+              {total}
             </Typography>
           </Tooltip>
 
