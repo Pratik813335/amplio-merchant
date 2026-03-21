@@ -19,10 +19,17 @@ const IndexPage = lazy(() => import('src/pages/dashboard/app'));
 const OverviewForecastingPage = lazy(() => import('src/pages/dashboard/forecasting'));
 const OverviewEcommercePage = lazy(() => import('src/pages/dashboard/ecommerce'));
 const OverviewAnalyticsPage = lazy(() => import('src/pages/dashboard/analytics'));
-const OverviewDashboardPage = lazy(() => import('src/pages/dashboard/dashboard'))
+const OverviewDashboardPage = lazy(() => import('src/pages/dashboard/dashboard'));
+// const OverviewBorrowingPage = lazy(() => import('src/pages/dashboard/borrowing'))
 const OverviewBankingPage = lazy(() => import('src/pages/dashboard/banking'));
 const OverviewBookingPage = lazy(() => import('src/pages/dashboard/booking'));
 const OverviewFilePage = lazy(() => import('src/pages/dashboard/file'));
+
+// Borrowing
+const BorrowingListPage = lazy(() => import('src/pages/dashboard/borrowing/list'));
+const BorrowingDetailsPage = lazy(() => import('src/pages/dashboard/borrowing/details'));
+const BorrowingViewPage = lazy(() => import('src/pages/dashboard/borrowing/view'));
+
 // PRODUCT
 const ProductDetailsPage = lazy(() => import('src/pages/dashboard/product/details'));
 const ProductListPage = lazy(() => import('src/pages/dashboard/product/list'));
@@ -88,7 +95,7 @@ export const dashboardRoutes = [
     ),
     children: [
       { element: <IndexPage />, index: true },
-      { path: 'forecasting', element: <OverviewForecastingPage />},
+      { path: 'forecasting', element: <OverviewForecastingPage /> },
       { path: 'dashboard', element: <OverviewDashboardPage /> },
       { path: 'ecommerce', element: <OverviewEcommercePage /> },
       { path: 'analytics', element: <OverviewAnalyticsPage /> },
@@ -96,6 +103,7 @@ export const dashboardRoutes = [
       { path: 'booking', element: <OverviewBookingPage /> },
       { path: 'file', element: <OverviewFilePage /> },
       { path: 'transaction', element: <TransactionPage /> },
+      // { path: 'borrowing', element: <OverviewBorrowingPage /> },
       { path: 'settings', element: <SettingsPage /> },
       {
         path: 'user',
@@ -108,6 +116,15 @@ export const dashboardRoutes = [
           { path: ':id/edit', element: <UserEditPage /> },
           { path: 'account', element: <UserAccountPage /> },
         ],
+      },
+      {
+        path: 'borrowing',
+        children: [
+          { element: <BorrowingListPage />, index: true },
+          { path: 'list', element: <BorrowingListPage /> },
+          { path: ':id', element: <BorrowingDetailsPage /> },
+          { path: ':id/transactions', element: <BorrowingViewPage /> },
+        ]
       },
       {
         path: 'product',

@@ -4,9 +4,7 @@ import Grid from '@mui/material/Unstable_Grid2';
 import Container from '@mui/material/Container';
 import Typography from '@mui/material/Typography';
 // _mock
-import {
-    _ecommerceSalesOverview,
-} from 'src/_mock';
+
 // components
 import { useSettingsContext } from 'src/components/settings';
 
@@ -51,28 +49,28 @@ const DASHBOARD_CARDS = [
         "percent": 12,
         "total": 480000,
         "timing": "Ready to disburse",
-        "icon": "codicon:pulse"
+        "icon": "mdi:drop-outline"
     },
     {
         "title": "Eligible Receivables (Today) Receivables (Today) Receivables (Today) Receivables (Today)  ",
         "percent": 3.1,
-        "total": 2455360,
+        "total": 24550,
         "timing": "Auto-financed",
         "icon": "mdi:trending-up"
     },
     {
         "title": "Outstanding Financed",
-        "percent": 1.8,
+        "percent": -1.8,
         "total": 78787878,
         "timing": "Across 3 buckets",
-        "icon": "codicon:pulse"
+        "icon": "mdi:clock-outline"
     },
     {
         "title": "Bank Settlement Score",
         "percent": 4.5,
-        "total": 9888888,
+        "total": "98.5%",
         "timing": "Based on 90-day history",
-        "icon": "mdi:trending-up"
+        "icon": "mdi:check-circle-outline"
     },
 
 
@@ -164,22 +162,6 @@ export default function OverviewDashboardView() {
                 </Grid>
 
                 {/* Live Transactions Feed  */}
-                {/* <Grid xs={12} md={12} >
-                    <DashboardTransactionsFeed
-                        title="Live Transactions Feed"
-                        tableData={_transactions_feed}
-                        tableLabels={[
-                            { id: 'id', label: 'Transaction ID' },
-                            { id: 'amount', label: 'Amount' },
-                            { id: 'rail', label: 'Rail' },
-                            { id: 'bank', label: 'Bank' },
-                            { id: 'time', label: 'Time' },
-                            { id: 'status', label: 'Status' },
-                            { id: '' },
-                        ]}
-                    />
-                </Grid> */}
-
                 <Grid xs={12} md={12} >
                     <DashboardTransactionTable />
                 </Grid>

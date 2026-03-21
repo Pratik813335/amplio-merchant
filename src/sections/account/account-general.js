@@ -25,6 +25,7 @@ import FormProvider, {
   RHFUploadAvatar,
   RHFAutocomplete,
 } from 'src/components/hook-form';
+import axiosInstance from 'src/utils/axios';
 
 // ----------------------------------------------------------------------
 
@@ -42,10 +43,10 @@ export default function BusinessProfile() {
     photoURL: Yup.mixed().nullable().required('Avatar is required'),
     phoneNumber: Yup.string().required('Phone number is required'),
     address: Yup.string().required('Address is required'),
-    uboName: Yup.string().required('UBO Name is required'),
-    uboPan: Yup.string().required('UBO Pan is required'),
-    ownership: Yup.string().required('Ownership % is required'),
-    contactNumber: Yup.string().required('Contact is required'),
+    // uboName: Yup.string().required('UBO Name is required'),
+    // uboPan: Yup.string().required('UBO Pan is required'),
+    // ownership: Yup.string().required('Ownership % is required'),
+    // contactNumber: Yup.string().required('Contact is required'),
     about: Yup.string().required('About is required'),
     // not required
     isPublic: Yup.boolean(),
@@ -59,11 +60,11 @@ export default function BusinessProfile() {
     email: user?.email || '',
     photoURL: user?.photoURL || null,
     phoneNumber: user?.phoneNumber || '',
-    uboName: user?.uboName || '',
+    // uboName: user?.uboName || '',
     address: user?.address || '',
-    uboPan: user?.uboPan || '',
-    ownership: user?.ownership || '',
-    contactNumber: user?.contactNumber || '',
+    // uboPan: user?.uboPan || '',
+    // ownership: user?.ownership || '',
+    // contactNumber: user?.contactNumber || '',
     about: user?.about || '',
     isPublic: user?.isPublic || false,
   };
@@ -81,13 +82,37 @@ export default function BusinessProfile() {
 
   const onSubmit = handleSubmit(async (data) => {
     try {
-      await new Promise((resolve) => setTimeout(resolve, 500));
-      enqueueSnackbar('Update success!');
-      console.info('DATA', data);
+
+      const userId = user?.id
+      let finalPayload;
+
+      if (!userId) {
+        finalPayload = { userDetails: data };
+      } else {
+        finalPayload = data;
+      }
+
+      let res;
+
+      if (!user?.id) {
+        res = await axiosInstance.post('/user-profiles/user-details', finalPayload);
+      } else {
+        res = await axiosInstance.patch(`/user-profiles/user-details/${userId}`, finalPayload);
+      }
+
+      if (res?.data?.success) {
+        enqueueSnackbar('User details saved successfully!', { variant: 'success' });
+        
+      } else {
+        enqueueSnackbar(res?.data?.message || 'Something went wrong!', { variant: 'error' });
+      }
     } catch (error) {
       console.error(error);
+      enqueueSnackbar('Failed to submit User details', { variant: 'error' });
     }
   });
+
+
 
   const handleDrop = useCallback(
     (acceptedFiles) => {
@@ -106,11 +131,11 @@ export default function BusinessProfile() {
 
   return (
     <FormProvider methods={methods} onSubmit={onSubmit}>
-      <Stack pb={3}>
-       <Typography variant='h4'>Business Profile Details</Typography>
-       </Stack>
+      {/* <Stack pb={3}>
+        <Typography variant='h4'>Business Profile Details</Typography>
+      </Stack> */}
       <Grid container spacing={3}>
-        
+
         <Grid xs={12} md={4}>
           <Card sx={{ pt: 10, pb: 5, px: 3, textAlign: 'center' }}>
             <RHFUploadAvatar
@@ -149,43 +174,43 @@ export default function BusinessProfile() {
 
         <Grid xs={12} md={8}>
           <Card sx={{ p: 3 }}>
-             <Stack spacing={3}>
-            <Box
-              rowGap={3}
-              columnGap={2}
-              display="grid"
-              gridTemplateColumns={{
-                xs: 'repeat(1, 1fr)',
-                sm: 'repeat(2, 1fr)',
-              }}
-            >
-              <RHFTextField name="businessName" label="Business Name" />
-              <RHFTextField name="entityType" label="Legal Entity Type" />
-              <RHFTextField name="panNo" label="Pan No" />
-              <RHFTextField name="gstNo" label="GST No" />
-              <RHFTextField name="email" label="Email Address" />
-              <RHFTextField name="phoneNumber" label="Phone Number" />
-              <RHFTextField name="address" label="Address" />
+            <Stack spacing={3}>
+              <Box
+                rowGap={3}
+                columnGap={2}
+                display="grid"
+                gridTemplateColumns={{
+                  xs: 'repeat(1, 1fr)',
+                  sm: 'repeat(2, 1fr)',
+                }}
+              >
+                <RHFTextField name="businessName" label="Business Name" />
+                <RHFTextField name="entityType" label="Legal Entity Type" />
+                <RHFTextField name="panNo" label="Pan No" />
+                <RHFTextField name="gstNo" label="GST No" />
+                <RHFTextField name="email" label="Email Address" />
+                <RHFTextField name="phoneNumber" label="Phone Number" />
+                <RHFTextField name="address" label="Address" />
               </Box>
-             
-              <Typography variant='h5'>Ultimate Beneficial Owner(UBO)</Typography>
-              
-               <Box
-              rowGap={3}
-              columnGap={2}
-              display="grid"
-              gridTemplateColumns={{
-                xs: 'repeat(1, 1fr)',
-                sm: 'repeat(2, 1fr)',
-              }}
-            >
-              
 
-              <RHFTextField name="uboName" label="UBO Name" />
-              <RHFTextField name="uboPan" label="UBO pan" />
-              <RHFTextField name="ownership" label="Ownership%" />
-              <RHFTextField name="contactNumber" label="Contact Number" />
-            </Box>
+              {/* <Typography variant='h5'>Ultimate Beneficial Owner(UBO)</Typography>
+
+              <Box
+                rowGap={3}
+                columnGap={2}
+                display="grid"
+                gridTemplateColumns={{
+                  xs: 'repeat(1, 1fr)',
+                  sm: 'repeat(2, 1fr)',
+                }}
+              >
+
+
+                <RHFTextField name="uboName" label="UBO Name" />
+                <RHFTextField name="uboPan" label="UBO pan" />
+                <RHFTextField name="ownership" label="Ownership%" />
+                <RHFTextField name="contactNumber" label="Contact Number" />
+              </Box> */}
             </Stack>
 
             <Stack spacing={3} alignItems="flex-end" sx={{ mt: 3 }}>

@@ -1,4 +1,6 @@
 import { useState, useCallback } from 'react';
+import { useSearchParams } from 'react-router-dom';
+import { useRouter } from 'src/routes/hook';
 // @mui
 import Tab from '@mui/material/Tab';
 import Tabs from '@mui/material/Tabs';
@@ -19,6 +21,8 @@ import AccountNotifications from '../account-notifications';
 import AccountChangePassword from '../account-change-password';
 import BusinessBankPage from '../bank-account';
 import PspAccountPage from '../psp-account';
+import UbosListView from '../ubo/view/kyc-ubo-list-view';
+
 
 // ----------------------------------------------------------------------
 
@@ -28,6 +32,11 @@ const TABS = [
     label: 'Business Profile',
     icon: <Iconify icon="solar:user-id-bold" width={24} />,
   },
+   {
+    value: 'UBO',
+    label: 'Ultimate Beneficial Owner(UBO)',
+    icon: <Iconify icon="mingcute:profile-line" width={24} />,
+  },
   {
     value: 'bankAccount',
     label: 'Bank Account',
@@ -36,13 +45,13 @@ const TABS = [
   {
     value: 'pspIntegration',
     label: 'PSP Integration',
-    icon: <Iconify icon="solar:bill-list-bold" width={24} />,
+    icon: <Iconify icon="hugeicons:transaction" width={24} />,
   },
-  {
-    value: 'notifications',
-    label: 'Notifications',
-    icon: <Iconify icon="solar:bell-bing-bold" width={24} />,
-  },
+  // {
+  //   value: 'notifications',
+  //   label: 'Notifications',
+  //   icon: <Iconify icon="solar:bell-bing-bold" width={24} />,
+  // },
   // {
   //   value: 'social',
   //   label: 'Social links',
@@ -59,16 +68,24 @@ const TABS = [
 
 export default function AccountView() {
   const settings = useSettingsContext();
+  const router=useRouter();
 
-  const [currentTab, setCurrentTab] = useState('businessProfile');
+  const [searchParams]=useSearchParams();
+  const tab=searchParams.get('tab');
+  const [currentTab, setCurrentTab] = useState(tab ||'businessProfile');
 
   const handleChangeTab = useCallback((event, newValue) => {
     setCurrentTab(newValue);
-  }, []);
+    router.push({
+      search:`?tab=${newValue}`,
+  });
+
+  }, [router]);
+  
 
   return (
     <Container maxWidth={settings.themeStretch ? false : 'lg'}>
-      <CustomBreadcrumbs
+      {/* <CustomBreadcrumbs
         heading="Account"
         links={[
           { name: 'Dashboard', href: paths.dashboard.root },
@@ -78,7 +95,7 @@ export default function AccountView() {
         sx={{
           mb: { xs: 3, md: 5 },
         }}
-      />
+      /> */}
 
       <Tabs
         value={currentTab}
@@ -87,8 +104,8 @@ export default function AccountView() {
           mb: { xs: 3, md: 5 },
         }}
       >
-        {TABS.map((tab) => (
-          <Tab key={tab.value} label={tab.label} icon={tab.icon} value={tab.value} />
+        {TABS.map((tabs) => (
+          <Tab key={tabs.value} label={tabs.label} icon={tabs.icon} value={tabs.value} />
         ))}
       </Tabs>
 
@@ -104,6 +121,7 @@ export default function AccountView() {
       )} */}
 
       {currentTab === 'bankAccount' && <BusinessBankPage />}
+      {currentTab === 'UBO' && <UbosListView />}
       {currentTab === 'pspIntegration' && <PspAccountPage />}
       {currentTab === 'notifications' && <AccountNotifications />}
 

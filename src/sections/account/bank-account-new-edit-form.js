@@ -33,10 +33,11 @@ const documentOptions = [
   { label: 'Bank Statement', value: 1 },
 ]
 
-export default function BankNewForm({onclose,bankDetails, refreshBankDetail }) {
+export default function BankNewForm({onclose,bankDetails, refreshBankDetail}) {
+  
   const router = useRouter();
   const navigate = useNavigate();
-  const [isEdit, setIsEdit] = useState();
+   const [isEdit, setIsEdit] = useState();
 
   useEffect(() => {
     if (bankDetails?.status === 1) {
