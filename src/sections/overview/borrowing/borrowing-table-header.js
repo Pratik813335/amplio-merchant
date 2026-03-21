@@ -10,38 +10,35 @@ export default function BorrowingTableHeader() {
 
   const DASHBOARD_CARDS = [
     {
-      title: "Total Transaction",
-      total: 6,
-      timing: 'Todays Count',
-      icon: 'codicon:pulse',
-    },
-    {
+      transactionTotal: 6,
       title: 'Amount Transferred',
-      total: 14250000,
-      percent: 12,
-      timing: 'Total outflow',
-      icon: 'mdi:trending-up',
-    },
-    {
-      title: 'Amount Expected',
-      total: '14008500',
-      timing: 'Total receivables',
-      icon: 'mynaui:dollar',
-    },
-    {
-      title: 'Pending Receivables',
-      total: 0,
-      timing: 'Awaiting settlement',
-      icon: 'tabler:clock',
-    },
-    {
-      title: 'Settled Transactions',
-      percent: 95,
-      total: 5,
-      timing: 'Successfully cpmpleted',
-      icon: 'prime:check-circle',
+      transferredTotal: 14250000,
+      transferredPercent: 12,
+      expectedTotal: '14008500',
+      pendingTotal: 798,
+      settledPercent: 95,
+      settledTotal: 5,
+ 
     },
   ];
+  function formatNumber(num) {
+    const number = Number(num);
+
+    if (number >= 10000000) {
+      return `${(number / 10000000).toFixed(2)} Cr`;
+    }
+
+    if (number >= 100000) {
+      return `${(number / 100000).toFixed(2)} L`;
+    }
+
+    if (number >= 1000) {
+      return `${(number / 1000).toFixed(2)} K`;
+    }
+
+    return number;
+  }
+
   return (
     <>
 
@@ -78,21 +75,60 @@ export default function BorrowingTableHeader() {
       </Box>
 
       <Stack spacing={3}>
-        <Grid container spacing={3} mb={3}>
-          {DASHBOARD_CARDS.filter((card) => card.total !== undefined && card.total !== null).map(
-            (card, i) => (
-              <Grid key={i} item xs={12} md={4}>
-                <WidgetSummaryCard
-                  title={card.title}
-                  percent={card.percent}
-                  total={card.total}
-                  timing={card.timing}
-                  icon={card.icon}
-                />
-              </Grid>
-            )
-          )}
-        </Grid>
+      <Grid container spacing={3} mb={3}>
+  {DASHBOARD_CARDS.map((card, i) => (
+    <Grid container spacing={3} key={i}>
+      
+      <Grid item xs={12} md={4}>
+        <WidgetSummaryCard
+          title="Total Transaction"
+          total={formatNumber(card.transactionTotal)}
+          timing="Today's Count"
+          icon="codicon:pulse"
+        />
+      </Grid>
+
+      <Grid item xs={12} md={4}>
+        <WidgetSummaryCard
+          title="Amount Transferred"
+          percent={card.transferredPercent}
+          total={formatNumber(card.transferredTotal)}
+          timing="Total outflow"
+          icon="mdi:trending-up"
+        />
+      </Grid>
+
+      <Grid item xs={12} md={4}>
+        <WidgetSummaryCard
+          title="Amount Expected"
+          total={formatNumber(card.expectedTotal)}
+          timing="Total receivables"
+          icon="mynaui:dollar"
+        />
+      </Grid>
+
+      <Grid item xs={12} md={4}>
+        <WidgetSummaryCard
+          title="Pending Receivables"
+          total= {`₹${formatNumber(card.pendingTotal)}`}
+          timing="Awaiting settlement"
+          icon="tabler:clock"
+        />
+      </Grid>
+
+      <Grid item xs={12} md={4}>
+        <WidgetSummaryCard
+          title="Settled Transactions"
+          percent={card.settledPercent}
+          total={formatNumber(card.settledTotal)}
+          timing="Successfully completed"
+          icon="prime:check-circle"
+        />
+      </Grid>
+
+    </Grid>
+  ))}
+</Grid>
 
         {/* <BorrowingListView /> */}
       </Stack>
