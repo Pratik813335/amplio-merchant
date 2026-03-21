@@ -66,7 +66,7 @@ const TABLE_HEAD = [
 const defaultFilters = {
   name: '',
   allrail: [],
-  allbanks: [],
+  allbanks: [], 
   alltimings: [],
   allstatuses: [],
   status: 'all',
