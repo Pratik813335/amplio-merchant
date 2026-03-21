@@ -18,6 +18,7 @@ export function TransactionView() {
             "totalVolume": 2450,
             "successRate": 54.20,
             "avgTransaction": 1290,
+            "successRateHistory":24,
            
         },
 
@@ -71,7 +72,7 @@ export function TransactionView() {
                                 title="Success Rate"
                                 percent={card.successPercent}
                                 total={`${card.successRate}%`}
-                                timing="Last 24 hours"
+                                timing={`Last ${card.successRateHistory} hours`}
                                 icon="codicon:pulse"
                             />
                              </Grid>
