@@ -33,8 +33,8 @@ export default function BorrowingDetailsHeader({
     const theme = useTheme();
     const router = useRouter()
     const handleTransactionsView = useCallback(() => {
-        router.push(paths.dashboard.borrowing.view(id));
-      }, [router, id]);
+        router.push(paths.dashboard.borrowing.view(transactionId));
+      }, [router,transactionId]);
 
     const handleGenerateInvoice = () => {
         console.log('Clicked on generate invoice');
@@ -168,7 +168,6 @@ export default function BorrowingDetailsHeader({
 // ----------------------------------------------------------------------
 
 BorrowingDetailsHeader.propTypes = {
-    id: PropTypes.string,
     transactionId: PropTypes.string,
     status: PropTypes.string,
     borrowingDate: PropTypes.string,

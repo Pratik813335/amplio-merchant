@@ -2,7 +2,6 @@
 import { useTheme } from '@mui/material/styles';
 
 import { Container, Grid, Typography, Button, Stack, IconButton } from '@mui/material';
-import { useParams } from 'react-router';
 
 // components
 import { useSettingsContext } from 'src/components/settings';

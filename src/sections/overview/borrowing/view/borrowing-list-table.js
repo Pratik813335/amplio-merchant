@@ -1,7 +1,6 @@
 import isEqual from 'lodash/isEqual';
 import { useCallback, useState } from 'react';
 // @mui
-
 import Card from '@mui/material/Card';
 import Table from '@mui/material/Table';
 import Tooltip from '@mui/material/Tooltip';
@@ -26,7 +25,6 @@ import {
   TableSelectedAction,
   TablePaginationCustom,
 } from 'src/components/table';
-
 import Iconify from 'src/components/iconify';
 import Scrollbar from 'src/components/scrollbar';
 
@@ -36,8 +34,7 @@ import { useRouter } from 'src/routes/hook';
 import borrowingDummyData from '../borrowing-dummy-data';
 import BorrowingUploadTableToolbar from '../borrowing-upload-table-tool-bar';
 import BorrowingTableRow from '../borrowing-table-row';
-import BorrowingDummyData from '../borrowing-dummy-data';
-
+import BorrowingTableHeader from '../borrowing-table-header';
 
 // ----------------------------------------------------------------------
 
@@ -55,9 +52,9 @@ const TABLE_HEAD = [
 ];
 
 const BANK_OPTIONS = [
-  { label: 'Today', value: 'Today' },
-  { label: 'Yesterday', value: 'Yesterday' },
-  { label: 'Day Before Yesterday', value: 'BeforeYesterday' },
+  { label: 'Today', value: 'today' },
+  { label: 'Yesterday', value: 'yesterday' },
+  { label: 'Day Before Yesterday', value: 'beforeyesterday' },
 ];
 
 const STATUS_OPTIONS = [
@@ -92,10 +89,6 @@ export default function BorrowingListView() {
   // const { products, productsLoading, productsEmpty } = useGetProducts();
 
   const confirm = useBoolean();
-
-  useEffect(() => {
-    setTableData(BorrowingDummyData);
-  }, []);
 
   const dataFiltered = applyFilter({
     inputData: tableData,

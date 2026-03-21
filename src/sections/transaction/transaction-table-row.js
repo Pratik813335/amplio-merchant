@@ -8,7 +8,7 @@ import TableCell from '@mui/material/TableCell';
 import ListItemText from '@mui/material/ListItemText';
 import LinearProgress from '@mui/material/LinearProgress';
 // utils
-import { fCurrency } from 'src/utils/format-number';
+import {fCurrencyindia } from 'src/utils/format-number';
 // components
 import Label from 'src/components/label';
 // ----------------------------------------------------------------------
@@ -38,7 +38,7 @@ export default function TransactionTableRow({
                     {txnId}
                 </TableCell>
 
-                <TableCell>{fCurrency(amount)}</TableCell>
+                <TableCell>₹{fCurrencyindia(amount)}</TableCell>
                 <TableCell>
                     <Label variant="soft" color="info">
                         {rail}

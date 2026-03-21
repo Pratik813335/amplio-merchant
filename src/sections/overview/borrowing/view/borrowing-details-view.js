@@ -8,13 +8,13 @@ import { useSettingsContext } from 'src/components/settings';
 import WidgetSummaryCard from 'src/components/card/widget-summary-card';
 import BorrowingDetailsCard from 'src/sections/overview/borrowing/borrowing-details-card';
 import BorrowingDetailsHeader from '../borrowing-details-header';
-import borrowingDummyData from '../borrowing-dummy-data';
+import BORROWING_DUMMY_DATA from '../borrowing-dummy-data';
 
 export default function BorrowingDetailsView() {
   const { id } = useParams();
   const settings = useSettingsContext();
 
-  const selectedBorrowing = borrowingDummyData.find((item) => item.transactionId === id);
+  const selectedBorrowing = BORROWING_DUMMY_DATA.find((item) => item.transactionId === id);
   const details = selectedBorrowing?.details;
 
   if (!details) {

@@ -12,7 +12,6 @@ import Tooltip from '@mui/material/Tooltip';
 // component
 import Iconify from 'src/components/iconify';
 
-import Tooltip from '@mui/material/Tooltip';
 // utils
 import { fPercent } from 'src/utils/format-number';
 
@@ -177,11 +176,6 @@ export default function WidgetSummaryCard({
             </Typography>
           </Tooltip>
         )}
-
-        {/* Timing */}
-        <Typography variant="caption" color="text.secondary">
-          {timing}
-        </Typography>
 
       </Box>
     </Card>

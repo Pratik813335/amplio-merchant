@@ -32,14 +32,14 @@ export const endpoints = {
   calendar: '/api/calendar',
   auth: {
     me: '/auth/me',
-    login: '/auth/company-login',
+    login: '/auth/merchant-login',
     register: '/register',
     forgotPassword: '/auth/forget-password/send-email-otp',
     newPassword: '/auth/forget-password/verify-email-otp',
   },
   companyProfile: {
     me: '/company-profiles/me',
-    bankDetails: '/company-profiles/bank-details',
+    bankDetails: '/merchant-profiles/bank-details',
     addressDetails: '/company-profiles/address-details',
   },
 
@@ -166,7 +166,7 @@ data: '/company-profiles/bank-details'
     list: '/credit-ratings',
   },
   bankDetails: {
-    list: '/company-profiles/bank-details',
+    list: '/merchant-profiles/bank-details',
     filterList: (filter) => `/company-profiles/bank-details?filter=${filter}`,
     details: (accountId) => `/company-profiles/bank-details/${accountId}`,
   },

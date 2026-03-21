@@ -62,7 +62,7 @@ export default function LiquidityEngineView() {
             total={690000}
             percent={0}
             timing="Avg haircut: 2.75%"
-            icon="ph:currency-dollar-duotone"
+            icon="ph:currency-inr-duotone"
             iconColor="primary.main"
             hideArrow
             chart={{
