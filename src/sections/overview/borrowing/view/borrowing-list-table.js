@@ -1,5 +1,5 @@
 import isEqual from 'lodash/isEqual';
-import { useState, useEffect, useCallback } from 'react';
+import { useCallback, useState } from 'react';
 // @mui
 
 import Card from '@mui/material/Card';
@@ -21,7 +21,6 @@ import {
   getComparator,
   emptyRows,
   TableNoData,
-  TableSkeleton,
   TableEmptyRows,
   TableHeadCustom,
   TableSelectedAction,
@@ -34,7 +33,7 @@ import Scrollbar from 'src/components/scrollbar';
 //
 import { paths } from 'src/routes/paths';
 import { useRouter } from 'src/routes/hook';
-import BorrowingDummyData  from './borrowing-dummy-data';
+import borrowingDummyData from '../borrowing-dummy-data';
 import BorrowingUploadTableToolbar from '../borrowing-upload-table-tool-bar';
 import BorrowingTableRow from '../borrowing-table-row';
 import BorrowingDummyData from '../borrowing-dummy-data';
@@ -83,6 +82,10 @@ export default function BorrowingListView() {
 
   const table = useTable();
   const router = useRouter();
+  const tableData = borrowingDummyData.map(({ transactionId, listView }) => ({
+    transactionId,
+    listView,
+  }));
 
   const [filters, setFilters] = useState(defaultFilters);
 
@@ -94,17 +97,11 @@ export default function BorrowingListView() {
     setTableData(BorrowingDummyData);
   }, []);
 
-  const tableData = BorrowingDummyData;
   const dataFiltered = applyFilter({
     inputData: tableData,
     comparator: getComparator(table.order, table.orderBy),
     filters,
   });
-
-  const dataInPage = dataFiltered.slice(
-    table.page * table.rowsPerPage,
-    table.page * table.rowsPerPage + table.rowsPerPage
-  );
 
   const handleView = useCallback(
     (id) => {
@@ -156,7 +153,7 @@ export default function BorrowingListView() {
                 onSelectAllRows={(checked) =>
                   table.onSelectAllRows(
                     checked,
-                    tableData.map((row) => row.id)
+                    tableData.map((row) => row.transactionId)
                   )
                 }
                 action={
@@ -187,10 +184,10 @@ export default function BorrowingListView() {
                       )
                       .map((row) => (
                         <BorrowingTableRow
-                          key={row.id}
+                          key={row.transactionId}
                           row={row}
-                          selected={table.selected.includes(row.id)}
-                          onSelectRow={() => table.onSelectRow(row.id)}
+                          selected={table.selected.includes(row.transactionId)}
+                          onSelectRow={() => table.onSelectRow(row.transactionId)}
                           onViewRow={() => handleView(row.transactionId)}
                         />
                       ))}
@@ -226,7 +223,7 @@ export default function BorrowingListView() {
 // ----------------------------------------------------------------------
 
 function applyFilter({ inputData, comparator, filters }) {
-  const { name, status, bank, rail } = filters;
+  const { name, status, bank } = filters;
 
   const stabilizedThis = inputData.map((el, index) => [el, index]);
 

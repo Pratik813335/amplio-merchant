@@ -186,8 +186,8 @@ export default function BorrowingTransactionsList({ data }) {
   );
 
   const handleDeleteRow = useCallback(
-    (rowId) => {
-      const deleteRow = tableData.filter((row) => row.id !== rowId);
+    (txnId) => {
+      const deleteRow = tableData.filter((row) => row.txnId !== txnId);
       setTableData(deleteRow);
 
       table.onUpdatePageDeleteRow(dataInPage.length);
@@ -196,7 +196,7 @@ export default function BorrowingTransactionsList({ data }) {
   );
 
   const handleDeleteRows = useCallback(() => {
-    const deleteRows = tableData.filter((row) => !table.selected.includes(row.id));
+    const deleteRows = tableData.filter((row) => !table.selected.includes(row.txnId));
     setTableData(deleteRows);
 
     table.onUpdatePageDeleteRows({
@@ -206,21 +206,18 @@ export default function BorrowingTransactionsList({ data }) {
     });
   }, [dataFiltered.length, dataInPage.length, table, tableData]);
   const handleEditRow = useCallback(
-    (rowId) => {
-      router.push(paths.dashboard.invoice.edit(rowId));
+    (txnId) => {
+      router.push(paths.dashboard.invoice.edit(txnId));
     },
     [router]
   );
 
-  // const handleViewRow = useCallback(
-  //   (id) => {
-  //     router.push(paths.dashboard.invoice.details(id));
-  //   },
-  //   [router]
-  // );
-  const handleViewRow = () => {
-    router.push(paths.dashboard.borrowing.details(id));
-  };
+  const handleViewRow = useCallback(
+    (txnId) => {
+      router.push(paths.dashboard.invoice.details(txnId));
+    },
+    [router]
+  );
 
   const handleFilterStatus = useCallback(
     (event, newValue) => {
@@ -294,7 +291,7 @@ export default function BorrowingTransactionsList({ data }) {
             onSelectAllRows={(checked) =>
               table.onSelectAllRows(
                 checked,
-                tableData.map((row) => row.id)
+                tableData.map((row) => row.txnId)
               )
             }
             action={
@@ -338,7 +335,7 @@ export default function BorrowingTransactionsList({ data }) {
                 onSelectAllRows={(checked) =>
                   table.onSelectAllRows(
                     checked,
-                    tableData.map((row) => row.id)
+                    tableData.map((row) => row.txnId)
                   )
                 }
               />
@@ -351,13 +348,13 @@ export default function BorrowingTransactionsList({ data }) {
                   )
                   .map((row) => (
                     <BorrowingTransactionsTableRow
-                      key={row.id}
+                      key={row.txnId}
                       row={row}
-                      selected={table.selected.includes(row.id)}
-                      onSelectRow={() => table.onSelectRow(row.id)}
-                      onViewRow={() => handleViewRow(row.id)}
-                      onEditRow={() => handleEditRow(row.id)}
-                      onDeleteRow={() => handleDeleteRow(row.id)}
+                      selected={table.selected.includes(row.txnId)}
+                      onSelectRow={() => table.onSelectRow(row.txnId)}
+                      onViewRow={() => handleViewRow(row.txnId)}
+                      onEditRow={() => handleEditRow(row.txnId)}
+                      onDeleteRow={() => handleDeleteRow(row.txnId)}
                     />
                   ))}
 
