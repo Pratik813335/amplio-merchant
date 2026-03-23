@@ -45,37 +45,37 @@ const _eligibleReceivables = [
 // Dummy data for widget summary 
 const DASHBOARD_CARDS = [
     {
-        "title": "Instant Liquidity Available",
-        "percent": 12,
-        "total": 480000,
-        "timing": "Ready to disburse",
-        "icon": "mdi:drop-outline"
-    },
-    {
-        "title": "Eligible Receivables (Today) Receivables (Today) Receivables (Today) Receivables (Today)  ",
-        "percent": 3.1,
-        "total": 24550,
-        "timing": "Auto-financed",
-        "icon": "mdi:trending-up"
-    },
-    {
-        "title": "Outstanding Financed",
-        "percent": -1.8,
-        "total": 78787878,
-        "timing": "Across 3 buckets",
-        "icon": "mdi:clock-outline"
-    },
-    {
-        "title": "Bank Settlement Score",
-        "percent": 4.5,
-        "total": "98.5%",
-        "timing": "Based on 90-day history",
-        "icon": "mdi:check-circle-outline"
+        "liquiditPercent": 12,
+        "liquidityTotal": 480000,
+        "receivablestiming": 5280000,
+        "receivablesTotal": 6500000,
+        "outstandingPercent": -1.8,
+        "outstandingTotal": 78787878,
+        "outstandingTiming":3,
+        "settlementPercent": 4.5,
+        "settlementTotal": 98.5,
+        "settlementTiming": 90,
     },
 
 
 ]
+function formatNumber(num) {
+    const number = Number(num);
 
+    if (number >= 10000000) {
+      return `${(number / 10000000).toFixed(2)} Cr`;
+    }
+
+    if (number >= 100000) {
+      return `${(number / 100000).toFixed(2)} L`;
+    }
+
+    if (number >= 1000) {
+      return `${(number / 1000).toFixed(2)} K`;
+    }
+
+    return number;
+  }
 // ----------------------------------------------------------------------
 
 export default function OverviewDashboardView() {
@@ -94,22 +94,63 @@ export default function OverviewDashboardView() {
             </Typography> */}
 
             <Grid container spacing={3}>
+                {DASHBOARD_CARDS.map((card) => {
+                    const {
+                        liquiditPercent,
+                        liquidityTotal,
+                        receivablestiming,
+                        receivablesTotal,
+                        outstandingPercent,
+                        outstandingTotal,
+                        outstandingTiming,
+                        settlementPercent,
+                        settlementTotal,
+                        settlementTiming
+                    } = card;
+                    // {`₹${formatNumber(card.pendingTotal)}`}
+                    return (
+                        <>
+                            <Grid item xs={12} md={3}>
+                                <WidgetSummaryCard
+                                    title="Instant Liquidity Available"
+                                    percent={liquiditPercent}
+                                    total={`₹${formatNumber(liquidityTotal)}`}
+                                    timing="Ready to disburse"
+                                    icon="mdi:drop-outline"
+                                />
+                            </Grid>
 
-                {DASHBOARD_CARDS.map((card) => (
-                    <Grid item xs={12} md={3}>
-                        <WidgetSummaryCard
-                            key={card.title}
-                            title={card.title}
-                            percent={card.percent}
-                            total={card.total}
-                            timing={card.timing}
-                            icon={card.icon}
-                            chart={{
-                                series: [5, 18, 12, 51, 68, 11, 39, 37, 27, 20],
-                            }}
-                        />
-                    </Grid>
-                ))}
+                            <Grid item xs={12} md={3}>
+                                <WidgetSummaryCard
+                                    title="Eligible Receivables (Today)"
+                                    total={`₹${formatNumber(receivablesTotal)}`}
+                                    timing={`Auto-financed: ₹${formatNumber(receivablestiming)}`}
+                                    icon="mdi:trending-up"
+                                />
+                            </Grid>
+
+                            <Grid item xs={12} md={3}>
+                                <WidgetSummaryCard
+                                    title="Outstanding Financed"
+                                    percent={outstandingPercent}
+                                    total={`₹${formatNumber(outstandingTotal)}`}
+                                    timing={`Acroos ${formatNumber(outstandingTiming)} buckets`}
+                                    icon="mdi:clock-outline"
+                                />
+                            </Grid>
+
+                            <Grid item xs={12} md={3}>
+                                <WidgetSummaryCard
+                                    title="Bank Settlement Score"
+                                    percent={settlementPercent}
+                                    total={`${formatNumber(settlementTotal)}%`}
+                                    timing={`Based on ${formatNumber(settlementTiming)}-day history`}
+                                    icon="mdi:check-circle-outline"
+                                />
+                            </Grid>
+                        </>
+                    );
+                })}
 
                 {/* Settlement Prediction Timeline  */}
                 <Grid xs={12} md={6} lg={8}>

@@ -79,22 +79,21 @@ export function useNavData() {
           // { title: t('Dashboard'), path: paths.dashboard.general.analytics, icon: ICONS.dashboard },
           { title: t('transaction'), path: paths.dashboard.general.transaction, icon: ICONS.transaction },
           { title: t('settings'), path: paths.dashboard.general.settings, icon: ICONS.settings },
+          {
+            title: t('borrowing'), path: paths.dashboard.borrowing.root,icon: ICONS.borrowing,
+          },
           // { title: t('borrowing'), path: paths.dashboard.general.borrowing, icon: ICONS.borrowing },
         ],
       },
 
       // MANAGEMENT
       // ----------------------------------------------------------------------
-      {
-        subheader: t('management'),
-        items: [
-          // LIQUIDITY ENGINE
+      // {
+      //   subheader: t('management'),
+      //   items: [
+      //     // LIQUIDITY ENGINE
 
-          {
-            title: t('borrowing'),
-            path: paths.dashboard.borrowing.root,
-            icon: ICONS.borrowing,
-          },
+         
           // USER
           // {
           //   title: t('user'),
@@ -210,8 +209,8 @@ export function useNavData() {
           //   path: paths.dashboard.kanban,
           //   icon: ICONS.kanban,
           // },
-        ],
-      },
+      //   ],
+      // },
 
       // DEMO MENU STATES
       // {
