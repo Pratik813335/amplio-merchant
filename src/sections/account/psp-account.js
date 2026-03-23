@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 // import { useGetPspDetails } from 'src/api/psp-details';
 
 import {
@@ -64,33 +64,23 @@ export const PSP_DUMMY_DATA = [
 export default function PspAccountPage() {
   const [open, setOpen] = useState(false);
   const [isEdit, setIsedit] = useState(false);
+  const [selectedpspData, setSelectedPspData] = useState(null);
 
   const close = () => {
     setOpen(false);
     setIsedit(false);
+    setSelectedPspData(null);
   };
 
   // const { PspDetails, refreshDetails } = useGetPspDetails();
-  const {pspDetails,refreshDetails }= useGetPSPData();
-  const [pspData, setPspData] = useState();
-  const [selectedpspData, setSelectedPspData] = useState(null);
-  const [loading, setLoading] = useState(true);
+  const { pspDetails = [], refreshDetails, loading } = useGetPSPData();
 
   const handleViewRow = (id, status) => {
-    const data = pspData.find((item) => item.id === id);
+    const data = pspDetails.find((item) => item.id === id);
     setSelectedPspData(data);
     setIsedit(status === 0);
     setOpen(true);
   };
-
-  useEffect(() => {
-    // if (PspDetails) {
-    //   setPspData(PspDetails);
-    //   setLoading(false);
-    // }
-    setPspData(pspDetails);
-    setLoading(false);
-  }, [pspDetails]);
 
 
   // useEffect(() => {
@@ -142,13 +132,13 @@ export default function PspAccountPage() {
           />
         </DialogContent>
       </Dialog>
-      {pspData.length === 0 ? (
+      {pspDetails.length === 0 ? (
         <Typography variant="body1" sx={{ color: 'text.secondary' }}>
           No PSP added yet. Click Create PSP Account to continue.
         </Typography>
       ) : (
         <Grid container spacing={3}>
-          {pspData?.map((item) => (
+          {pspDetails.map((item) => (
             <Grid key={item.id} item xs={12} md={6}>
               <PspDetailsCard
                 psp={item}

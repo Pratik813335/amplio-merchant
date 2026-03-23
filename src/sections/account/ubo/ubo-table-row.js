@@ -1,20 +1,15 @@
 import PropTypes from 'prop-types';
 // @mui
 import Button from '@mui/material/Button';
-import Avatar from '@mui/material/Avatar';
 import Tooltip from '@mui/material/Tooltip';
-import MenuItem from '@mui/material/MenuItem';
 import TableRow from '@mui/material/TableRow';
-import Checkbox from '@mui/material/Checkbox';
 import TableCell from '@mui/material/TableCell';
 import IconButton from '@mui/material/IconButton';
-import ListItemText from '@mui/material/ListItemText';
 // hooks
 import { useBoolean } from 'src/hooks/use-boolean';
 // components
 import Label from 'src/components/label';
 import Iconify from 'src/components/iconify';
-import CustomPopover, { usePopover } from 'src/components/custom-popover';
 import { ConfirmDialog } from 'src/components/custom-dialog';
 //
 // import UserQuickEditForm from './user-quick-edit-form';
@@ -35,15 +30,11 @@ export default function UboTableRow({
   onSelectRow,
   onDeleteRow,
 }) {
-  const { fullName, email, phone, ownershipPercentage, designationValue, status } = row;
+  const { fullName, email, phone, ownershipPercentage, designationValue } = row;
 
   const { color, label } = getStatusMeta(row.status);
 
   const confirm = useBoolean();
-
-  const quickEdit = useBoolean();
-
-  const popover = usePopover();
 
   return (
     <>
@@ -65,7 +56,7 @@ export default function UboTableRow({
           <Label color={color}>{label}</Label>
         </TableCell>
 
-        <TableCell align="center" sx={{ px: 1, whiteSpace: 'nowrap' }}>
+        <TableCell >
           <Tooltip title="View" placement="top" arrow>
             <IconButton onClick={() => handleView(row)}>
               <Iconify icon="solar:eye-bold" />
