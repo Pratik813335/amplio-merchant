@@ -13,8 +13,7 @@ import {
   DialogContent,
 } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
-import { useGetBankDetails } from 'src/api/bank-details';
-
+import { useGetBankDetails } from 'src/api/merchantProfile';
 import { paths } from 'src/routes/paths';
 import BankDetailsCard from './bank-cards';
 import BankNewForm from './bank-account-new-edit-form';

@@ -149,9 +149,9 @@ export default function BankNewForm({onclose,bankDetails, refreshBankDetail}) {
       let res;
 
       if (!bankDetails?.id) {
-        res = await axiosInstance.post('/company-profiles/bank-details', finalPayload);
+        res = await axiosInstance.post('/merchant-profiles/bank-details', finalPayload);
       } else {
-        res = await axiosInstance.patch(`/company-profiles/bank-details/${accountId}`, finalPayload);
+        res = await axiosInstance.patch(`/merchant-profiles/bank-details/${accountId}`, finalPayload);
       }
 
       if (res?.data?.success) {

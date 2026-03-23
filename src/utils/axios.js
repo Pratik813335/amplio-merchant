@@ -73,7 +73,7 @@ export const endpoints = {
   },
 
   businessProfile: {
-data: '/company-profiles/bank-details'
+    data: '/company-profiles/bank-details'
   },
 
   scheduler: {
@@ -116,6 +116,12 @@ data: '/company-profiles/bank-details'
     list: '/dealership-types',
     filterList: (filter) => `/dealership-types?filter=${filter}`,
     details: (id) => `/dealership-types/${id}`,
+  },
+  merchantProfile:{
+    list : '/merchant-profiles/bank-details',
+    profileData: '/merchant-profiles/me',
+    uboDetails: '/merchant-profiles/UBO-details',
+    pspDetails: '/merchant-profiles/PSP-details'
   },
   companyEntityType: {
     list: '/company-entity-types',

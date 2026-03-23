@@ -1,7 +1,5 @@
-import React, { useCallback, useEffect, useState } from 'react';
-
-import { useRouter } from 'src/routes/hook';
-import { useGetPspDetails } from 'src/api/psp-details';
+import React, { useEffect, useState } from 'react';
+// import { useGetPspDetails } from 'src/api/psp-details';
 
 import {
   CircularProgress,
@@ -13,15 +11,14 @@ import {
   Dialog,
   DialogContent,
 } from '@mui/material';
-import { useNavigate } from 'react-router-dom';
 
-
-import { paths } from 'src/routes/paths';
+import { useGetPSPData } from 'src/api/merchantProfile';
 // import BankDetailsCard from './bank-cards';
 // import BankNewForm from './bank-account-new-edit-form';
 // import PspDetailsCard from './psp-account-card';
 import PspAccount from './psp-account-new-edit-form';
 import PspDetailsCard from './psp-account-card';
+
 
 
 export const PSP_DUMMY_DATA = [
@@ -73,37 +70,27 @@ export default function PspAccountPage() {
     setIsedit(false);
   };
 
-  const { PspDetails, refreshDetails } = useGetPspDetails();
-
+  // const { PspDetails, refreshDetails } = useGetPspDetails();
+  const {pspDetails,refreshDetails }= useGetPSPData();
   const [pspData, setPspData] = useState();
   const [selectedpspData, setSelectedPspData] = useState(null);
   const [loading, setLoading] = useState(true);
 
-  const router = useRouter();
-  const navigate = useNavigate();
-
-  const handleViewRow =
-    (id, status) => {
-       const data = pspData.find((item) => item.id === id)
-       setSelectedPspData(data);
-
-      if (status === 0 || status === 1) {
-        setIsedit(true);
-        setOpen(true);
-        return;
-      }
-       console.log(data);
-      setOpen(true);
-    }
+  const handleViewRow = (id, status) => {
+    const data = pspData.find((item) => item.id === id);
+    setSelectedPspData(data);
+    setIsedit(status === 0);
+    setOpen(true);
+  };
 
   useEffect(() => {
     // if (PspDetails) {
     //   setPspData(PspDetails);
     //   setLoading(false);
     // }
-    setPspData(PSP_DUMMY_DATA);
+    setPspData(pspDetails);
     setLoading(false);
-  }, [PspDetails]);
+  }, [pspDetails]);
 
 
   // useEffect(() => {
@@ -164,7 +151,9 @@ export default function PspAccountPage() {
           {pspData?.map((item) => (
             <Grid key={item.id} item xs={12} md={6}>
               <PspDetailsCard
-                psp={item} onViewRow={() => handleViewRow(item.id, item.status)} />
+                psp={item}
+                onViewRow={() => handleViewRow(item.id, item.status)}
+              />
             </Grid>
           ))}
         </Grid>

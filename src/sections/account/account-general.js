@@ -1,7 +1,8 @@
 import * as Yup from 'yup';
-import { useCallback } from 'react';
+import { useCallback, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
+
 // @mui
 import LoadingButton from '@mui/lab/LoadingButton';
 import Box from '@mui/material/Box';
@@ -10,63 +11,61 @@ import Stack from '@mui/material/Stack';
 import Button from '@mui/material/Button';
 import Grid from '@mui/material/Unstable_Grid2';
 import Typography from '@mui/material/Typography';
-// hooks
-import { useMockedUser } from 'src/hooks/use-mocked-user';
+
 // utils
 import { fData } from 'src/utils/format-number';
-// assets
-import { countries } from 'src/assets/data';
+
 // components
-import Iconify from 'src/components/iconify';
 import { useSnackbar } from 'src/components/snackbar';
 import FormProvider, {
   RHFSwitch,
   RHFTextField,
   RHFUploadAvatar,
-  RHFAutocomplete,
 } from 'src/components/hook-form';
+
 import axiosInstance from 'src/utils/axios';
 
 // ----------------------------------------------------------------------
 
+const mapMerchantLogo = (media) => {
+  if (!media?.fileUrl) {
+    return null;
+  }
+
+  return {
+    ...media,
+    preview: media.fileUrl,
+  };
+};
+
 export default function BusinessProfile() {
   const { enqueueSnackbar } = useSnackbar();
 
-  const { user } = useMockedUser();
-
   const UpdateUserSchema = Yup.object().shape({
-    businessName: Yup.string().required('Name is required'),
-    entityType: Yup.string().required('Entity Type is required'),
+    companyName: Yup.string().required('Name is required'),
+    dealershipType: Yup.string().required('Entity Type is required'),
     panNo: Yup.string().required('Pan No is required'),
     gstNo: Yup.string().required('GST No is required'),
-    email: Yup.string().required('Email is required').email('Email must be a valid email address'),
-    photoURL: Yup.mixed().nullable().required('Avatar is required'),
+    email: Yup.string()
+      .required('Email is required')
+      .email('Email must be a valid email address'),
+    merchantLogo: Yup.mixed().nullable(),
     phoneNumber: Yup.string().required('Phone number is required'),
-    address: Yup.string().required('Address is required'),
-    // uboName: Yup.string().required('UBO Name is required'),
-    // uboPan: Yup.string().required('UBO Pan is required'),
-    // ownership: Yup.string().required('Ownership % is required'),
-    // contactNumber: Yup.string().required('Contact is required'),
     about: Yup.string().required('About is required'),
-    // not required
     isPublic: Yup.boolean(),
   });
 
   const defaultValues = {
-    businessName: user?.displayName || '',
-    entityType: user?.entityType || '',
-    panNo: user?.panNo || '',
-    gstNo: user?.gstNo || '',
-    email: user?.email || '',
-    photoURL: user?.photoURL || null,
-    phoneNumber: user?.phoneNumber || '',
-    // uboName: user?.uboName || '',
-    address: user?.address || '',
-    // uboPan: user?.uboPan || '',
-    // ownership: user?.ownership || '',
-    // contactNumber: user?.contactNumber || '',
-    about: user?.about || '',
-    isPublic: user?.isPublic || false,
+    companyName: '',
+    dealershipType: '',
+    panNo: '',
+    cin: '',
+    gstNo: '',
+    email: '',
+    merchantLogo: null,
+    phoneNumber: '',
+    about: '',
+    isPublic: false,
   };
 
   const methods = useForm({
@@ -77,69 +76,126 @@ export default function BusinessProfile() {
   const {
     setValue,
     handleSubmit,
+    reset,
     formState: { isSubmitting },
   } = methods;
 
+  useEffect(() => {
+    const fetchMerchant = async () => {
+      try {
+        const res = await axiosInstance.get('/merchant-profiles/me');
+        const data = res?.data?.profile;
+
+        if (data) {
+          reset({
+            companyName: data.companyName || '',
+            dealershipType: data?.merchantDealershipType?.label || '',
+            panNo: data?.merchantPanCard?.submittedPanNumber || '',
+            gstNo: data.GSTIN || '',
+            email: data.users?.email || '',
+            cin: data?.CIN,
+            merchantLogo: mapMerchantLogo(data.media),
+            about: data.merchantAbout || '',
+            phoneNumber: data.users?.phone || '',
+            isPublic: data.isPublic || false,
+          });
+        }
+      } catch (error) {
+        console.error('fetchMerchant error', error);
+        enqueueSnackbar('Failed to load merchant profile', {
+          variant: 'error',
+        });
+      }
+    };
+
+    fetchMerchant();
+  }, [reset, enqueueSnackbar]);
+
+  const handleDrop = useCallback(
+    async (acceptedFiles) => {
+      const file = acceptedFiles[0];
+      if (!file) return;
+
+      try {
+        const formData = new FormData();
+        formData.append('file', file);
+
+        const { data } = await axiosInstance.post('/files', formData);
+
+        const uploaded = data?.files?.[0];
+
+        if (uploaded) {
+          setValue('merchantLogo', mapMerchantLogo(uploaded), { shouldValidate: true });
+
+          console.log('Saved merchantLogoId:', uploaded.id);
+
+          enqueueSnackbar('Logo uploaded!', { variant: 'success' });
+        }
+      } catch (err) {
+        console.error(err);
+        enqueueSnackbar('Upload failed', { variant: 'error' });
+      }
+    },
+    [setValue, enqueueSnackbar]
+  );
+
   const onSubmit = handleSubmit(async (data) => {
     try {
+      const merchantLogoId =
+        typeof data.merchantLogo === 'string' ? null : data.merchantLogo?.id || null;
 
-      const userId = user?.id
-      let finalPayload;
+      const payload = {
+        merchantLogo: merchantLogoId ? String(merchantLogoId) : null,
+        merchantAbout: data.about,
+      };
 
-      if (!userId) {
-        finalPayload = { userDetails: data };
-      } else {
-        finalPayload = data;
-      }
-
-      let res;
-
-      if (!user?.id) {
-        res = await axiosInstance.post('/user-profiles/user-details', finalPayload);
-      } else {
-        res = await axiosInstance.patch(`/user-profiles/user-details/${userId}`, finalPayload);
-      }
+      const res = await axiosInstance.patch(
+        '/merchant-profiles/update-general-info',
+        payload
+      );
 
       if (res?.data?.success) {
-        enqueueSnackbar('User details saved successfully!', { variant: 'success' });
-        
+        const updatedProfile = res?.data?.updatedProfile;
+
+        if (updatedProfile) {
+          reset({
+            companyName: updatedProfile.companyName || '',
+            dealershipType: updatedProfile?.merchantDealershipType?.label || '',
+            panNo: updatedProfile?.merchantPanCard?.submittedPanNumber || '',
+            gstNo: updatedProfile.GSTIN || '',
+            email: updatedProfile.users?.email || '',
+            cin: updatedProfile?.CIN || '',
+            merchantLogo: mapMerchantLogo(updatedProfile.media),
+            about: updatedProfile.merchantAbout || '',
+            phoneNumber: updatedProfile.users?.phone || '',
+            isPublic: updatedProfile.isPublic || false,
+          });
+        }
+
+        enqueueSnackbar('Merchant profile updated successfully!', {
+          variant: 'success',
+        });
       } else {
-        enqueueSnackbar(res?.data?.message || 'Something went wrong!', { variant: 'error' });
+        enqueueSnackbar(res?.data?.message || 'Something went wrong!', {
+          variant: 'error',
+        });
       }
     } catch (error) {
       console.error(error);
-      enqueueSnackbar('Failed to submit User details', { variant: 'error' });
+      enqueueSnackbar('Failed to update merchant profile', {
+        variant: 'error',
+      });
     }
   });
 
-
-
-  const handleDrop = useCallback(
-    (acceptedFiles) => {
-      const file = acceptedFiles[0];
-
-      const newFile = Object.assign(file, {
-        preview: URL.createObjectURL(file),
-      });
-
-      if (file) {
-        setValue('photoURL', newFile, { shouldValidate: true });
-      }
-    },
-    [setValue]
-  );
-
   return (
     <FormProvider methods={methods} onSubmit={onSubmit}>
-      {/* <Stack pb={3}>
-        <Typography variant='h4'>Business Profile Details</Typography>
-      </Stack> */}
       <Grid container spacing={3}>
-
+        {/* LEFT */}
         <Grid xs={12} md={4}>
           <Card sx={{ pt: 10, pb: 5, px: 3, textAlign: 'center' }}>
             <RHFUploadAvatar
-              name="photoURL"
+              name="merchantLogo"
               maxSize={3145728}
               onDrop={handleDrop}
               helperText={
@@ -158,20 +214,10 @@ export default function BusinessProfile() {
                 </Typography>
               }
             />
-
-            <RHFSwitch
-              name="isPublic"
-              labelPlacement="start"
-              label="Public Profile"
-              sx={{ mt: 5 }}
-            />
-
-            <Button variant="soft" color="error" sx={{ mt: 3 }}>
-              Delete User
-            </Button>
           </Card>
         </Grid>
 
+        {/* RIGHT */}
         <Grid xs={12} md={8}>
           <Card sx={{ p: 3 }}>
             <Stack spacing={3}>
@@ -184,39 +230,27 @@ export default function BusinessProfile() {
                   sm: 'repeat(2, 1fr)',
                 }}
               >
-                <RHFTextField name="businessName" label="Business Name" />
-                <RHFTextField name="entityType" label="Legal Entity Type" />
-                <RHFTextField name="panNo" label="Pan No" />
-                <RHFTextField name="gstNo" label="GST No" />
-                <RHFTextField name="email" label="Email Address" />
-                <RHFTextField name="phoneNumber" label="Phone Number" />
-                <RHFTextField name="address" label="Address" />
+                <RHFTextField name="companyName" label="Business Name" disabled />
+                <RHFTextField name="gstNo" label="GST No" disabled />
+                <RHFTextField name="cin" label="CIN No" disabled />
+                <RHFTextField name="dealershipType" label="Dealership Type" disabled />
+                <RHFTextField name="panNo" label="Pan No" disabled />
+
+                <RHFTextField name="email" label="Email Address" disabled />
+                <RHFTextField name="phoneNumber" label="Phone Number" disabled />
+
               </Box>
-
-              {/* <Typography variant='h5'>Ultimate Beneficial Owner(UBO)</Typography>
-
-              <Box
-                rowGap={3}
-                columnGap={2}
-                display="grid"
-                gridTemplateColumns={{
-                  xs: 'repeat(1, 1fr)',
-                  sm: 'repeat(2, 1fr)',
-                }}
-              >
-
-
-                <RHFTextField name="uboName" label="UBO Name" />
-                <RHFTextField name="uboPan" label="UBO pan" />
-                <RHFTextField name="ownership" label="Ownership%" />
-                <RHFTextField name="contactNumber" label="Contact Number" />
-              </Box> */}
             </Stack>
 
             <Stack spacing={3} alignItems="flex-end" sx={{ mt: 3 }}>
               <RHFTextField name="about" multiline rows={4} label="About" />
 
-              <LoadingButton type="submit" variant="contained" color="primary" loading={isSubmitting}>
+              <LoadingButton
+                type="submit"
+                variant="contained"
+                color="primary"
+                loading={isSubmitting}
+              >
                 Save Changes
               </LoadingButton>
             </Stack>
