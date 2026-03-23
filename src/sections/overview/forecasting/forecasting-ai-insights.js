@@ -2,11 +2,11 @@ import PropTypes from 'prop-types';
 
 import Card from '@mui/material/Card';
 import CardHeader from '@mui/material/CardHeader';
-import Grid from '@mui/material/Unstable_Grid2';
 import Paper from '@mui/material/Paper';
 import Typography from '@mui/material/Typography';
 import Box from '@mui/material/Box';
 import Chip from '@mui/material/Chip';
+import { Grid } from '@mui/material';
 
 // ----------------------------------------------------------------------
 
@@ -29,7 +29,7 @@ export default function ForecastingAiInsights({ title, subheader, list, ...other
 
 
             return (
-              <Grid xs={12} md={6} key={item.id}>
+              <Grid item xs={12} md={6} key={item.id}>
                 <Paper
                   variant="outlined"
                   sx={{
