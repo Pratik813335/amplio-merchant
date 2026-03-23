@@ -1,8 +1,7 @@
 // @mui
 import { useTheme } from '@mui/material/styles';
 import Container from '@mui/material/Container';
-import Grid from '@mui/material/Unstable_Grid2';
-import { Stack } from '@mui/material';
+import { Grid, Stack } from '@mui/material';
 
 // hooks
 import { useMockedUser } from 'src/hooks/use-mocked-user';
@@ -14,6 +13,7 @@ import {
   _aiInsightsPredictions,
   _railSettlementReliability,
   _bankOutageProbability,
+  _bookingNew,
 } from 'src/_mock';
 // components
 import { useSettingsContext } from 'src/components/settings';
@@ -28,13 +28,14 @@ import ForecastingHighRisk from '../forecasting-high-risks';
 import ForecastingAiInsights from '../forecasting-ai-insights';
 import ForecastingRail from '../forecasting-rail';
 
+import EcommerceYearlySales from '../../e-commerce/ecommerce-yearly-sales';
+import BookingNewest from '../../booking/booking-newest';
+
 // ----------------------------------------------------------------------
 
 export default function OverviewForecastingView() {
   const { user } = useMockedUser();
-
   const theme = useTheme();
-
   const settings = useSettingsContext();
 
   const DASHBOARD_DATA = [
@@ -67,52 +68,52 @@ export default function OverviewForecastingView() {
 
   return (
     <Container maxWidth={settings.themeStretch ? false : 'xl'}>
-        <Grid container spacing={3}>
-          {DASHBOARD_DATA.map((card, index) => (
-            <>
-              <Grid xs={12} md={3} key={index}>
-                <WidgetSummaryCard
-                  title="7-Day Forecast Accuracy"
-                  percent={card.forecastAccuracyPercent}
-                  total={`${formatNumber(card.forecastAccuracyTotal)}%`}
-                  timing="Based on last 30 days"
-                  icon="mdi:target"
-                />
-              </Grid>
+      <Grid container spacing={3}>
+        {DASHBOARD_DATA.map((card, index) => (
+          <>
+            <Grid item xs={12} sm={6} lg={3} key={index}>
+              <WidgetSummaryCard
+                title="7-Day Forecast Accuracy"
+                percent={card.forecastAccuracyPercent}
+                total={`${formatNumber(card.forecastAccuracyTotal)}%`}
+                timing="Based on last 30 days"
+                icon="mdi:target"
+              />
+            </Grid>
 
-              <Grid xs={12} md={3} key={index}>
-                <WidgetSummaryCard
-                  title="Avg Settlement Confidence"
-                  percent={card.settlementConfidencePercent}
-                  total={`${formatNumber(card.settlementConfidenceTotal)}%`}
-                  timing="Weighted by amount"
-                  icon="mdi:trending-up"
-                />
-              </Grid>
+            <Grid item xs={12} sm={6} lg={3} key={index}>
+              <WidgetSummaryCard
+                title="Avg Settlement Confidence"
+                percent={card.settlementConfidencePercent}
+                total={`${formatNumber(card.settlementConfidenceTotal)}%`}
+                timing="Weighted by amount"
+                icon="mdi:trending-up"
+              />
+            </Grid>
 
-              <Grid xs={12} md={3} key={index}>
-                <WidgetSummaryCard
-                  title="High Risk Days"
-                  percent={card.highRiskDaysPercent}
-                  total={card.highRiskDaysTotal}
-                  timing="Next 7 days"
-                  icon="mdi:alert-outline"
-                />
-              </Grid>
+            <Grid item xs={12} sm={6} lg={3} key={index}>
+              <WidgetSummaryCard
+                title="High Risk Days"
+                percent={card.highRiskDaysPercent}
+                total={card.highRiskDaysTotal}
+                timing="Next 7 days"
+                icon="mdi:alert-outline"
+              />
+            </Grid>
 
-              <Grid xs={12} md={3} key={index}>
-                <WidgetSummaryCard
-                  title="Expected Net Inflow"
-                  percent={card.netInflowPercent}
-                  total={`₹${formatNumber(card.netInflowTotal)}`}
-                  timing="Next 7 days (after refunds)"
-                  icon="mdi:trending-up"
-                />
-              </Grid>
-            </>
-          ))}
+            <Grid item xs={12} sm={6} lg={3} key={index}>
+              <WidgetSummaryCard
+                title="Expected Net Inflow"
+                percent={card.netInflowPercent}
+                total={`₹${formatNumber(card.netInflowTotal)}`}
+                timing="Next 7 days (after refunds)"
+                icon="mdi:trending-up"
+              />
+            </Grid>
+          </>
+        ))}
 
-          <Grid xs={12} md={12} lg={12}>
+        <Grid item xs={12}>
             <ForecastingYearlySales
               title="7-Day Settlement Prediction"
               subheader="Predicted inflow with confidence intervals"
@@ -137,22 +138,26 @@ export default function OverviewForecastingView() {
             />
           </Grid>
 
-          <Grid xs={12} md={12} lg={12}>
+          {/* <Grid xs={12}>
+          <BookingNewest title="Newest Booking" subheader="12 Booking" list={_bookingNew} />
+        </Grid> */}
+
+       <Grid item xs={12}>
             <ForecastingHighRisk title="High Risk Days Highlighted" list={_highRiskDays} />
           </Grid>
 
-          <Grid xs={12} md={6}>
+        <Grid item xs={12} lg={6}>
             <ForecastingRail
               title="Rail-wise Settlement Reliability"
               list={_railSettlementReliability}
             />
           </Grid>
 
-          <Grid xs={12} md={6}>
+          <Grid item xs={12} lg={6}>
             <ForecastingBankOutage title="Bank Outage Probability" data={_bankOutageProbability} />
           </Grid>
 
-          <Grid xs={12} md={12} lg={12}>
+        <Grid item xs={12} >
             <ForecastingAppAreaInstalled
               title="Seasonality Patterns (6 Months)"
               // subheader="(+43%) than last year"
@@ -186,13 +191,13 @@ export default function OverviewForecastingView() {
             />
           </Grid>
 
-          <Grid xs={12}>
+        <Grid item xs={12}>
             <ForecastingAiInsights
               title="AI Insights & Predictions"
               list={_aiInsightsPredictions}
             />
           </Grid>
-        </Grid>
+      </Grid>
     </Container>
   );
 }
