@@ -1,6 +1,6 @@
 /* eslint-disable import/order */
 // @mui
-import { Stack } from '@mui/material';
+import { Grid, Stack } from '@mui/material';
 import Container from '@mui/material/Container';
 // components
 import { useSettingsContext } from 'src/components/settings';
@@ -35,6 +35,40 @@ const DISBURSEMENT_HISTORY = [
   },
 ];
 
+const DASHBOARD_CARDS = [
+  {
+  todayEligibleTotal: 710000,
+  receivables: 5,
+  haircutTotal: 69000,
+  avgHaircut: 2.75,
+  utilizationTotal: 50.10,
+  utilizationPercent: 5.0,
+  railTotal: 70.00,
+  railUPI: 75,
+  railCard: 85,
+
+
+
+}
+];
+
+function formatNumber(num) {
+  const number = Number(num);
+
+  if (number >= 10000000) {
+    return `${(number / 10000000).toFixed(2)} Cr`;
+  }
+
+  if (number >= 100000) {
+    return `${(number / 100000).toFixed(2)} L`;
+  }
+
+  if (number >= 1000) {
+    return `${(number / 1000).toFixed(2)} K`;
+  }
+
+  return number;
+}
 // ----------------------------------------------------------------------
 
 export default function LiquidityEngineView() {
@@ -43,67 +77,56 @@ export default function LiquidityEngineView() {
   return (
     <Container maxWidth={settings.themeStretch ? false : 'lg'}>
       <Stack spacing={3}>
-        {/* Summary Cards Row */}
-        <Stack direction={{ xs: 'column', sm: 'row' }} spacing={3}>
-          <WidgetSummaryCard
-            title="Total Eligible Today"
-            total={710000}
-            percent={0}
-            timing="5 receivables"
-            icon="lucide:droplets"
-            iconColor="primary.main"
-            hideArrow
-            chart={{ series: [] }}
-            sx={{ flex: 1 }}
-          />
+        <Grid container spacing={3}>
+          {DASHBOARD_CARDS.map((card, i) => (
+            <>
+              <Grid key={i} item xs={12} md={3}>
 
-          <WidgetSummaryCard
-            title="Net After Haircut"
-            total={690000}
-            percent={0}
-            timing="Avg haircut: 2.75%"
-            icon="ph:currency-inr-duotone"
-            iconColor="primary.main"
-            hideArrow
-            chart={{
-              series: [],
-            }}
-            sx={{ flex: 1 }}
-          />
+                <WidgetSummaryCard
+                  title="Total Eligible Today"
+                  total={`₹${formatNumber(card.todayEligibleTotal)}`}
+                  timing={`${card.receivables} receivables`}
+                  icon="lucide:droplets"
 
-          <WidgetSummaryCard
-            title="Utilization Rate"
-            total="87.5%"
-            percent={5}
-            timing="Of available limit"
-            icon="ph:trend-up-duotone"
-            iconColor="primary.main"
-            arrowColor="success.main"
-            arrowSize="small"
-            chart={{
-              series: [],
-            }}
-            sx={{ flex: 1 }}
-          />
 
-          <WidgetSummaryCard
-            title="Rail Limit Usage"
-            total="72.3%"
-            percent={0}
-            timing="UPI: 85% | Card: 68%"
-            icon="ph:warning-circle-duotone"
-            iconColor="primary.main"
-            hideArrow
-            chart={{
-              series: [],
-            }}
-            sx={{ flex: 1 }}
-          />
-        </Stack>
+                />
+              </Grid>
+              <Grid key={i} item xs={12} md={3}>
+                <WidgetSummaryCard
+                  title="Net After Haircut"
+                  total={`₹${formatNumber(card.haircutTotal)}`}
+                  timing={`Avg haircut:${card.avgHaircut}`}
+                  icon="ph:currency-inr-duotone"
 
-        <LiquidityEngineListView />
-        <LiquidityEngineCard disbursements={DISBURSEMENT_HISTORY} />
-      </Stack>
-    </Container>
+                />
+              </Grid>
+              <Grid key={i} item xs={12} md={3}>
+                <WidgetSummaryCard
+                  title="Utilization Rate"
+                  total={`${card.utilizationTotal}%`}
+                  percent={card.utilizationPercent}
+                  timing="Of available limit"
+                  icon="ph:trend-up-duotone"
+
+                />
+              </Grid>
+              <Grid key={i} item xs={12} md={3}>
+                <WidgetSummaryCard
+                  title="Rail Limit Usage"
+                  total={`${card.railTotal}%`}
+                  timing={`UPI: ${card.railUPI}% | Card: ${card.railCard}%`}
+                  icon="ph:warning-circle-duotone"
+
+                />
+              </Grid>
+              </>
+          ))}
+            </Grid >
+        
+
+              <LiquidityEngineListView />
+              <LiquidityEngineCard disbursements={DISBURSEMENT_HISTORY} />
+       </Stack>
+    </Container >
   );
 }

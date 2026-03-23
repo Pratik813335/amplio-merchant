@@ -1,4 +1,3 @@
-
 import PropTypes from 'prop-types';
 
 // @mui
@@ -90,15 +89,15 @@ export default function WidgetSummaryCard({
 
   return (
     <Card
-      sx={{
-        display: 'flex',
-        alignItems: 'center',
-        p: 3,
-        minHeight: 120,
-        ...sx,
-      }}
-      {...other}
-    >
+  sx={{
+    width: '100%',
+    height: '100%',
+    p: 3,
+    minHeight: 120,
+    ...sx,
+  }}
+  {...other}
+>
       <Box sx={{ flexGrow: 1, minWidth: 0 }}>
         <Box display="flex" justifyContent="space-between" alignItems="center">
           <Tooltip title={title || ''} arrow>

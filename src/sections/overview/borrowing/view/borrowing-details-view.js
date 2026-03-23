@@ -4,6 +4,7 @@ import { Container, Grid } from '@mui/material';
 
 // components
 import { useSettingsContext } from 'src/components/settings';
+import { fNumber } from 'src/utils/format-number';
 
 import WidgetSummaryCard from 'src/components/card/widget-summary-card';
 import BorrowingDetailsCard from 'src/sections/overview/borrowing/borrowing-details-card';
@@ -107,7 +108,7 @@ export default function BorrowingDetailsView() {
               key={card.title}
               title={card.title}
               percent={card.percent}
-              total={card.amount}
+              total={` ₹${fNumber(card.amount)}`}
               icon={card.icon}
               timing={card.description}
               chart={{
