@@ -260,7 +260,7 @@ export default function UbosListView({
             color="primary"
             startIcon={<Iconify icon="mingcute:add-line" />}
           >
-            New Ubo
+            New UBO
           </Button>
         </Stack>
 

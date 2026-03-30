@@ -22,6 +22,8 @@ import AccountChangePassword from '../account-change-password';
 import BusinessBankPage from '../bank-account';
 import PspAccountPage from '../psp-account';
 import UbosListView from '../ubo/view/kyc-ubo-list-view';
+import MerchantDocumentDetails from '../merchant-document-details';
+import AccountAddressDetails from '../account-address-details';
 
 
 // ----------------------------------------------------------------------
@@ -32,7 +34,17 @@ const TABS = [
     label: 'Business Profile',
     icon: <Iconify icon="solar:user-id-bold" width={24} />,
   },
-   {
+  {
+    value: 'document',
+    label: 'Document',
+    icon: <Iconify icon="tabler:file-description" width={24} />,
+  },
+  {
+    value: 'addressDetails',
+    label: 'Address Details',
+    icon: <Iconify icon="mdi:map-marker-outline" width={24} />,
+  },
+  {
     value: 'UBO',
     label: 'Ultimate Beneficial Owner(UBO)',
     icon: <Iconify icon="mingcute:profile-line" width={24} />,
@@ -68,20 +80,20 @@ const TABS = [
 
 export default function AccountView() {
   const settings = useSettingsContext();
-  const router=useRouter();
+  const router = useRouter();
 
-  const [searchParams]=useSearchParams();
-  const tab=searchParams.get('tab');
-  const [currentTab, setCurrentTab] = useState(tab ||'businessProfile');
+  const [searchParams] = useSearchParams();
+  const tab = searchParams.get('tab');
+  const [currentTab, setCurrentTab] = useState(tab || 'businessProfile');
 
   const handleChangeTab = useCallback((event, newValue) => {
     setCurrentTab(newValue);
     router.push({
-      search:`?tab=${newValue}`,
-  });
+      search: `?tab=${newValue}`,
+    });
 
   }, [router]);
-  
+
 
   return (
     <Container maxWidth={settings.themeStretch ? false : 'lg'}>
@@ -119,6 +131,8 @@ export default function AccountView() {
           addressBook={_userAddressBook}
         />
       )} */}
+      {currentTab === 'document' && <MerchantDocumentDetails />}
+      {currentTab === 'addressDetails' && <AccountAddressDetails />}
 
       {currentTab === 'bankAccount' && <BusinessBankPage />}
       {currentTab === 'UBO' && <UbosListView />}

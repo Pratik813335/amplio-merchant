@@ -24,6 +24,10 @@ export default function TransactionTableFiltersResult({
     onFilters('status', newValue);
   };
 
+  const handleRemoveName = () => {
+    onFilters('name', '');
+  };
+
   const handleRemoveBank = (inputValue) => {
     const newValue = filters.bank.filter((item) => item !== inputValue);
     onFilters('bank', newValue);
@@ -43,6 +47,12 @@ export default function TransactionTableFiltersResult({
       </Box>
 
       <Stack flexGrow={1} spacing={1} direction="row" flexWrap="wrap" alignItems="center">
+        {!!filters.name && (
+          <Block label="Transaction ID:">
+            <Chip size="small" label={filters.name} onDelete={handleRemoveName} />
+          </Block>
+        )}
+
         {!!filters.status.length && (
           <Block label="Status:">
             {filters.status.map((item) => (

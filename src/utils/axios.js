@@ -121,7 +121,12 @@ export const endpoints = {
     list : '/merchant-profiles/bank-details',
     profileData: '/merchant-profiles/me',
     uboDetails: '/merchant-profiles/UBO-details',
-    pspDetails: '/merchant-profiles/PSP-details'
+    pspDetails: '/merchant-profiles/PSP-details',
+    documents: '/merchant-profiles/documents',
+    addressDetails: '/merchant-profiles/address-details'
+  },
+  transactions:{
+    list: '/transactions'
   },
   companyEntityType: {
     list: '/company-entity-types',

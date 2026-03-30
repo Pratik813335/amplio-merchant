@@ -128,3 +128,46 @@ export function useGetPSPData() {
     refreshDetails,
   };
 }
+
+export function useGetDocumentDetails() {
+  const URL = endpoints.merchantProfile.documents;
+
+  const { data, isLoading, error, isValidating, mutate } = useSWR(URL, fetcher, {
+    keepPreviousData: true,
+  });
+
+  const refreshUbos = useCallback(() => {
+    mutate();
+  }, [mutate]);
+
+  return {
+    documents: data?.documents || [],
+    loading: isLoading,
+    error,
+    validating: isValidating,
+    eempty: !isLoading && !(data?.documents?.length),
+    refreshUbos,
+  };
+}
+
+
+export function useGetAddressDetails() {
+  const URL =  endpoints.merchantProfile.addressDetails;
+
+  const { data, isLoading, error, isValidating, mutate } = useSWR(URL, fetcher, {
+    keepPreviousData: true,
+  });
+
+  const refreshAddressDetails = () => {
+    mutate();
+  };
+
+  return {
+    registeredAddress: data?.registeredAddress || null,
+    correspondenceAddress: data?.correspondenceAddress || null,
+    loading: isLoading,
+    error,
+    validating: isValidating,
+    refreshAddressDetails,
+  };
+}

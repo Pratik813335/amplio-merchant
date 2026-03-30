@@ -2,7 +2,7 @@ import { Container, Grid, Stack } from '@mui/material';
 import { useSettingsContext } from 'src/components/settings';
 import WidgetSummaryCard from '../../../components/card/widget-summary-card';
 import TransactionGraph from '../transaction-graph';
-import TransactionTable from '../transaction-table';
+import TransactionTable from './transaction-table-list-view';
 
 export function TransactionView() {
   const settings = useSettingsContext();
@@ -51,7 +51,7 @@ export function TransactionView() {
                         <>
                         <Grid key={i} item xs={12} md={3}>
                             <WidgetSummaryCard
-                                title="Today's TransactionToday's"
+                                title="Today's Transactions"
                                 percent={card.transactionPercent}
                                 total={formatNumber(card.todayTotalTransaction)}
                                 timing="Live Count"
