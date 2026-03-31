@@ -56,19 +56,7 @@ const isToday = (date) => {
     d.getFullYear() === today.getFullYear()
   );
 };
-const DASHBOARD_CARDS = [
-  {
-    todayEligibleTotal: 710000,
-    receivables: 5,
-    haircutTotal: 69000,
-    avgHaircut: 2.75,
-    utilizationTotal: 50.1,
-    utilizationPercent: 5.0,
-    railTotal: 70.0,
-    railUPI: 75,
-    railCard: 85,
-  },
-];
+
 
 const RequestSchema = Yup.object().shape({
   amount: Yup.number().required('Amount is Required'),
@@ -176,6 +164,46 @@ export default function LiquidityEngineView() {
             />
           </Grid>
         </Grid>
+
+        <Grid item xs={12} md={6}>
+          <Card sx={{ p: 3 }}>
+            <Typography variant="h6" mb={2} >
+              Request Receivables Amount
+            </Typography> 
+
+            <FormProvider {...methods} onSubmit={onSubmit} >
+                <Stack spacing={2}>
+                  <Grid container spacing={2} alignItems='center' >
+                    <Grid item xs={10}>
+                      <RHFTextField
+                        name="amount"
+                        label="Enter Amount (₹)"
+                        type="number"
+                        fullWidth
+                        placeholder="e.g. 500000"
+                      />
+                    </Grid>
+                    <Grid item xs={2}>
+                      <Button
+                        type="submit"
+                        variant="contained"
+                        color='primary'
+                      >
+                        Submit Request
+                      </Button>
+                    </Grid>
+                  </Grid>
+
+                  <Stack direction="row" spacing={2}>
+                    <Button variant="outlined">₹ 100000</Button>
+                    <Button variant="outlined">₹ 200000</Button>
+                    <Button variant="outlined">₹ 500000</Button>
+                  </Stack>
+                </Stack>
+            </FormProvider>
+          </Card>
+        </Grid>
+
 
 
         <LiquidityEngineListView transaction = {todayTransactions} />
