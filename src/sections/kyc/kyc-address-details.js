@@ -341,17 +341,23 @@ export default function KYCAddressDetails({
               </Grid>
 
               <Grid item xs={12} md={6}>
-                <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 2 }}>
-                  <Typography variant="h5">Correspondence Address</Typography>
-                  <FormControlLabel
-                    control={
-                      <Checkbox
-                        checked={sameAsRegistered}
-                        onChange={(e) => setValue('sameAsRegistered', e.target.checked)}
-                      />
-                    }
-                    label="Same as Registered"
-                  />
+                <Box
+                  sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2}}
+                >
+                  <Typography variant="h5">
+                    Correspondence Address
+                  </Typography>
+
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                    <Checkbox
+                      checked={sameAsRegistered}
+                      onChange={(e) => setValue('sameAsRegistered', e.target.checked)}
+                      sx={{ p: 0.5 }}
+                    />
+                    <Typography variant="body1">
+                      Same as Registered
+                    </Typography>
+                  </Box>
                 </Box>
 
                 <Stack spacing={2} sx={{ opacity: sameAsRegistered ? 0.5 : 1 }}>

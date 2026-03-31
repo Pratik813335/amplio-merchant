@@ -1,198 +1,246 @@
-import * as Yup from 'yup';
+import PropTypes from 'prop-types';
+import { useEffect, useMemo } from 'react';
 import { useForm } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
+import * as Yup from 'yup';
 
-// MUI
-import Container from '@mui/material/Container';
-import Typography from '@mui/material/Typography';
-import Stack from '@mui/material/Stack';
+import Alert from '@mui/material/Alert';
 import Box from '@mui/material/Box';
+import Button from '@mui/material/Button';
+import Container from '@mui/material/Container';
 import MenuItem from '@mui/material/MenuItem';
-
-// components
-import FormProvider, { RHFTextField, RHFSelect } from 'src/components/hook-form';
-import { alpha } from '@mui/system';
-import Iconify from 'src/components/iconify';
+import Stack from '@mui/material/Stack';
+import Typography from '@mui/material/Typography';
+import CircularProgress from '@mui/material/CircularProgress';
 
 import { LoadingButton } from '@mui/lab';
-import { Button } from '@mui/material';
-import PropTypes from 'prop-types';
 
-export default function PspAccount({onclose,pspDetails}) {
+import FormProvider, { RHFSelect, RHFTextField } from 'src/components/hook-form';
+import { useSnackbar } from 'src/components/snackbar';
+import axiosInstance from 'src/utils/axios';
+import { useGetPsp } from 'src/api/psp-master';
 
-    const PSP_OPTIONS = [
-        { value: 'razorpay', label: 'Razorpay' },
-        { value: 'paytm', label: 'Paytm' },
-        { value: 'phonepe', label: 'PhonePe' },
-        { value: 'cashfree', label: 'Cashfree' },
-        { value: 'stripe', label: 'Stripe' },
-        { value: 'ccavenue', label: 'CCAvenue' },
-        { value: 'payu', label: 'PayU' },
-    ];
+export default function PspAccount({
+  onclose,
+  pspDetails,
+  isEdit,
+  refreshBankDetail,
+}) {
+  const { enqueueSnackbar } = useSnackbar();
+  const { psp = [], pspLoading } = useGetPsp();
 
-    const isEdit = true; // temporary flag
+  const selectedPspMasterId = pspDetails?.pspMasterId || pspDetails?.pspMaster?.id || '';
 
-    const UpdateUserSchema = Yup.object().shape({
-        psp: Yup.string().required('PSP is required'),
-        merchantId: Yup.string().required('Merchant ID is required'),
-        settlementAccount: Yup.string().required('Settlement account is required'),
-        apiKey: Yup.string().required('API key is required'),
-        apiSecret: Yup.string().required('API secret is required'),
-        WebhookUrl: Yup.string().url('Enter valid URL').required('Webhook URL required'),
-    });
+  const selectedPsp = useMemo(
+    () => psp.find((item) => item.id === selectedPspMasterId),
+    [psp, selectedPspMasterId]
+  );
 
-    const defaultValues = {
-        psp: '',
-        merchantId: '',
-        settlementAccount: '',
-        apiKey: '',
-        apiSecret: '',
-        WebhookUrl: '',
+  const fields = selectedPsp?.pspMasterFields || [];
+  const sortedFields = [...fields].sort((a, b) => a.order - b.order);
+
+  const validationShape = useMemo(() => {
+    const shape = {
+      pspMasterId: Yup.string().required('PSP is required'),
     };
 
-    const methods = useForm({
-        resolver: yupResolver(UpdateUserSchema),
-        defaultValues,
+    sortedFields.forEach((field) => {
+      let validator = Yup.string();
+
+      if (field.isRequired) {
+        validator = validator.required(`${field.label} is required`);
+      }
+
+      if (field.type === 'url') {
+        validator = validator.url(`Enter a valid ${field.label}`);
+      }
+
+      shape[field.fieldName] = validator;
     });
 
-    const {
-        handleSubmit,
-        formState: { isSubmitting },
-    } = methods;
+    return Yup.object().shape(shape);
+  }, [sortedFields]);
 
-    const onSubmit = async (data) => {
-        console.log('PSP Form Data:', data);
+  const defaultValues = useMemo(() => {
+    const values = {
+      pspMasterId: selectedPspMasterId,
     };
 
+    sortedFields.forEach((field) => {
+      values[field.fieldName] = pspDetails?.[field.fieldName] || '';
+    });
+
+    return values;
+  }, [pspDetails, selectedPspMasterId, sortedFields]);
+
+  const methods = useForm({
+    resolver: yupResolver(validationShape),
+    defaultValues,
+  });
+
+  const {
+    handleSubmit,
+    watch,
+    reset,
+    formState: { isSubmitting },
+  } = methods;
+
+  const watchedPspMasterId = watch('pspMasterId');
+
+  const activePsp = useMemo(
+    () => psp.find((item) => item.id === watchedPspMasterId),
+    [psp, watchedPspMasterId]
+  );
+
+  const activeFields = [...(activePsp?.pspMasterFields || [])].sort((a, b) => a.order - b.order);
+
+  useEffect(() => {
+    if (!psp.length) return;
+
+    if (pspDetails) {
+      const resetData = {
+        pspMasterId: selectedPspMasterId,
+      };
+
+      const currentPspMaster = psp.find((item) => item.id === selectedPspMasterId);
+
+      currentPspMaster?.pspMasterFields?.forEach((field) => {
+        resetData[field.fieldName] = pspDetails?.[field.fieldName] || '';
+      });
+
+      reset(resetData);
+      return;
+    }
+
+    reset({ pspMasterId: '' });
+  }, [psp, pspDetails, reset, selectedPspMasterId]);
+
+  const onSubmit = handleSubmit(async (data) => {
+    try {
+      const pspPayload = {
+        pspMasterId: data.pspMasterId,
+      };
+
+      activeFields.forEach((field) => {
+        pspPayload[field.fieldName] = data[field.fieldName];
+      });
+
+      let res;
+
+      if (!pspDetails?.id) {
+        res = await axiosInstance.post('/merchant-profiles/PSP-details', {
+          psp: pspPayload,
+        });
+      } else {
+        res = await axiosInstance.patch(`/merchant-profiles/PSP-details/${pspDetails.id}`, {
+          psp: pspPayload,
+        });
+      }
+
+      if (res?.data?.success) {
+        enqueueSnackbar(pspDetails?.id ? 'PSP updated successfully!' : 'PSP added successfully!', {
+          variant: 'success',
+        });
+        refreshBankDetail?.();
+        onclose?.();
+      } else {
+        enqueueSnackbar(res?.data?.message || 'Something went wrong!', { variant: 'error' });
+      }
+    } catch (error) {
+      console.error(error);
+      enqueueSnackbar(error?.error?.message || 'Failed to submit PSP details', {
+        variant: 'error',
+      });
+    }
+  });
+
+  if (pspLoading) {
     return (
-        <Container>
-
-            <FormProvider methods={methods} onSubmit={handleSubmit(onSubmit)}>
-                <Stack spacing={3}>
-                    <Stack pt={2} pb={2}>
-                        <Typography variant="h4" sx={{ fontWeight: 700 }}>
-                            Add New PSP Integration
-                        </Typography>
-                        <Typography variant="subtitle1" sx={{ color: (theme) => theme.palette.grey[600], fontWeight: 200 }}>
-                            Configure your payment service provider integration. Your request will be reviewed and approved by our team.
-                        </Typography>
-                    </Stack>
-                    <Box>
-                        <Box sx={{ width: 200, mb: 3 }}>
-                            <RHFSelect name="psp" label="Select PSP" disabled={!isEdit}>
-                                {PSP_OPTIONS.map((item) => (
-                                    <MenuItem key={item.value} value={item.value}>
-                                        {item.label}
-                                    </MenuItem>
-                                ))}
-                            </RHFSelect>
-                        </Box>
-
-                        <Box
-                            rowGap={3}
-                            columnGap={2}
-                            display="grid"
-                            gridTemplateColumns={{
-                                xs: 'repeat(1, 1fr)',
-                                sm: 'repeat(2, 1fr)',
-                            }}
-                        >
-                            <RHFTextField
-                                name="merchantId"
-                                label="Merchant ID"
-                                disabled={!isEdit}
-                                placeholder="Enter Merchant ID"
-                            />
-
-                            <RHFTextField
-                                name="settlementAccount"
-                                label="Settlement Account"
-                                disabled={!isEdit}
-                                placeholder="Enter Bank Account Number"
-                            />
-                        </Box>
-
-                        <Box mt={3}>
-                            <RHFTextField
-                                name="apiKey"
-                                label="API Key"
-                                disabled={!isEdit}
-                                placeholder="Enter API Key"
-                            />
-                        </Box>
-
-                        <Box mt={3}>
-                            <RHFTextField
-                                name="apiSecret"
-                                label="API Secret"
-                                disabled={!isEdit}
-                                placeholder="Enter API Secret"
-                            />
-                        </Box>
-
-                        <Box mt={3}>
-                            <RHFTextField
-                                name="WebhookUrl"
-                                label="Webhook URL"
-                                disabled={!isEdit}
-                                placeholder="Enter webhook URL"
-                            />
-                        </Box>
-                        <Typography variant='caption'>This URL will be automatically configured. Please whitelist this in your PSP dashboard.</Typography>
-                    </Box>
-                    <Box
-                        sx={{
-                            display: "flex",
-                            alignItems: "flex-end",
-                            alignContent: "center",
-                            gap: 2,
-                            p: 1,
-                            borderRadius: 1,
-                            border: (theme) => `solid 2px ${alpha(theme.palette.warning.main, 1.00)}`,
-                            backgroundColor: (theme) => alpha(theme.palette.warning.main, 0.10),
-                            color: (theme) => alpha(theme.palette.warning.main, 1.00),
-
-                            mb: 1
-                        }}
-
-                    > <Box display="flex" >
-                            <Stack p={2} pt={0.5}>
-                                <Iconify icon="si:info-duotone"
-                                    width={20} sx={{ color: (theme) => alpha(theme.palette.warning.main, 1.00), mt: 0 }} />
-                            </Stack>
-                            <Box>
-                                <Box display="flex" justifyContent='flex-start'>
-                                    <Typography variant="h7" sx={{
-                                        display: "flex",
-                                        alignItems: "center",
-                                        justifyContent: "center",
-                                    }}>
-                                        Review Process
-                                    </Typography>
-                                </Box>
-                                <Box display="flex" justifyContent='flex-start'>
-
-                                    <Typography variant='body2' >Your integration request will be reviewed by our operations team within 24 hours. You will be notified once approved.</Typography>
-                                </Box>
-                            </Box>
-                        </Box>
-                    </Box>
-                    <Box display="flex" justifyContent="flex-end" mb={2} >
-                        <Button color='primary' variant="outlined"> Cancel</Button>
-                        <LoadingButton type="submit" color='primary' variant="contained" loading={isSubmitting} sx={{ml:2}} >
-                            Save For Review
-                        </LoadingButton>
-                    </Box>
-
-                </Stack>
-            </FormProvider>
-
-        </Container>
+      <Container sx={{ py: 4 }}>
+        <Box sx={{ display: 'flex', justifyContent: 'center' }}>
+          <CircularProgress />
+        </Box>
+      </Container>
     );
+  }
+
+  return (
+    <Container>
+      <FormProvider methods={methods} onSubmit={onSubmit}>
+        <Stack spacing={3}>
+          <Stack pt={2} pb={2}>
+            <Typography variant="h4" sx={{ fontWeight: 700 }}>
+              {pspDetails?.id ? 'Update PSP Integration' : 'Add New PSP Integration'}
+            </Typography>
+            <Typography
+              variant="subtitle1"
+              sx={{ color: (theme) => theme.palette.grey[600], fontWeight: 300 }}
+            >
+              Configure your payment service provider integration. Your request will be reviewed
+              and approved by our team.
+            </Typography>
+          </Stack>
+
+          <Box display="grid" rowGap={3}>
+            <RHFSelect name="pspMasterId" label="Select PSP" disabled={!isEdit}>
+              <MenuItem value="" disabled>
+                Choose a payment service provider
+              </MenuItem>
+
+              {psp.map((item) => (
+                <MenuItem key={item.id} value={item.id}>
+                  {item.name}
+                </MenuItem>
+              ))}
+            </RHFSelect>
+
+            {activeFields.map((field) => (
+              <RHFTextField
+                key={field.id}
+                name={field.fieldName}
+                label={`${field.label}${field.isRequired ? ' *' : ''}`}
+                type={field.type === 'password' ? 'password' : 'text'}
+                disabled={!isEdit}
+                placeholder={field.label}
+              />
+            ))}
+
+            {!pspDetails?.id && (
+              <Alert severity="warning">
+                <strong>Review Process</strong>
+                <br />
+                Your integration request will be reviewed by our operations team within 24 hours.
+                You will be notified once approved.
+              </Alert>
+            )}
+          </Box>
+
+          <Box display="flex" justifyContent="flex-end" mb={2}>
+            <Button color="primary" variant="outlined" onClick={onclose}>
+              Cancel
+            </Button>
+
+            {(pspDetails?.status === 0 || pspDetails?.status === 1 || !pspDetails?.status) && (
+              <LoadingButton
+                type="submit"
+                color="primary"
+                variant="contained"
+                loading={isSubmitting}
+                sx={{ ml: 2 }}
+              >
+                {pspDetails?.id ? 'Update' : 'Save For Review'}
+              </LoadingButton>
+            )}
+          </Box>
+        </Stack>
+      </FormProvider>
+    </Container>
+  );
 }
 
 PspAccount.propTypes = {
   onclose: PropTypes.func,
-  pspDetails:PropTypes.object,
-  // isEdit: PropTypes.func
-}
+  pspDetails: PropTypes.object,
+  isEdit: PropTypes.bool,
+  refreshBankDetail: PropTypes.func,
+};

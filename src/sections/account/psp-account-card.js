@@ -4,14 +4,13 @@ import {
     Box,
     Typography,
     Stack,
-    Chip,
     Grid,
-    IconButton,
     Button,
     Divider,
 } from '@mui/material';
 import Iconify from 'src/components/iconify';
 import Label from 'src/components/label';
+import { format } from 'date-fns';
 
 export default function PspDetailsCard({ psp, onViewRow }) {
     if (!psp) return null;
@@ -23,9 +22,10 @@ export default function PspDetailsCard({ psp, onViewRow }) {
     };
 
     const status = STATUS[psp?.status] || STATUS[0];
+    const showUpdateButton = psp?.status === 0;
 
 
-    
+
 
     return (
         <Card
@@ -65,13 +65,13 @@ export default function PspDetailsCard({ psp, onViewRow }) {
                             fontWeight: 700,
                         })}
                     >
-                        {psp?.pspName?.substring(0, 2)?.toUpperCase()}
+                        {psp?.pspMaster?.name?.substring(0, 2)?.toUpperCase()}
                     </Box>
 
                     <Box>
-                        <Typography fontWeight={600}>{psp?.pspName}</Typography>
+                        <Typography fontWeight={600}>{psp?.pspMaster?.name}</Typography>
                         <Typography variant="body2" color="text.secondary">
-                            {psp?.merchantId}
+                            {psp?.merchantId || 'NA'}
                         </Typography>
                     </Box>
                 </Stack>
@@ -88,8 +88,8 @@ export default function PspDetailsCard({ psp, onViewRow }) {
                     <Iconify icon={status.icon} width={16} />
                     {status.label}
                 </Label>
+                
             </Stack>
-
             <Divider />
             <Box
 
@@ -99,7 +99,7 @@ export default function PspDetailsCard({ psp, onViewRow }) {
                         <Typography variant="body2" color="text.secondary">
                             Submitted on
                         </Typography>
-                        <Typography>{psp?.createdAt}</Typography>
+                        <Typography>{psp?.createdAt ? format(new Date(psp?.createdAt), 'dd/MM/yyyy'): 'NA'}</Typography>
                     </Grid>
 
                     {psp?.status === 2 && (
@@ -107,16 +107,22 @@ export default function PspDetailsCard({ psp, onViewRow }) {
                             <Typography variant="body2" color="text.secondary">
                                 Rejected on
                             </Typography>
-                            <Typography>{psp?.deletedAt}</Typography>
+                            <Typography> {psp?.deletedAt
+                                ? format(new Date(psp.deletedAt), 'dd/MMM/yyyy')
+                                : 'NA'}</Typography>
                         </Grid>
                     )}
 
-                    {psp?.requestedBy && (
+                    {(psp?.status === 0 || psp?.status === 1) && (
                         <Grid item xs={6}>
                             <Typography variant="body2" color="text.secondary">
                                 Requested by
                             </Typography>
-                            <Typography>{psp?.requestedBy}</Typography>
+                            <Typography>
+                                {psp?.requestedBy
+                                    ? format(new Date(psp.requestedBy), 'dd/MMM/yyyy')
+                                    : 'NA'}
+                            </Typography>
                         </Grid>
                     )}
                 </Grid>
@@ -155,22 +161,6 @@ export default function PspDetailsCard({ psp, onViewRow }) {
             )} */}
 
             {/* Actions */}
-            {/* {psp?.status === 2 && (
-                <Stack direction="row" spacing={2} mt={2}>
-                    <Button
-                        fullWidth
-                        variant="contained"
-                        color="inherit"
-                        onClick={onViewRow}
-                    >
-                        Resubmit
-                    </Button>
-
-                    <IconButton color="error">
-                        <Iconify icon="mdi:delete-outline" />
-                    </IconButton>
-                </Stack>
-            )} */}
         </Card>
     );
 }

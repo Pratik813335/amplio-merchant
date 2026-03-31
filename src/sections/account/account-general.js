@@ -1,72 +1,125 @@
 import * as Yup from 'yup';
-import { useCallback } from 'react';
-import { useForm } from 'react-hook-form';
+import { useCallback, useEffect, useMemo } from 'react';
+import { Controller, useForm } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
+
 // @mui
 import LoadingButton from '@mui/lab/LoadingButton';
 import Box from '@mui/material/Box';
 import Card from '@mui/material/Card';
-import Stack from '@mui/material/Stack';
-import Button from '@mui/material/Button';
 import Grid from '@mui/material/Unstable_Grid2';
+import MenuItem from '@mui/material/MenuItem';
+import Stack from '@mui/material/Stack';
 import Typography from '@mui/material/Typography';
-// hooks
-import { useMockedUser } from 'src/hooks/use-mocked-user';
+import Button from '@mui/material/Button';
+import { DatePicker } from '@mui/x-date-pickers/DatePicker';
+
 // utils
 import { fData } from 'src/utils/format-number';
-// assets
-import { countries } from 'src/assets/data';
+
 // components
-import Iconify from 'src/components/iconify';
 import { useSnackbar } from 'src/components/snackbar';
 import FormProvider, {
-  RHFSwitch,
+  RHFCustomFileUploadBox,
+  RHFSelect,
   RHFTextField,
   RHFUploadAvatar,
-  RHFAutocomplete,
 } from 'src/components/hook-form';
+
+import { useGetDealershipTypes } from 'src/api/dealershipTypes';
+import { indianStates } from 'src/_mock/_state';
+import axiosInstance from 'src/utils/axios';
+import { Container } from '@mui/material';
 
 // ----------------------------------------------------------------------
 
+const mapUploadedFile = (file) => {
+  if (!file?.fileUrl) {
+    return null;
+  }
+
+  return {
+    ...file,
+    preview: file.fileUrl,
+    fileOriginalName: file.fileOriginalName || file.fileName,
+  };
+};
+
+const mapMerchantToFormValues = (profile) => {
+  const panDocument = profile?.merchantPanCard?.panCardDocument || profile?.merchantPanCard?.media;
+
+  return {
+    companyName: profile?.companyName || '',
+    cin: profile?.CIN || '',
+    gstin: profile?.GSTIN || '',
+    dateOfIncorporation: profile?.dateOfIncorporation
+      ? new Date(profile.dateOfIncorporation)
+      : null,
+    msmeUdyamRegistrationNo: profile?.udyamRegistrationNumber || '',
+    city: profile?.cityOfIncorporation || '',
+    state: profile?.stateOfIncorporation || '',
+    country: profile?.countryOfIncorporation || 'India',
+    merchantDealershipTypeId: profile?.merchantDealershipTypeId || '',
+    panFile: mapUploadedFile(panDocument),
+    panNumber:
+      profile?.merchantPanCard?.submittedPanNumber ||
+      profile?.merchantPanCard?.extractedPanNumber ||
+      '',
+    panHoldersName:
+      profile?.merchantPanCard?.submittedMerchantName ||
+      profile?.merchantPanCard?.extractedMerchantName ||
+      '',
+    email: profile?.users?.email || '',
+    phoneNumber: profile?.users?.phone || '',
+    merchantLogo: mapUploadedFile(profile?.media),
+    about: profile?.merchantAbout || '',
+  };
+};
+
 export default function BusinessProfile() {
   const { enqueueSnackbar } = useSnackbar();
-
-  const { user } = useMockedUser();
+  const { dealershipTypes = [] } = useGetDealershipTypes();
 
   const UpdateUserSchema = Yup.object().shape({
-    businessName: Yup.string().required('Name is required'),
-    entityType: Yup.string().required('Entity Type is required'),
-    panNo: Yup.string().required('Pan No is required'),
-    gstNo: Yup.string().required('GST No is required'),
+    cin: Yup.string().required('CIN is required'),
+    companyName: Yup.string().required('Legal Entity Name is required'),
+    merchantDealershipTypeId: Yup.string().required('Dealership Type is required'),
+    dateOfIncorporation: Yup.date().nullable().required('Date of Incorporation is required'),
+    gstin: Yup.string().required('GSTIN is required'),
+    city: Yup.string().required('City of Incorporation is required'),
+    state: Yup.string().required('State of Incorporation is required'),
+    country: Yup.string().required('Country is required'),
+    msmeUdyamRegistrationNo: Yup.string().nullable(),
+    panFile: Yup.mixed().nullable().required('PAN file is required'),
+    panNumber: Yup.string().required('PAN Number is required'),
+    panHoldersName: Yup.string().required('PAN Holder Name is required'),
     email: Yup.string().required('Email is required').email('Email must be a valid email address'),
-    photoURL: Yup.mixed().nullable().required('Avatar is required'),
-    phoneNumber: Yup.string().required('Phone number is required'),
-    address: Yup.string().required('Address is required'),
-    uboName: Yup.string().required('UBO Name is required'),
-    uboPan: Yup.string().required('UBO Pan is required'),
-    ownership: Yup.string().required('Ownership % is required'),
-    contactNumber: Yup.string().required('Contact is required'),
-    about: Yup.string().required('About is required'),
-    // not required
-    isPublic: Yup.boolean(),
+    phoneNumber: Yup.string().required('Phone Number is required'),
+    merchantLogo: Yup.mixed().nullable(),
+    about: Yup.string().nullable(),
   });
 
-  const defaultValues = {
-    businessName: user?.displayName || '',
-    entityType: user?.entityType || '',
-    panNo: user?.panNo || '',
-    gstNo: user?.gstNo || '',
-    email: user?.email || '',
-    photoURL: user?.photoURL || null,
-    phoneNumber: user?.phoneNumber || '',
-    uboName: user?.uboName || '',
-    address: user?.address || '',
-    uboPan: user?.uboPan || '',
-    ownership: user?.ownership || '',
-    contactNumber: user?.contactNumber || '',
-    about: user?.about || '',
-    isPublic: user?.isPublic || false,
-  };
+  const defaultValues = useMemo(
+    () => ({
+      companyName: '',
+      cin: '',
+      gstin: '',
+      dateOfIncorporation: null,
+      msmeUdyamRegistrationNo: '',
+      city: '',
+      state: '',
+      country: 'India',
+      merchantDealershipTypeId: '',
+      panFile: null,
+      panNumber: '',
+      panHoldersName: '',
+      email: '',
+      phoneNumber: '',
+      merchantLogo: null,
+      about: '',
+    }),
+    []
+  );
 
   const methods = useForm({
     resolver: yupResolver(UpdateUserSchema),
@@ -75,129 +128,370 @@ export default function BusinessProfile() {
 
   const {
     setValue,
+    getValues,
     handleSubmit,
+    reset,
+    control,
     formState: { isSubmitting },
   } = methods;
 
+  useEffect(() => {
+    const fetchMerchant = async () => {
+      try {
+        const res = await axiosInstance.get('/merchant-profiles/me');
+        const data = res?.data?.profile;
+
+        if (data) {
+          reset(mapMerchantToFormValues(data));
+        }
+      } catch (error) {
+        console.error('fetchMerchant error', error);
+        enqueueSnackbar('Failed to load merchant profile', {
+          variant: 'error',
+        });
+      }
+    };
+
+    fetchMerchant();
+  }, [reset, enqueueSnackbar]);
+
+  const handleDrop = useCallback(
+    async (acceptedFiles) => {
+      const file = acceptedFiles[0];
+      if (!file) return;
+
+      try {
+        const formData = new FormData();
+        formData.append('file', file);
+
+        const { data } = await axiosInstance.post('/files', formData);
+
+        const uploaded = data?.files?.[0];
+
+        if (uploaded) {
+          setValue('merchantLogo', mapUploadedFile(uploaded), { shouldValidate: true });
+          enqueueSnackbar('Logo uploaded!', { variant: 'success' });
+        }
+      } catch (error) {
+        console.error(error);
+        enqueueSnackbar('Upload failed', { variant: 'error' });
+      }
+    },
+    [setValue, enqueueSnackbar]
+  );
+
+  const handleFetchCinDetails = useCallback(async () => {
+    const cin = getValues('cin');
+
+    if (!cin) {
+      enqueueSnackbar('Enter CIN first.', { variant: 'warning' });
+      return;
+    }
+
+    try {
+      const res = await axiosInstance.post('/extraction/company-info', {
+        CIN: cin,
+      });
+
+      const data = res?.data?.data;
+
+      if (res?.data?.success && data) {
+        setValue('companyName', data.companyName || '', {
+          shouldValidate: true,
+          shouldDirty: true,
+        });
+        setValue('gstin', data.gstin || '', {
+          shouldValidate: true,
+          shouldDirty: true,
+        });
+        setValue(
+          'dateOfIncorporation',
+          data.dateOfIncorporation ? new Date(data.dateOfIncorporation) : null,
+          {
+            shouldValidate: true,
+            shouldDirty: true,
+          }
+        );
+        setValue('city', data.cityOfIncorporation || '', {
+          shouldValidate: true,
+          shouldDirty: true,
+        });
+        setValue('state', data.stateOfIncorporation || '', {
+          shouldValidate: true,
+          shouldDirty: true,
+        });
+        setValue('country', data.countryOfIncorporation || 'India', {
+          shouldValidate: true,
+          shouldDirty: true,
+        });
+
+        enqueueSnackbar('CIN details fetched!', { variant: 'success' });
+      }
+    } catch (error) {
+      enqueueSnackbar('Unable to fetch CIN details', { variant: 'error' });
+    }
+  }, [enqueueSnackbar, getValues, setValue]);
+
   const onSubmit = handleSubmit(async (data) => {
     try {
-      await new Promise((resolve) => setTimeout(resolve, 500));
-      enqueueSnackbar('Update success!');
-      console.info('DATA', data);
+      const merchantLogoId = data.merchantLogo?.id ? String(data.merchantLogo.id) : null;
+      const panCardDocumentId = data.panFile?.id ? String(data.panFile.id) : null;
+
+      const payload = {
+        merchantLogo: merchantLogoId,
+        merchantAbout: data.about || '',
+        companyName: data.companyName,
+        CIN: data.cin,
+        GSTIN: data.gstin,
+        dateOfIncorporation: data.dateOfIncorporation
+          ? new Date(data.dateOfIncorporation).toISOString().split('T')[0]
+          : null,
+        udyamRegistrationNumber: data.msmeUdyamRegistrationNo || '',
+        cityOfIncorporation: data.city,
+        stateOfIncorporation: data.state,
+        countryOfIncorporation: data.country,
+        merchantDealershipTypeId: data.merchantDealershipTypeId,
+        panCardDocumentId,
+        submittedPanDetails: {
+          submittedMerchantName: data.panHoldersName,
+          submittedPanNumber: data.panNumber,
+        },
+        email: data.email,
+        phone: data.phoneNumber,
+      };
+
+      const res = await axiosInstance.patch('/merchant-profiles/update-general-info', payload);
+
+      if (res?.data?.success) {
+        const updatedProfile = res?.data?.updatedProfile;
+
+        if (updatedProfile) {
+          reset(mapMerchantToFormValues(updatedProfile));
+        }
+
+        enqueueSnackbar('Merchant profile updated successfully!', {
+          variant: 'success',
+        });
+      } else {
+        enqueueSnackbar(res?.data?.message || 'Something went wrong!', {
+          variant: 'error',
+        });
+      }
     } catch (error) {
       console.error(error);
+      enqueueSnackbar(
+        error?.response?.data?.message || 'Failed to update merchant profile',
+        {
+          variant: 'error',
+        }
+      );
     }
   });
 
-  const handleDrop = useCallback(
-    (acceptedFiles) => {
-      const file = acceptedFiles[0];
-
-      const newFile = Object.assign(file, {
-        preview: URL.createObjectURL(file),
-      });
-
-      if (file) {
-        setValue('photoURL', newFile, { shouldValidate: true });
-      }
-    },
-    [setValue]
-  );
-
   return (
-    <FormProvider methods={methods} onSubmit={onSubmit}>
-      <Stack pb={3}>
-       <Typography variant='h4'>Business Profile Details</Typography>
-       </Stack>
-      <Grid container spacing={3}>
-        
-        <Grid xs={12} md={4}>
-          <Card sx={{ pt: 10, pb: 5, px: 3, textAlign: 'center' }}>
-            <RHFUploadAvatar
-              name="photoURL"
-              maxSize={3145728}
-              onDrop={handleDrop}
-              helperText={
-                <Typography
-                  variant="caption"
-                  sx={{
-                    mt: 3,
-                    mx: 'auto',
-                    display: 'block',
-                    textAlign: 'center',
-                    color: 'text.disabled',
-                  }}
-                >
-                  Allowed *.jpeg, *.jpg, *.png, *.gif
-                  <br /> max size of {fData(3145728)}
-                </Typography>
-              }
-            />
+    <Container>
+      <FormProvider methods={methods} onSubmit={onSubmit}>
+        <Card
+          sx={{
+            p: { xs: 2, sm: 3, md: 4 },
+            boxShadow: '0 4px 12px rgba(0,0,0,0.08)',
+            borderRadius: 2,
+          }}
+        >
+          <Grid container spacing={3}>
+            <Grid xs={12} md={4}>
+              <Card sx={{ pt: 10, pb: 5, px: 3, textAlign: 'center' }}>
+                <RHFUploadAvatar
+                  name="merchantLogo"
+                  maxSize={3145728}
+                  onDrop={handleDrop}
+                  helperText={
+                    <Typography
+                      variant="caption"
+                      sx={{
+                        mt: 3,
+                        mx: 'auto',
+                        display: 'block',
+                        textAlign: 'center',
+                        color: 'text.disabled',
+                      }}
+                    >
+                      Allowed *.jpeg, *.jpg, *.png, *.gif
+                      <br /> max size of {fData(3145728)}
+                    </Typography>
+                  }
+                />
+              </Card>
+            </Grid>
 
-            <RHFSwitch
-              name="isPublic"
-              labelPlacement="start"
-              label="Public Profile"
-              sx={{ mt: 5 }}
-            />
+            <Grid xs={12} md={8}>
+              <Stack spacing={3}>
+                <Grid container spacing={3}>
+                  <Grid xs={12} md={6}>
+                    <RHFTextField
+                      name="cin"
+                      label="CIN *"
+                      placeholder="Enter CIN"
+                      InputProps={{
+                        endAdornment: (
+                          <Button
+                            size="small"
+                            variant="contained"
+                            color='primary'
+                            sx={{
+                              textTransform: 'none',
+                              ml: 1,
 
-            <Button variant="soft" color="error" sx={{ mt: 3 }}>
-              Delete User
-            </Button>
-          </Card>
-        </Grid>
+                            }}
+                            onClick={handleFetchCinDetails}
+                          >
+                            Fetch
+                          </Button>
+                        ),
+                      }}
+                    />
+                  </Grid>
 
-        <Grid xs={12} md={8}>
-          <Card sx={{ p: 3 }}>
-             <Stack spacing={3}>
-            <Box
-              rowGap={3}
-              columnGap={2}
-              display="grid"
-              gridTemplateColumns={{
-                xs: 'repeat(1, 1fr)',
-                sm: 'repeat(2, 1fr)',
-              }}
-            >
-              <RHFTextField name="businessName" label="Business Name" />
-              <RHFTextField name="entityType" label="Legal Entity Type" />
-              <RHFTextField name="panNo" label="Pan No" />
-              <RHFTextField name="gstNo" label="GST No" />
-              <RHFTextField name="email" label="Email Address" />
-              <RHFTextField name="phoneNumber" label="Phone Number" />
-              <RHFTextField name="address" label="Address" />
-              </Box>
-             
-              <Typography variant='h5'>Ultimate Beneficial Owner(UBO)</Typography>
-              
-               <Box
-              rowGap={3}
-              columnGap={2}
-              display="grid"
-              gridTemplateColumns={{
-                xs: 'repeat(1, 1fr)',
-                sm: 'repeat(2, 1fr)',
-              }}
-            >
-              
+                  <Grid xs={12} md={6}>
+                    <RHFTextField
+                      name="companyName"
+                      label="Legal Entity Name *"
+                      placeholder="Company Name"
+                    />
+                  </Grid>
 
-              <RHFTextField name="uboName" label="UBO Name" />
-              <RHFTextField name="uboPan" label="UBO pan" />
-              <RHFTextField name="ownership" label="Ownership%" />
-              <RHFTextField name="contactNumber" label="Contact Number" />
-            </Box>
-            </Stack>
+                  <Grid xs={12} md={6}>
+                    <RHFSelect name="merchantDealershipTypeId" label="Dealership Type *">
+                      <MenuItem value="">Select Dealership Type</MenuItem>
+                      {dealershipTypes.map((option) => (
+                        <MenuItem key={option.id} value={option.id}>
+                          {option.label}
+                        </MenuItem>
+                      ))}
+                    </RHFSelect>
+                  </Grid>
 
-            <Stack spacing={3} alignItems="flex-end" sx={{ mt: 3 }}>
-              <RHFTextField name="about" multiline rows={4} label="About" />
+                  <Grid xs={12} md={6}>
+                    <RHFTextField name="gstin" label="GSTIN *" placeholder="Enter GSTIN" />
+                  </Grid>
 
-              <LoadingButton type="submit" variant="contained" color="primary" loading={isSubmitting}>
-                Save Changes
-              </LoadingButton>
-            </Stack>
-          </Card>
-        </Grid>
-      </Grid>
-    </FormProvider>
+                  <Grid xs={12} md={6}>
+                    <Controller
+                      name="dateOfIncorporation"
+                      control={control}
+                      render={({ field, fieldState: { error } }) => (
+                        <DatePicker
+                          label="Date of Incorporation *"
+                          format="dd/MM/yyyy"
+                          value={field.value}
+                          onChange={(value) => field.onChange(value)}
+                          slotProps={{
+                            textField: {
+                              fullWidth: true,
+                              error: !!error,
+                              helperText: error?.message,
+                            },
+                          }}
+                        />
+                      )}
+                    />
+
+                  </Grid>
+
+                  <Grid xs={12} md={6}>
+                    <RHFTextField
+                      name="msmeUdyamRegistrationNo"
+                      label="MSME / Udyam No."
+                      placeholder="Enter MSME Number"
+                    />
+                  </Grid>
+                  
+                  <Grid xs={12} md={6}>
+                    <RHFTextField name="email" label="Email Address *" placeholder="Email Address" />
+                  </Grid>
+
+                  <Grid xs={12} md={6}>
+                    <RHFTextField name="phoneNumber" label="Phone Number *" placeholder="Phone Number" />
+                  </Grid>
+
+                  <Grid xs={12} md={4}>
+                    <RHFTextField name="city" label="City of Incorporation *" placeholder="City" />
+                  </Grid>
+
+                  <Grid xs={12} md={4}>
+                    <RHFSelect name="state" label="State of Incorporation *">
+                      <MenuItem value="" disabled>
+                        Select State
+                      </MenuItem>
+
+                      {indianStates.map((state) => (
+                        <MenuItem key={state.id} value={state.value}>
+                          {state.label}
+                        </MenuItem>
+                      ))}
+                    </RHFSelect>
+                  </Grid>
+
+                  <Grid xs={12} md={4}>
+                    <RHFTextField name="country" label="Country" placeholder="Country" />
+                  </Grid>
+
+
+
+                </Grid>
+              </Stack>
+            </Grid>
+          </Grid>
+
+          <Typography variant="h6" color='primary' sx={{ fontWeight: 700 }}>
+            PAN Details
+          </Typography>
+
+          <Grid container spacing={3}>
+            <Grid xs={12} md={12}>
+              <RHFCustomFileUploadBox
+                name="panFile"
+                label="Upload PAN Card *"
+                icon="mdi:file-document-outline"
+                accept={{
+                  'image/png': ['.png'],
+                  'image/jpeg': ['.jpg', '.jpeg'],
+                  'application/pdf': ['.pdf'],
+                }}
+              />
+            </Grid>
+
+            <Grid xs={12} md={6}>
+              <RHFTextField
+                name="panNumber"
+                label="PAN Number *"
+                placeholder="Enter PAN Number"
+              />
+            </Grid>
+
+            <Grid xs={12} md={6}>
+              <RHFTextField
+                name="panHoldersName"
+                label="PAN Holder Name *"
+                placeholder="Enter Name"
+              />
+            </Grid>
+
+            <Grid xs={12} md={12}>
+              <RHFTextField name="about" multiline rows={4} label="About Business" />
+            </Grid>
+          </Grid>
+
+          {/* <Box sx={{ mt: 4, display: 'flex', justifyContent: 'flex-end' }}>
+            <LoadingButton type="submit" variant="contained" color="primary" loading={isSubmitting}>
+              Save Changes
+            </LoadingButton>
+          </Box> */}
+
+
+
+        </Card>
+      </FormProvider>
+    </Container>
   );
 }

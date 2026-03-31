@@ -39,7 +39,7 @@ export const endpoints = {
   },
   companyProfile: {
     me: '/company-profiles/me',
-    bankDetails: '/company-profiles/bank-details',
+    bankDetails: '/merchant-profiles/bank-details',
     addressDetails: '/company-profiles/address-details',
   },
 
@@ -73,7 +73,7 @@ export const endpoints = {
   },
 
   businessProfile: {
-data: '/company-profiles/bank-details'
+    data: '/company-profiles/bank-details'
   },
 
   scheduler: {
@@ -116,6 +116,17 @@ data: '/company-profiles/bank-details'
     list: '/dealership-types',
     filterList: (filter) => `/dealership-types?filter=${filter}`,
     details: (id) => `/dealership-types/${id}`,
+  },
+  merchantProfile:{
+    list : '/merchant-profiles/bank-details',
+    profileData: '/merchant-profiles/me',
+    uboDetails: '/merchant-profiles/UBO-details',
+    pspDetails: '/merchant-profiles/PSP-details',
+    documents: '/merchant-profiles/documents',
+    addressDetails: '/merchant-profiles/address-details'
+  },
+  transactions:{
+    list: '/transactions'
   },
   companyEntityType: {
     list: '/company-entity-types',
@@ -166,7 +177,7 @@ data: '/company-profiles/bank-details'
     list: '/credit-ratings',
   },
   bankDetails: {
-    list: '/company-profiles/bank-details',
+    list: '/merchant-profiles/bank-details',
     filterList: (filter) => `/company-profiles/bank-details?filter=${filter}`,
     details: (accountId) => `/company-profiles/bank-details/${accountId}`,
   },

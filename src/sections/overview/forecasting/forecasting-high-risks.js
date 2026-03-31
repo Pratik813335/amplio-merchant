@@ -16,6 +16,12 @@ export default function ForecastingHighRisk({ title, list, ...other }) {
     slidesToScroll: 1,
     infinite: false,
     speed: 500,
+    responsive: [
+            { breakpoint: 1280, settings: { slidesToShow: 4 } },
+            { breakpoint: 960, settings: { slidesToShow: 3 } },
+            { breakpoint: 600, settings: { slidesToShow: 2 } },
+            { breakpoint: 400, settings: { slidesToShow: 1 } },
+          ],
   });
 
   return (
@@ -23,7 +29,12 @@ export default function ForecastingHighRisk({ title, list, ...other }) {
       <CardHeader title={title} />
 
       <Box sx={{ p: 3, position: 'relative', mx: -1 }}>
-        <Carousel ref={carousel.carouselRef} {...carousel.carouselSettings}>
+        <Carousel
+          ref={carousel.carouselRef}
+          {...carousel.carouselSettings}
+         
+        >
+          {' '}
           {list.map((item) => {
             let color = 'success';
 

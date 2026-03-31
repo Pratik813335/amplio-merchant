@@ -8,6 +8,9 @@ import IconButton from '@mui/material/IconButton';
 // components
 import Label from 'src/components/label';
 import Iconify from 'src/components/iconify';
+import { ListItemText } from '@mui/material';
+import { format } from 'date-fns';
+import { fCurrencyindia } from 'src/utils/format-number';
 
 // ----------------------------------------------------------------------
 
@@ -20,40 +23,50 @@ export default function LiquidityEngineTableRow({
   onViewHaircut,
 }) {
   const theme = useTheme();
-  const { receivableId, amount, rail, bank, settlementDate, haircut, netAmount, risk } = row;
+  const { tnsId, totalRecieved, method, bank, settlementDate, haircut, netAmount, risk } = row;
 
-  const getRiskColor = () => {
-    if (risk === 'Low') return 'success';
-    if (risk === 'Medium') return 'warning';
-    if (risk === 'High') return 'error';
-    return 'default';
-  };
+  // const getRiskColor = () => {
+  //   if (risk === 'Low') return 'success';
+  //   if (risk === 'Medium') return 'warning';
+  //   if (risk === 'High') return 'error';
+  //   return 'default';
+  // };
 
   return (
     <TableRow hover selected={selected}>
-      <TableCell>{receivableId}</TableCell>
+      <TableCell>{tnsId}</TableCell>
 
-      <TableCell sx={{ fontWeight: 600 }}>{amount}</TableCell>
+      <TableCell sx={{ fontWeight: 600 }}>₹{fCurrencyindia(Math.round(Number(totalRecieved) || 0))}</TableCell>
 
       <TableCell>
-        <Label variant="soft" color={getRiskColor()}>
-          {rail}
+        <Label variant="soft" color="info">
+          {method}
         </Label>
       </TableCell>
 
       <TableCell>{bank}</TableCell>
 
-      <TableCell>{settlementDate}</TableCell>
-
-      <TableCell sx={{ color: theme.palette.error.main, fontWeight: 600 }}>{haircut}</TableCell>
-
-      <TableCell sx={{ color: theme.palette.success.main, fontWeight: 700 }}>{netAmount}</TableCell>
-
       <TableCell>
+        <ListItemText
+          primary={format(new Date(settlementDate), 'dd MMM yyyy')}
+          secondary={format(new Date(settlementDate), 'p')}
+          primaryTypographyProps={{ typography: 'body2' }}
+          secondaryTypographyProps={{
+            component: 'span',
+            typography: 'caption',
+          }}
+        />
+      </TableCell>
+
+      <TableCell sx={{ color: theme.palette.error.main, fontWeight: 600 }}>{haircut}%</TableCell>
+
+      <TableCell sx={{ color: theme.palette.success.main, fontWeight: 700 }}>₹{fCurrencyindia(Math.round(Number(netAmount) || 0))}</TableCell>
+
+      {/* <TableCell>
         <Label variant="soft" color={getRiskColor()}>
           {risk}
         </Label>
-      </TableCell>
+      </TableCell> */}
 
       <TableCell align="center">
         <Tooltip title="View Details">

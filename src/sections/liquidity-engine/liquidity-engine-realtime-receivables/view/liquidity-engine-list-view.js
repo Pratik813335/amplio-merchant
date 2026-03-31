@@ -1,6 +1,6 @@
 import isEqual from 'lodash/isEqual';
 import { Stack } from '@mui/material';
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 // @mui
 import { alpha, useTheme } from '@mui/material/styles';
 import Card from '@mui/material/Card';
@@ -32,6 +32,7 @@ import {
   TableHeadCustom,
   TablePaginationCustom,
 } from 'src/components/table';
+import PropTypes from 'prop-types';
 import LiquidityEngineTableRow from '../liquidity-engine-row';
 import LiquidityEngineHaircutCalculationCard from '../liquidity-engine-haircut-calculation-card';
 
@@ -45,67 +46,10 @@ const TABLE_HEAD = [
   { id: 'settlementDate', label: 'Settlement Date' },
   { id: 'haircut', label: 'Haircut' },
   { id: 'netAmount', label: 'Net Amount' },
-  { id: 'risk', label: 'Risk' },
+  // { id: 'risk', label: 'Risk' },
   { id: 'action', label: 'Action', width: 50 },
 ];
 
-const DUMMY_RECEIVABLES = [
-  {
-    id: 1,
-    receivableId: 'RCV-2024-001',
-    amount: '₹125,000',
-    rail: 'UPI',
-    bank: 'HDFC',
-    settlementDate: '2024-02-28',
-    haircut: '2.5%',
-    netAmount: '₹121,875',
-    risk: 'Low',
-  },
-  {
-    id: 2,
-    receivableId: 'RCV-2024-002',
-    amount: '₹89,000',
-    rail: 'QR',
-    bank: 'ICICI',
-    settlementDate: '2024-02-28',
-    haircut: '2%',
-    netAmount: '₹87,220',
-    risk: 'Low',
-  },
-  {
-    id: 3,
-    receivableId: 'RCV-2024-003',
-    amount: '₹245,000',
-    rail: 'Card',
-    bank: 'Axis',
-    settlementDate: '2024-02-29',
-    haircut: '3%',
-    netAmount: '₹237,650',
-    risk: 'Medium',
-  },
-  {
-    id: 4,
-    receivableId: 'RCV-2024-004',
-    amount: '₹156,000',
-    rail: 'UPI',
-    bank: 'SBI',
-    settlementDate: '2024-02-29',
-    haircut: '2.5%',
-    netAmount: '₹152,100',
-    risk: 'Low',
-  },
-  {
-    id: 5,
-    receivableId: 'RCV-2024-005',
-    amount: '₹98,000',
-    rail: 'UPI',
-    bank: 'HDFC',
-    settlementDate: '2024-03-01',
-    haircut: '3.5%',
-    netAmount: '₹94,570',
-    risk: 'Medium',
-  },
-];
 
 const defaultFilters = {
   name: '',
@@ -115,17 +59,26 @@ const defaultFilters = {
 
 // ----------------------------------------------------------------------
 
-export default function LiquidityEngineListView() {
+export default function LiquidityEngineListView({ transaction }) {
   const table = useTable();
   const theme = useTheme();
   const settings = useSettingsContext();
   const router = useRouter();
   const confirm = useBoolean();
 
-  const [tableData, setTableData] = useState(DUMMY_RECEIVABLES);
+  const [tableData, setTableData] = useState([]);
+
+
+
   const [filters, setFilters] = useState(defaultFilters);
   const [selectedRow, setSelectedRow] = useState(null);
   const [haircutOpen, setHaircutOpen] = useState(false);
+
+  useEffect(() => {
+
+    setTableData(transaction);
+
+  }, [transaction]);
 
   const dataFiltered = applyFilter({
     inputData: tableData,
@@ -164,7 +117,7 @@ export default function LiquidityEngineListView() {
             action={
               <Button
                 component={RouterLink}
-                href={paths.dashboard.liquidityEngine.new}
+                // href={paths.dashboard.liquidityEngine.new}
                 variant="contained"
                 startIcon={<Iconify icon="lucide:droplets" width={22} />}
                 sx={{
@@ -257,6 +210,21 @@ export default function LiquidityEngineListView() {
     </>
   );
 }
+
+LiquidityEngineListView.propTypes = {
+  transaction: PropTypes.arrayOf(
+    PropTypes.shape({
+      id: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
+      amount: PropTypes.number,
+      netAmount: PropTypes.number,
+      haircut: PropTypes.number,
+      status: PropTypes.string,
+      createdAt: PropTypes.string,
+      method: PropTypes.string,
+      bank: PropTypes.string,
+    })
+  ),
+};
 
 // ----------------------------------------------------------------------
 

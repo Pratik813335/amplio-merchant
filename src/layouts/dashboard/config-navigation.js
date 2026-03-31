@@ -43,6 +43,8 @@ const ICONS = {
   ecommerce: icon('ic_ecommerce'),
   analytics: icon('ic_analytics'),
   dashboard: icon('ic_dashboard'),
+  liquidity: icon('ic_liquidity'),
+  borrowing: icon('ic_borrowing'),
   forecasting: icon('ic_forecasting'),
   settings: icon('ic_settings'),
   transaction: icon('ic_transaction'),
@@ -67,28 +69,31 @@ export function useNavData() {
           // { title: t('booking'), path: paths.dashboard.general.booking, icon: ICONS.booking },
           // { title: t('file'), path: paths.dashboard.general.file, icon: ICONS.file },
           { title: t('dashboard'), path: paths.dashboard.root, icon: ICONS.dashboard },
-          // { title: t('transaction'), path: paths.dashboard.general.transaction, icon: ICONS.analytics },
+          {
+            title: t('liquidity engine'),
+            path: paths.dashboard.liquidityEngine.list,
+            icon: ICONS.liquidity,
+           
+          },
           { title: t('Forecasting'), path: paths.dashboard.general.forecasting, icon: ICONS.forecasting },
           // { title: t('Dashboard'), path: paths.dashboard.general.analytics, icon: ICONS.dashboard },
           { title: t('transaction'), path: paths.dashboard.general.transaction, icon: ICONS.transaction },
           { title: t('settings'), path: paths.dashboard.general.settings, icon: ICONS.settings },
+          {
+            title: t('borrowing'), path: paths.dashboard.borrowing.root,icon: ICONS.borrowing,
+          },
+          // { title: t('borrowing'), path: paths.dashboard.general.borrowing, icon: ICONS.borrowing },
         ],
       },
 
       // MANAGEMENT
       // ----------------------------------------------------------------------
-      {
-        subheader: t('management'),
-        items: [
-          // LIQUIDITY ENGINE
-          {
-            title: t('liquidity engine'),
-            path: paths.dashboard.liquidityEngine.list,
-            icon: ICONS.liquidityEngine,
-            children: [
-              {title: t('list'), path: paths.dashboard.liquidityEngine.list},
-            ]
-          },
+      // {
+      //   subheader: t('management'),
+      //   items: [
+      //     // LIQUIDITY ENGINE
+
+         
           // USER
           // {
           //   title: t('user'),
@@ -204,8 +209,8 @@ export function useNavData() {
           //   path: paths.dashboard.kanban,
           //   icon: ICONS.kanban,
           // },
-        ],
-      },
+      //   ],
+      // },
 
       // DEMO MENU STATES
       // {

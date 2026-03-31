@@ -13,14 +13,14 @@ import {
   DialogContent,
 } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
-import { useGetBankDetails } from 'src/api/bank-details';
-
+import { useGetBankDetails } from 'src/api/merchantProfile';
 import { paths } from 'src/routes/paths';
 import BankDetailsCard from './bank-cards';
 import BankNewForm from './bank-account-new-edit-form';
 
 export default function BusinessBankPage() {
   const [open, setOpen] = useState(false);
+  const [isEdit, setIsedit] = useState(false);
 
   const close = () => {
     setOpen(false);
@@ -28,20 +28,19 @@ export default function BusinessBankPage() {
 
   const { BankDetails, refreshDetails } = useGetBankDetails();
 
-    console.log("dataaaa", BankDetails)
-
   const [bankData, setBankData] = useState();
+  const [selectedbankData, setSelectedBankData] = useState(null);
   const [loading, setLoading] = useState(true);
 
   const router = useRouter();
   const navigate = useNavigate();
 
-  const handleViewRow = useCallback(
+  const handleViewRow =
     (id) => {
-      router.push(paths.dashboard.bankDetails.details(id));
-    },
-    [router]
-  );
+       const data = bankData.find((item) => item.id === id)
+       setSelectedBankData(data);
+       setOpen(true);
+    }
 
   // useEffect(() => {
   //   fetchBankDetails();
@@ -52,7 +51,7 @@ export default function BusinessBankPage() {
       setBankData(BankDetails);
       setLoading(false);
     }
-  }, [BankDetails]);
+  }, [BankDetails,open]);
 
   // const fetchBankDetails = async () => {
   //   try {
@@ -75,11 +74,11 @@ export default function BusinessBankPage() {
     <>
       {/* Header + Button */}
       <Stack direction="row" justifyContent="space-between" alignItems="center" sx={{ mb: 3 }}>
-        <Typography variant="h4" sx={{ fontWeight: 700 }}>
-          Company Bank Details
+        <Typography variant="h4" color="primary" sx={{ fontWeight: 700 }}>
+          Merchant Bank Details
         </Typography>
 
-        <Button variant="contained" color="primary" onClick={() => setOpen(true)}>
+        <Button variant="contained" color="primary" onClick={() => {setSelectedBankData(null); setOpen(true);}} >
           + Create Bank Details
         </Button>
       </Stack>
@@ -88,7 +87,7 @@ export default function BusinessBankPage() {
         <DialogContent>
           <BankNewForm
             refreshBankDetail={refreshDetails}
-            bankDetails={bankData}
+            bankDetails={selectedbankData}
             onclose={close}
           />
         </DialogContent>
