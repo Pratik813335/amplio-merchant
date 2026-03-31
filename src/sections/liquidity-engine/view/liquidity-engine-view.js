@@ -186,9 +186,9 @@ export default function LiquidityEngineView() {
           </Card>
         </Grid>
 
-        <LiquidityEngineListView />
-        <LiquidityEngineCard disbursements={DISBURSEMENT_HISTORY} />
-      </Stack>
-    </Container>
+              <LiquidityEngineListView />
+              <LiquidityEngineCard disbursements={DISBURSEMENT_HISTORY} />
+       </Stack>
+    </Container >
   );
 }

@@ -84,27 +84,29 @@ const calculateTransactionData = (data) => {
 
 
 export function TransactionView() {
-  const settings = useSettingsContext();
-  const { transaction = [], transactionLoading } = useGetTransactions();
+    const settings = useSettingsContext();
+    const { transaction = [], transactionLoading } = useGetTransactions();
 
-  const now = new Date();
-  const countByHour = {};
+    const calculatedTransactions = calculateTransactionData(transaction)
 
-  transaction.forEach((t) => {
-    const tTime = new Date(t.createdAt);
-    if (tTime >= new Date(now.getTime() - 5 * 60 * 60 * 1000)) {
-      const hour = tTime.getHours();
-      countByHour[hour] = (countByHour[hour] || 0) + 1;
-    }
-  });
+    const now = new Date();
+    const countByHour = {};
 
-  const categories = [];
-  const data = [];
-  for (let i = 4; i >= 0; i -= 1) {
-    const hour = new Date(now.getTime() - i * 60 * 60 * 1000).getHours();
-    categories.push(`${hour}:00`);
-    data.push(countByHour[hour] || 0);
-  };
+    transaction.forEach((t) => {
+        const tTime = new Date(t.createdAt);
+        if (tTime >= new Date(now.getTime() - 5 * 60 * 60 * 1000)) {
+            const hour = tTime.getHours();
+            countByHour[hour] = (countByHour[hour] || 0) + 1;
+        }
+    });
+
+    const categories = [];
+    const data = [];
+    for (let i = 4; i >= 0; i -= 1) {
+        const hour = new Date(now.getTime() - i * 60 * 60 * 1000).getHours();
+        categories.push(`${hour}:00`);
+        data.push(countByHour[hour] || 0);
+    };
 
     const DASHBOARD_CARDS = [
         {
@@ -140,69 +142,69 @@ export function TransactionView() {
         return number;
     }
 
-  return (
-    <Container maxWidth={settings.themeStretch ? false : 'xl'}>
-      <Stack spacing={3}>
-        <Grid container spacing={3}>
-          {DASHBOARD_CARDS.map((card, i) => (
-            <>
-              <Grid key={i} item xs={12} md={3}>
-                <WidgetSummaryCard
-                  title="Today's Transactions"
-                  percent={card.transactionPercent}
-                  total={formatNumber(card.todayTotalTransaction)}
-                  timing="Live Count"
-                  icon="codicon:pulse"
+    return (
+        <Container maxWidth={settings.themeStretch ? false : 'xl'}>
+            <Stack spacing={3}>
+                <Grid container spacing={3}>
+                    {DASHBOARD_CARDS.map((card, i) => (
+                        <>
+                            <Grid key={i} item xs={12} md={3}>
+                                <WidgetSummaryCard
+                                    title="Today's Transactions"
+                                    percent={card.transactionPercent}
+                                    total={formatNumber(card.todayTotalTransaction)}
+                                    timing="Live Count"
+                                    icon="codicon:pulse"
+                                />
+                            </Grid>
+                            <Grid key={i} item xs={12} md={3}>
+                                <WidgetSummaryCard
+                                    title="Total Volume"
+                                    percent={card.percent}
+                                    total={`₹${formatNumber(card.totalVolume)}`}
+                                    timing="Today"
+                                    icon="mdi:trending-up"
+                                />
+                            </Grid>
+                            <Grid key={i} item xs={12} md={3}>
+                                <WidgetSummaryCard
+                                    title="Success Rate"
+                                    percent={card.successPercent}
+                                    total={`${card.successRate}%`}
+                                    timing={`Last ${card.successRateHistory} hours`}
+                                    icon="codicon:pulse"
+                                />
+                            </Grid>
+                            <Grid key={i} item xs={12} md={3}>
+                                <WidgetSummaryCard
+                                    title="Avg Transaction"
+                                    percent={card.percent}
+                                    total={`₹${formatNumber(card.avgTransaction)}`}
+                                    timing="Today"
+                                    icon="mdi:trending-up"
+                                />
+                            </Grid>
+                        </>
+                    ))}
+                </Grid>
+                <TransactionGraph
+                    title="Transaction Volume Timeline (Last 5 Hours)"
+                    chart={{
+                        categories,
+                        series: [
+                            {
+                                data: [
+                                    {
+                                        name: 'Transaction Count',
+                                        data,
+                                    },
+                                ],
+                            },
+                        ],
+                    }}
                 />
-              </Grid>
-              <Grid key={i} item xs={12} md={3}>
-                <WidgetSummaryCard
-                  title="Total Volume"
-                  percent={card.percent}
-                  total={`₹${formatNumber(card.totalVolume)}`}
-                  timing="Today"
-                  icon="mdi:trending-up"
-                />
-              </Grid>
-              <Grid key={i} item xs={12} md={3}>
-                <WidgetSummaryCard
-                  title="Success Rate"
-                  percent={card.successPercent}
-                  total={`${card.successRate}%`}
-                  timing={`Last ${card.successRateHistory} hours`}
-                  icon="codicon:pulse"
-                />
-              </Grid>
-              <Grid key={i} item xs={12} md={3}>
-                <WidgetSummaryCard
-                  title="Avg Transaction"
-                  percent={card.percent}
-                  total={`₹${formatNumber(card.avgTransaction)}`}
-                  timing="Today"
-                  icon="mdi:trending-up"
-                />
-              </Grid>
-            </>
-          ))}
-        </Grid>
-        <TransactionGraph
-          title="Transaction Volume Timeline (Last 5 Hours)"
-          chart={{
-            categories,
-            series: [
-              {
-                data: [
-                  {
-                    name: 'Transaction Count',
-                    data,
-                  },
-                ],
-              },
-            ],
-          }}
-        />
-        <TransactionTable />
-      </Stack>
-    </Container>
-  );
+                <TransactionTable />
+            </Stack>
+        </Container>
+    );
 }
