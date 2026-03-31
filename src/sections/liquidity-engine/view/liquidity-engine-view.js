@@ -1,8 +1,12 @@
 /* eslint-disable import/order */
 
 // @mui
-import { Button, Grid, Stack, Typography } from '@mui/material';
+import { Button, Card, Grid, Stack, Typography, useTheme } from '@mui/material';
 import Container from '@mui/material/Container';
+import { RHFTextField } from 'src/components/hook-form';
+import { useForm, FormProvider } from 'react-hook-form';
+import * as Yup from 'yup';
+import { yupResolver } from '@hookform/resolvers/yup';
 // components
 import { useSettingsContext } from 'src/components/settings';
 
@@ -43,16 +47,17 @@ const DASHBOARD_CARDS = [
     receivables: 5,
     haircutTotal: 69000,
     avgHaircut: 2.75,
-    utilizationTotal: 50.10,
+    utilizationTotal: 50.1,
     utilizationPercent: 5.0,
-    railTotal: 70.00,
+    railTotal: 70.0,
     railUPI: 75,
     railCard: 85,
-
-
-
-  }
+  },
 ];
+
+const RequestSchema = Yup.object().shape({
+  amount: Yup.string().required('Amount is Required'),
+});
 
 function formatNumber(num) {
   const number = Number(num);
@@ -75,22 +80,31 @@ function formatNumber(num) {
 
 export default function LiquidityEngineView() {
   const settings = useSettingsContext();
+  const theme = useTheme();
+
+  const methods = useForm({
+    resolver: yupResolver(RequestSchema),
+    defaultValues: { amount: '' },
+  });
+
+  const { handleSubmit } = methods;
+
+  const onSubmit = (data) => {
+    console.log('Amount Added', data);
+  };
 
   return (
-    <Container maxWidth={settings.themeStretch ? false : 'lg'}>
+    <Container maxWidth={settings.themeStretch ? false : 'xl'}>
       <Stack spacing={3}>
         <Grid container spacing={3}>
           {DASHBOARD_CARDS.map((card, i) => (
             <>
               <Grid key={i} item xs={12} md={3}>
-
                 <WidgetSummaryCard
                   title="Total Eligible Today"
                   total={`₹${formatNumber(card.todayEligibleTotal)}`}
                   timing={`${card.receivables} receivables`}
                   icon="lucide:droplets"
-
-
                 />
               </Grid>
               <Grid key={i} item xs={12} md={3}>
@@ -99,7 +113,6 @@ export default function LiquidityEngineView() {
                   total={`₹${formatNumber(card.haircutTotal)}`}
                   timing={`Avg haircut:${card.avgHaircut}`}
                   icon="ph:currency-inr-duotone"
-
                 />
               </Grid>
               <Grid key={i} item xs={12} md={3}>
@@ -109,7 +122,6 @@ export default function LiquidityEngineView() {
                   percent={card.utilizationPercent}
                   timing="Of available limit"
                   icon="ph:trend-up-duotone"
-
                 />
               </Grid>
               <Grid key={i} item xs={12} md={3}>
@@ -118,16 +130,65 @@ export default function LiquidityEngineView() {
                   total={`${card.railTotal}%`}
                   timing={`UPI: ${card.railUPI}% | Card: ${card.railCard}%`}
                   icon="ph:warning-circle-duotone"
-
                 />
               </Grid>
             </>
           ))}
-        </Grid >
+        </Grid>
+
+        <Grid item xs={12} md={6}>
+          <Card sx={{ p: 3 }}>
+            <Typography variant="h6" gutterBottom>
+              Request Receivables Amount
+            </Typography>
+
+            <FormProvider {...methods}>
+              <form onSubmit={handleSubmit(onSubmit)}>
+                <Stack spacing={2}>
+                  <Grid container spacing={2}>
+                    <Grid item xs={10}>
+                      <RHFTextField
+                        name="amount"
+                        label="Enter Amount (₹)"
+                        type="number"
+                        fullWidth
+                        placeholder="e.g. 50000"
+                        sx={{ mt: 1 }}
+                      />
+                    </Grid>
+                    <Grid item xs={2}>
+                      <Button
+                        type="submit"
+                        variant="contained"
+                        sx={{
+                          bgcolor: theme.palette.primary.main,
+                          color: theme.palette.primary.contrastText,
+                          '&:hover': {
+                            bgcolor: theme.palette.primary.dark,
+                          },
+                          borderRadius: 2,
+                          mt: 2,
+                        }}
+                      >
+                        Submit Request
+                      </Button>
+                    </Grid>
+                  </Grid>
+
+                  <Stack direction="row" spacing={2}>
+                    <Button variant="outlined">₹ 100000</Button>
+                    <Button variant="outlined">₹ 200000</Button>
+                    <Button variant="outlined">₹ 500000</Button>
+                  </Stack>
+                </Stack>
+              </form>
+            </FormProvider>
+          </Card>
+        </Grid>
 
         <LiquidityEngineListView />
         <LiquidityEngineCard disbursements={DISBURSEMENT_HISTORY} />
       </Stack>
-    </Container >
+    </Container>
   );
 }
