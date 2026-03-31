@@ -9,39 +9,14 @@ import IconButton from '@mui/material/IconButton';
 import Typography from '@mui/material/Typography';
 // components
 import Iconify from 'src/components/iconify';
+import { fCurrencyindia } from 'src/utils/format-number';
+import { ro } from 'date-fns/locale';
 
 // ----------------------------------------------------------------------
 
-function calculateHaircutBreakdown(grossAmount, haircutPercent) {
-  const totalHaircutAmount = (grossAmount * haircutPercent) / 100;
-  const riskPercent = haircutPercent / 4;
-  const netDisbursement = grossAmount - totalHaircutAmount;
-
-  return {
-    railRisk: riskPercent,
-    bankRisk: riskPercent,
-    settlementDelayRisk: riskPercent,
-    refundReserve: riskPercent,
-    totalHaircut: haircutPercent,
-    netDisbursement,
-  };
-}
-
-function parseAmount(amountStr) {
-  return Number(amountStr.replace(/[₹,]/g, ''));
-}
-
-function parseHaircut(haircutStr) {
-  return Number(haircutStr.replace('%', ''));
-}
 
 function formatCurrency(value) {
   return `₹${Number(value).toLocaleString('en-IN')}`;
-}
-
-function formatRiskPercent(value) {
-  // Remove trailing zeros: 0.625 → "0.625", 0.5 → "0.5", 0.75 → "0.75"
-  return parseFloat(value.toFixed(3)).toString();
 }
 
 // ----------------------------------------------------------------------
@@ -51,15 +26,12 @@ export default function LiquidityEngineHaircutCalculationCard({ open, onClose, r
 
   if (!row) return null;
 
-  const grossAmount = parseAmount(row.amount);
-  const haircutPercent = parseHaircut(row.haircut);
-  const breakdown = calculateHaircutBreakdown(grossAmount, haircutPercent);
 
   const riskRows = [
-    { label: `Rail Risk (${row.rail})`, value: breakdown.railRisk },
-    { label: `Bank Risk (${row.bank})`, value: breakdown.bankRisk },
-    { label: 'Settlement Delay Risk', value: breakdown.settlementDelayRisk },
-    { label: 'Refund Reserve', value: breakdown.refundReserve },
+    { label: `Rail Risk (${row.settlementMethod})`, value: row.delayRisk },
+    // { label: `Bank Risk (${row.bank})`, value: breakdown.bankRisk },
+    { label: 'Settlement Delay Risk', value: row.riskScore },
+    { label: 'Refund Reserve', value: row.chargebackRisk },
   ];
 
   return (
@@ -82,7 +54,7 @@ export default function LiquidityEngineHaircutCalculationCard({ open, onClose, r
             Haircut Calculation
           </Typography>
           <Typography variant="body2" color="text.secondary">
-            Breakdown for {row.receivableId}
+            Breakdown for {row.tnsId}
           </Typography>
         </Stack>
         <IconButton
@@ -100,7 +72,7 @@ export default function LiquidityEngineHaircutCalculationCard({ open, onClose, r
           Gross Amount
         </Typography>
         <Typography variant="body1" fontWeight={600} color="text.primary">
-          {formatCurrency(grossAmount)}
+          ₹{fCurrencyindia(Math.round(Number(row.totalRecieved)|| 0 ))}
         </Typography>
       </Stack>
 
@@ -114,7 +86,7 @@ export default function LiquidityEngineHaircutCalculationCard({ open, onClose, r
               {item.label}
             </Typography>
             <Typography variant="body2" sx={{ color: theme.palette.error.main }}>
-              -{formatRiskPercent(item.value)}%
+              -{(item.value)}%
             </Typography>
           </Stack>
         ))}
@@ -128,7 +100,7 @@ export default function LiquidityEngineHaircutCalculationCard({ open, onClose, r
           Total Haircut
         </Typography>
         <Typography variant="body1" fontWeight={700} sx={{ color: theme.palette.error.main }}>
-          -{breakdown.totalHaircut}%
+          -{row.haircut}%
         </Typography>
       </Stack>
 
@@ -146,7 +118,7 @@ export default function LiquidityEngineHaircutCalculationCard({ open, onClose, r
             Net Disbursement
           </Typography>
           <Typography variant="body1" fontWeight={700} sx={{ color: theme.palette.success.dark }}>
-            {formatCurrency(breakdown.netDisbursement)}
+            {formatCurrency(Math.round(Number(row.netAmount)|| 0 ))}
           </Typography>
         </Stack>
       </Box>
@@ -158,11 +130,15 @@ LiquidityEngineHaircutCalculationCard.propTypes = {
   open: PropTypes.bool,
   onClose: PropTypes.func,
   row: PropTypes.shape({
-    receivableId: PropTypes.string,
+    tnsId: PropTypes.string,
     amount: PropTypes.string,
-    rail: PropTypes.string,
+    settlementMethod: PropTypes.string,
     bank: PropTypes.string,
     haircut: PropTypes.string,
     netAmount: PropTypes.string,
+    totalRecieved: PropTypes.string,
+    delayRisk: PropTypes.number,
+    riskScore: PropTypes.number,
+    chargebackRisk: PropTypes.number,
   }),
 };

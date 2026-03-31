@@ -13,7 +13,9 @@ import { useSettingsContext } from 'src/components/settings';
 import WidgetSummaryCard from 'src/components/card/widget-summary-card';
 import { LiquidityEngineListView } from '../liquidity-engine-realtime-receivables/view';
 import LiquidityEngineCard from '../liquidity-engine-card';
-// import FormProvider, { RHFTextField } from 'src/components/hook-form';
+import { useGetTransactions } from 'src/api/transaction';
+
+
 
 // ----------------------------------------------------------------------
 
@@ -41,6 +43,19 @@ const DISBURSEMENT_HISTORY = [
   },
 ];
 
+
+
+
+const isToday = (date) => {
+  const d = new Date(date);
+  const today = new Date();
+
+  return (
+    d.getDate() === today.getDate() &&
+    d.getMonth() === today.getMonth() &&
+    d.getFullYear() === today.getFullYear()
+  );
+};
 const DASHBOARD_CARDS = [
   {
     todayEligibleTotal: 710000,
@@ -80,6 +95,34 @@ function formatNumber(num) {
 
 export default function LiquidityEngineView() {
   const settings = useSettingsContext();
+  const {
+    transaction = [],
+    transactionLoading,
+  } = useGetTransactions();
+
+  const todayTransactions = transaction.filter(
+    (item) => item.status === 'captured' && isToday(item.createdAt)
+  );
+
+  const todayEligibleTotal = todayTransactions.reduce(
+    (sum, item) => sum + (item.amount || 0),
+    0
+  );
+
+  const receivablesCount = todayTransactions.length;
+
+  const totalNetAmount = todayTransactions.reduce(
+    (sum, item) => sum + (item.netAmount || 0),
+    0
+  );
+
+  const avgHaircut =
+    todayTransactions.length > 0
+      ? (
+        todayTransactions.reduce((sum, item) => sum + (item.haircut || 0), 0) /
+        todayTransactions.length
+      ).toFixed(2)
+      : 0;
   const theme = useTheme();
 
   const methods = useForm({
@@ -97,87 +140,47 @@ export default function LiquidityEngineView() {
     <Container maxWidth={settings.themeStretch ? false : 'xl'}>
       <Stack spacing={3}>
         <Grid container spacing={3}>
-          {DASHBOARD_CARDS.map((card, i) => (
-            <>
-              <Grid key={i} item xs={12} md={3}>
-                <WidgetSummaryCard
-                  title="Total Eligible Today"
-                  total={`₹${formatNumber(card.todayEligibleTotal)}`}
-                  timing={`${card.receivables} receivables`}
-                  icon="lucide:droplets"
-                />
-              </Grid>
-              <Grid key={i} item xs={12} md={3}>
-                <WidgetSummaryCard
-                  title="Net After Haircut"
-                  total={`₹${formatNumber(card.haircutTotal)}`}
-                  timing={`Avg haircut:${card.avgHaircut}`}
-                  icon="ph:currency-inr-duotone"
-                />
-              </Grid>
-              <Grid key={i} item xs={12} md={3}>
-                <WidgetSummaryCard
-                  title="Utilization Rate"
-                  total={`${card.utilizationTotal}%`}
-                  percent={card.utilizationPercent}
-                  timing="Of available limit"
-                  icon="ph:trend-up-duotone"
-                />
-              </Grid>
-              <Grid key={i} item xs={12} md={3}>
-                <WidgetSummaryCard
-                  title="Rail Limit Usage"
-                  total={`${card.railTotal}%`}
-                  timing={`UPI: ${card.railUPI}% | Card: ${card.railCard}%`}
-                  icon="ph:warning-circle-duotone"
-                />
-              </Grid>
-            </>
-          ))}
+          <Grid item xs={12} md={3}>
+            <WidgetSummaryCard
+              title="Total Eligible Today"
+              total={`₹${formatNumber(todayEligibleTotal)}`}
+              timing={`${receivablesCount} receivables`}
+              icon="lucide:droplets"
+            />
+          </Grid>
+
+          <Grid item xs={12} md={3}>
+            <WidgetSummaryCard
+              title="Net After Haircut"
+              total={`₹${formatNumber(totalNetAmount)}`}
+              timing={`Avg haircut: ${avgHaircut}%`}
+              icon="ph:currency-inr-duotone"
+            />
+          </Grid>
+
+          <Grid item xs={12} md={3}>
+            <WidgetSummaryCard
+              title="Utilization Rate"
+              total= {0}
+              timing="Of available limit"
+              icon="ph:trend-up-duotone"
+            />
+          </Grid>
+
+          <Grid item xs={12} md={3}>
+            <WidgetSummaryCard
+              title="Rail Limit Usage"
+              total={0}  
+              timing="UPI | Card"
+              icon="ph:warning-circle-duotone"
+            />
+          </Grid>
         </Grid>
 
-        <Grid item xs={12} md={6}>
-          <Card sx={{ p: 3 }}>
-            <Typography variant="h6" mb={2} >
-              Request Receivables Amount
-            </Typography> 
 
-            <FormProvider {...methods} onSubmit={onSubmit} >
-                <Stack spacing={2}>
-                  <Grid container spacing={2} alignItems='center' >
-                    <Grid item xs={10}>
-                      <RHFTextField
-                        name="amount"
-                        label="Enter Amount (₹)"
-                        type="number"
-                        fullWidth
-                        placeholder="e.g. 500000"
-                      />
-                    </Grid>
-                    <Grid item xs={2}>
-                      <Button
-                        type="submit"
-                        variant="contained"
-                        color='primary'
-                      >
-                        Submit Request
-                      </Button>
-                    </Grid>
-                  </Grid>
-
-                  <Stack direction="row" spacing={2}>
-                    <Button variant="outlined">₹ 100000</Button>
-                    <Button variant="outlined">₹ 200000</Button>
-                    <Button variant="outlined">₹ 500000</Button>
-                  </Stack>
-                </Stack>
-            </FormProvider>
-          </Card>
-        </Grid>
-
-        <LiquidityEngineListView />
+        <LiquidityEngineListView transaction = {todayTransactions} />
         <LiquidityEngineCard disbursements={DISBURSEMENT_HISTORY} />
       </Stack>
-    </Container>
+    </Container >
   );
 }
