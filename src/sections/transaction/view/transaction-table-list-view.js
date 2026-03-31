@@ -189,13 +189,15 @@ const STATUS_OPTIONS = [
   { value: 'captured', label: 'Captured' },
   { value: 'failed', label: 'Failed' },
   { value: 'created', label: 'Created' },
+  { value: 'refunded', label: 'Refunded' },
+  { value: 'settled', label: 'Settled' },
 ];
 
 const defaultFilters = {
   name: '',
   bank: [],
   status: [],
-  rail:[]
+  rail: []
 };
 
 // ----------------------------------------------------------------------
@@ -212,14 +214,14 @@ export default function TransactionTable() {
     transactionLoading,
   } = useGetTransactions();
 
-   // const { transaction, transactionLoading, transactionEmpty } = useGettransaction();
+  // const { transaction, transactionLoading, transactionEmpty } = useGettransaction();
 
   const confirm = useBoolean();
 
   useEffect(() => {
-   
-      setTableData(transaction);
-    
+
+    setTableData(transaction);
+
   }, [transaction]);
 
   const dataFiltered = applySort({
@@ -252,104 +254,104 @@ export default function TransactionTable() {
   }, []);
 
   return (
-    
-        <Card>
-          <TransactionTableToolbar
-            filters={filters}
-            onFilters={handleFilters}
-            //
-            railOptions={RAIL_OPTIONS}
-            bankOptions={BANK_OPTIONS}
-            statusOptions={STATUS_OPTIONS}
-            
-          />
 
-          {canReset && (
-            <TransactionTableFiltersResult
-              filters={filters}
-              onFilters={handleFilters}
-              onResetFilters={handleResetFilters}
-              results={dataFiltered.length}
-              sx={{ p: 2.5, pt: 0 }}
-            />
-          )}
+    <Card>
+      <TransactionTableToolbar
+        filters={filters}
+        onFilters={handleFilters}
+        //
+        railOptions={RAIL_OPTIONS}
+        bankOptions={BANK_OPTIONS}
+        statusOptions={STATUS_OPTIONS}
 
-          <TableContainer sx={{ position: 'relative', overflow: 'unset' }}>
-            <TableSelectedAction
-              dense={table.dense}
-              numSelected={table.selected.length}
+      />
+
+      {canReset && (
+        <TransactionTableFiltersResult
+          filters={filters}
+          onFilters={handleFilters}
+          onResetFilters={handleResetFilters}
+          results={dataFiltered.length}
+          sx={{ p: 2.5, pt: 0 }}
+        />
+      )}
+
+      <TableContainer sx={{ position: 'relative', overflow: 'unset' }}>
+        <TableSelectedAction
+          dense={table.dense}
+          numSelected={table.selected.length}
+          rowCount={tableData.length}
+          onSelectAllRows={(checked) =>
+            table.onSelectAllRows(
+              checked,
+              tableData.map((row) => row.id)
+            )
+          }
+          action={
+            <Tooltip title="Delete">
+              <IconButton color="primary" onClick={confirm.onTrue}>
+                <Iconify icon="solar:trash-bin-trash-bold" />
+              </IconButton>
+            </Tooltip>
+          }
+        />
+
+        <Scrollbar>
+          <Table size={table.dense ? 'small' : 'medium'} sx={{ minWidth: 960 }}>
+            <TableHeadCustom
+              order={table.order}
+              orderBy={table.orderBy}
+              headLabel={TABLE_HEAD}
               rowCount={tableData.length}
-              onSelectAllRows={(checked) =>
-                table.onSelectAllRows(
-                  checked,
-                  tableData.map((row) => row.id)
-                )
-              }
-              action={
-                <Tooltip title="Delete">
-                  <IconButton color="primary" onClick={confirm.onTrue}>
-                    <Iconify icon="solar:trash-bin-trash-bold" />
-                  </IconButton>
-                </Tooltip>
-              }
+              numSelected={table.selected.length}
+              onSort={table.onSort}
+
             />
 
-            <Scrollbar>
-              <Table size={table.dense ? 'small' : 'medium'} sx={{ minWidth: 960 }}>
-                <TableHeadCustom
-                  order={table.order}
-                  orderBy={table.orderBy}
-                  headLabel={TABLE_HEAD}
-                  rowCount={tableData.length}
-                  numSelected={table.selected.length}
-                  onSort={table.onSort}
-    
-                />
+            <TableBody>
 
-                <TableBody>
-                 
-                  {(transactionLoading ? [] : dataFiltered)
-                        .slice(
-                          table.page * table.rowsPerPage,
-                          table.page * table.rowsPerPage + table.rowsPerPage
-                        )
-                        .map((row) => (
-                          <TransactionTableRow
-                            key={row.id}
-                            row={row}
-                            selected={table.selected.includes(row.id)}
-                            onSelectRow={() => table.onSelectRow(row.id)}
-                            
-                          />
-                        ))}
-                  
+              {(transactionLoading ? [] : dataFiltered)
+                .slice(
+                  table.page * table.rowsPerPage,
+                  table.page * table.rowsPerPage + table.rowsPerPage
+                )
+                .map((row) => (
+                  <TransactionTableRow
+                    key={row.id}
+                    row={row}
+                    selected={table.selected.includes(row.id)}
+                    onSelectRow={() => table.onSelectRow(row.id)}
 
-                  <TableEmptyRows
-                    height={denseHeight}
-                    emptyRows={emptyRows(table.page, table.rowsPerPage, tableData.length)}
                   />
+                ))}
 
-                  {transactionLoading && <TableSkeleton rowCount={table.rowsPerPage} cellCount={TABLE_HEAD.length} />}
 
-                  <TableNoData notFound={notFound && !transactionLoading} />
-                </TableBody>
-              </Table>
-            </Scrollbar>
-          </TableContainer>
+              <TableEmptyRows
+                height={denseHeight}
+                emptyRows={emptyRows(table.page, table.rowsPerPage, tableData.length)}
+              />
 
-          <TablePaginationCustom
-            count={dataFiltered.length}
-            page={table.page}
-            rowsPerPage={table.rowsPerPage}
-            onPageChange={table.onChangePage}
-            onRowsPerPageChange={table.onChangeRowsPerPage}
-            //
-            dense={table.dense}
-            onChangeDense={table.onChangeDense}
-          />
-        </Card>
-      
-    
+              {transactionLoading && <TableSkeleton rowCount={table.rowsPerPage} cellCount={TABLE_HEAD.length} />}
+
+              <TableNoData notFound={notFound && !transactionLoading} />
+            </TableBody>
+          </Table>
+        </Scrollbar>
+      </TableContainer>
+
+      <TablePaginationCustom
+        count={dataFiltered.length}
+        page={table.page}
+        rowsPerPage={table.rowsPerPage}
+        onPageChange={table.onChangePage}
+        onRowsPerPageChange={table.onChangeRowsPerPage}
+        //
+        dense={table.dense}
+        onChangeDense={table.onChangeDense}
+      />
+    </Card>
+
+
   );
 }
 

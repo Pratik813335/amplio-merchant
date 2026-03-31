@@ -1,7 +1,12 @@
 /* eslint-disable import/order */
+
 // @mui
-import { Grid, Stack } from '@mui/material';
+import { Button, Card, Grid, Stack, Typography, useTheme } from '@mui/material';
 import Container from '@mui/material/Container';
+import { RHFTextField } from 'src/components/hook-form';
+import { useForm, FormProvider } from 'react-hook-form';
+import * as Yup from 'yup';
+import { yupResolver } from '@hookform/resolvers/yup';
 // components
 import { useSettingsContext } from 'src/components/settings';
 
@@ -52,6 +57,11 @@ const isToday = (date) => {
   );
 };
 
+
+const RequestSchema = Yup.object().shape({
+  amount: Yup.number().required('Amount is Required'),
+});
+
 function formatNumber(num) {
   const number = Number(num);
 
@@ -101,9 +111,21 @@ export default function LiquidityEngineView() {
         todayTransactions.length
       ).toFixed(2)
       : 0;
+  const theme = useTheme();
+
+  const methods = useForm({
+    resolver: yupResolver(RequestSchema),
+    defaultValues: { amount: '' },
+  });
+
+  const { handleSubmit } = methods;
+
+  const onSubmit = (data) => {
+    console.log('Amount Added', data);
+  };
 
   return (
-    <Container maxWidth={settings.themeStretch ? false : 'lg'}>
+    <Container maxWidth={settings.themeStretch ? false : 'xl'}>
       <Stack spacing={3}>
         <Grid container spacing={3}>
           <Grid item xs={12} md={3}>
@@ -142,6 +164,46 @@ export default function LiquidityEngineView() {
             />
           </Grid>
         </Grid>
+
+        <Grid item xs={12} md={6}>
+          <Card sx={{ p: 3 }}>
+            <Typography variant="h6" mb={2} >
+              Request Receivables Amount
+            </Typography> 
+
+            <FormProvider {...methods} onSubmit={onSubmit} >
+                <Stack spacing={2}>
+                  <Grid container spacing={2} alignItems='center' >
+                    <Grid item xs={10}>
+                      <RHFTextField
+                        name="amount"
+                        label="Enter Amount (₹)"
+                        type="number"
+                        fullWidth
+                        placeholder="e.g. 500000"
+                      />
+                    </Grid>
+                    <Grid item xs={2}>
+                      <Button
+                        type="submit"
+                        variant="contained"
+                        color='primary'
+                      >
+                        Submit Request
+                      </Button>
+                    </Grid>
+                  </Grid>
+
+                  <Stack direction="row" spacing={2}>
+                    <Button variant="outlined">₹ 100000</Button>
+                    <Button variant="outlined">₹ 200000</Button>
+                    <Button variant="outlined">₹ 500000</Button>
+                  </Stack>
+                </Stack>
+            </FormProvider>
+          </Card>
+        </Grid>
+
 
 
         <LiquidityEngineListView transaction = {todayTransactions} />
