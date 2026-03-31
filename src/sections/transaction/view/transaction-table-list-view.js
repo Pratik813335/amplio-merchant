@@ -47,7 +47,6 @@ const TABLE_HEAD = [
   { id: 'risk', label: 'Created At' },
   // { id: 'location', label: 'Location' },
   // { id: 'time', label: 'Time' },
- 
 ];
 
 // const transaction=[

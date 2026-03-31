@@ -12,16 +12,15 @@ import Label from 'src/components/label';
 
 // ----------------------------------------------------------------------
 
-const RUPEE_SYMBOL = '\u20B9';
 
 export default function TransactionTableRow({ row, selected }) {
-  const { tnsId, amount, method, bank, psp, status, createdAt } = row;
+  const { tnsId, totalRecieved, method, bank, psp, status, createdAt } = row;
 
   return (
     <TableRow hover selected={selected}>
       <TableCell>{tnsId}</TableCell>
 
-      <TableCell>{RUPEE_SYMBOL}{fCurrencyindia(amount)}</TableCell>
+      <TableCell>₹{fCurrencyindia(Math.round(Number(totalRecieved) || 0))}</TableCell>
 
       <TableCell>
         <Label variant="soft" color="info">
