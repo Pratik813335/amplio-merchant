@@ -1,4 +1,5 @@
 /* eslint-disable import/order */
+
 // @mui
 import { Button, Card, Grid, Stack, Typography, useTheme } from '@mui/material';
 import Container from '@mui/material/Container';
@@ -12,6 +13,7 @@ import { useSettingsContext } from 'src/components/settings';
 import WidgetSummaryCard from 'src/components/card/widget-summary-card';
 import { LiquidityEngineListView } from '../liquidity-engine-realtime-receivables/view';
 import LiquidityEngineCard from '../liquidity-engine-card';
+// import FormProvider, { RHFTextField } from 'src/components/hook-form';
 
 // ----------------------------------------------------------------------
 
@@ -54,7 +56,7 @@ const DASHBOARD_CARDS = [
 ];
 
 const RequestSchema = Yup.object().shape({
-  amount: Yup.string().required('Amount is Required'),
+  amount: Yup.number().required('Amount is Required'),
 });
 
 function formatNumber(num) {
@@ -136,37 +138,27 @@ export default function LiquidityEngineView() {
 
         <Grid item xs={12} md={6}>
           <Card sx={{ p: 3 }}>
-            <Typography variant="h6" gutterBottom>
+            <Typography variant="h6" mb={2} >
               Request Receivables Amount
-            </Typography>
+            </Typography> 
 
-            <FormProvider {...methods}>
-              <form onSubmit={handleSubmit(onSubmit)}>
+            <FormProvider {...methods} onSubmit={onSubmit} >
                 <Stack spacing={2}>
-                  <Grid container spacing={2}>
+                  <Grid container spacing={2} alignItems='center' >
                     <Grid item xs={10}>
                       <RHFTextField
                         name="amount"
                         label="Enter Amount (₹)"
                         type="number"
                         fullWidth
-                        placeholder="e.g. 50000"
-                        sx={{ mt: 1 }}
+                        placeholder="e.g. 500000"
                       />
                     </Grid>
                     <Grid item xs={2}>
                       <Button
                         type="submit"
                         variant="contained"
-                        sx={{
-                          bgcolor: theme.palette.primary.main,
-                          color: theme.palette.primary.contrastText,
-                          '&:hover': {
-                            bgcolor: theme.palette.primary.dark,
-                          },
-                          borderRadius: 2,
-                          mt: 2,
-                        }}
+                        color='primary'
                       >
                         Submit Request
                       </Button>
@@ -179,7 +171,6 @@ export default function LiquidityEngineView() {
                     <Button variant="outlined">₹ 500000</Button>
                   </Stack>
                 </Stack>
-              </form>
             </FormProvider>
           </Card>
         </Grid>
