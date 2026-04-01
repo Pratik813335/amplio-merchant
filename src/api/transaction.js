@@ -5,21 +5,45 @@ import { fetcher, endpoints } from 'src/utils/axios';
 
 // ----------------------------------------------------------------------
 
+// export function useGetTransactions() {
+//   const URL = endpoints.transactions.list;
+
+//   const { data, isLoading, error, isValidating, mutate } = useSWR(URL, fetcher);
+//     const refreshTrasnsactions = () => {
+//     mutate();
+//   };
+
+//   const memoizedValue = useMemo(
+//     () => ({
+//       transaction: data || [],
+//       transactionLoading: isLoading,
+//       transactionError: error,
+//       transactionValidating: isValidating,
+//       transactionEmpty: !isLoading && (!data || data.length === 0),
+//       refreshTrasnsactions,
+//     }),
+//     [data, error, isLoading, isValidating, mutate]
+//   );
+
+
+//   return memoizedValue;
+// }
+
+
 export function useGetTransactions() {
   const URL = endpoints.transactions.list;
 
-  const { data, isLoading, error, isValidating } = useSWR(URL, fetcher);
+  const { data, isLoading, error, isValidating, mutate } = useSWR(URL, fetcher);
+  const refreshTrasnsactions = () => {
+    mutate();
+  };
 
-  const memoizedValue = useMemo(
-    () => ({
-      transaction: data || [],
-      transactionLoading: isLoading,
-      transactionError: error,
-      transactionValidating: isValidating,
-      transactionEmpty: !isLoading && (!data || data.length === 0),
-    }),
-    [data, error, isLoading, isValidating]
-  );
-
-  return memoizedValue;
+  return {
+    transaction: data || [],
+    transactionLoading: isLoading,
+    transactionError: error,
+    transactionValidating: isValidating,
+    transactionEmpty: !isLoading && (!data || data.length === 0),
+    refreshTrasnsactions,
+  };
 }

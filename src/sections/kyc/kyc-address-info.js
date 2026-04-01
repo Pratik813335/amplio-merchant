@@ -1,4 +1,4 @@
-import { useForm, FormProvider, useWatch } from 'react-hook-form';
+import { useForm, useWatch } from 'react-hook-form';
 import { useState } from 'react';
 import * as Yup from 'yup';
 import { yupResolver } from '@hookform/resolvers/yup';
@@ -17,6 +17,7 @@ import Iconify from 'src/components/iconify';
 // components
 import RHFTextField from 'src/components/hook-form/rhf-text-field';
 import { RHFUploadBox } from 'src/components/hook-form/rhf-upload';
+import FormProvider from 'src/components/hook-form';
 
 // ----------------------------------------------------------------------
 
@@ -143,8 +144,8 @@ export default function KycAddressInfo() {
 
   return (
     <Container maxWidth="lg" sx={{ py: 4 }}>
-      <FormProvider {...methods}>
-        <form onSubmit={handleSubmit(onSubmit)}>
+      <FormProvider methods={methods} onSubmit={handleSubmit(onSubmit)}>
+     
           <Paper
             // sx={{
             //   p: { xs: 2, md: 4 },
@@ -414,7 +415,7 @@ export default function KycAddressInfo() {
               </Box>
             </Stack>
           </Paper>
-        </form>
+
       </FormProvider>
     </Container>
   );

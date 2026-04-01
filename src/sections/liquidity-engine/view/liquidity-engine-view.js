@@ -1,50 +1,28 @@
 /* eslint-disable import/order */
 
-// @mui
-import { Button, Card, Grid, Stack, Typography, useTheme } from '@mui/material';
+import { Button, Card, Grid, Stack, Typography } from '@mui/material';
 import Container from '@mui/material/Container';
-import { RHFTextField } from 'src/components/hook-form';
-import { useForm, FormProvider } from 'react-hook-form';
+import FormProvider, { RHFTextField } from 'src/components/hook-form';
+import { useForm } from 'react-hook-form';
 import * as Yup from 'yup';
 import { yupResolver } from '@hookform/resolvers/yup';
-// components
 import { useSettingsContext } from 'src/components/settings';
-
 import WidgetSummaryCard from 'src/components/card/widget-summary-card';
 import { LiquidityEngineListView } from '../liquidity-engine-realtime-receivables/view';
 import LiquidityEngineCard from '../liquidity-engine-card';
 import { useGetTransactions } from 'src/api/transaction';
-
+import { useMemo } from 'react';
+import axiosInstance from 'src/utils/axios';
+import { useSnackbar } from 'src/components/snackbar';
 
 
 // ----------------------------------------------------------------------
 
 const DISBURSEMENT_HISTORY = [
-  {
-    id: 1,
-    date: '2024-02-27',
-    receivablesFinanced: 245,
-    amount: '₹48.2L',
-    status: 'Completed',
-  },
-  {
-    id: 2,
-    date: '2024-02-26',
-    receivablesFinanced: 198,
-    amount: '₹39.5L',
-    status: 'Completed',
-  },
-  {
-    id: 3,
-    date: '2024-02-25',
-    receivablesFinanced: 267,
-    amount: '₹52.4L',
-    status: 'Completed',
-  },
+  { id: 1, date: '2024-02-27', receivablesFinanced: 245, amount: '₹48.2L', status: 'Completed' },
+  { id: 2, date: '2024-02-26', receivablesFinanced: 198, amount: '₹39.5L', status: 'Completed' },
+  { id: 3, date: '2024-02-25', receivablesFinanced: 267, amount: '₹52.4L', status: 'Completed' },
 ];
-
-
-
 
 const isToday = (date) => {
   const d = new Date(date);
@@ -57,43 +35,35 @@ const isToday = (date) => {
   );
 };
 
-
-const RequestSchema = Yup.object().shape({
-  amount: Yup.number().required('Amount is Required'),
-});
-
 function formatNumber(num) {
   const number = Number(num);
 
-  if (number >= 10000000) {
-    return `${(number / 10000000).toFixed(2)} Cr`;
-  }
-
-  if (number >= 100000) {
-    return `${(number / 100000).toFixed(2)} L`;
-  }
-
-  if (number >= 1000) {
-    return `${(number / 1000).toFixed(2)} K`;
-  }
+  if (number >= 10000000) return `${(number / 10000000).toFixed(2)} Cr`;
+  if (number >= 100000) return `${(number / 100000).toFixed(2)} L`;
+  if (number >= 1000) return `${(number / 1000).toFixed(2)} K`;
 
   return number;
 }
+
 // ----------------------------------------------------------------------
 
 export default function LiquidityEngineView() {
   const settings = useSettingsContext();
-  const {
-    transaction = [],
-    transactionLoading,
-  } = useGetTransactions();
+
+  const { enqueueSnackbar } = useSnackbar();
+
+  const RequestSchema = Yup.object().shape({
+    requestReceivableAmount: Yup.number().required('Amount is Required'),
+  });
+
+  const { transaction = [], refreshTrasnsactions } = useGetTransactions();
 
   const todayTransactions = transaction.filter(
     (item) => item.status === 'captured' && isToday(item.createdAt)
   );
 
   const todayEligibleTotal = todayTransactions.reduce(
-    (sum, item) => sum + (item.amount || 0),
+    (sum, item) => sum + (item.totalRecieved || 0),
     0
   );
 
@@ -104,6 +74,13 @@ export default function LiquidityEngineView() {
     0
   );
 
+  const totalRequested = todayTransactions.reduce(
+    (sum, item) => sum + (item.requestReceivableAmount || 0),
+    0
+  );
+
+  const availableBalance = totalNetAmount - totalRequested;
+
   const avgHaircut =
     todayTransactions.length > 0
       ? (
@@ -111,104 +88,140 @@ export default function LiquidityEngineView() {
         todayTransactions.length
       ).toFixed(2)
       : 0;
-  const theme = useTheme();
+
+  const defaultValues = useMemo(
+    () => ({
+      requestReceivableAmount: null,
+    }),
+    []
+  );
 
   const methods = useForm({
     resolver: yupResolver(RequestSchema),
-    defaultValues: { amount: '' },
+    defaultValues,
   });
 
-  const { handleSubmit } = methods;
+  const { handleSubmit, setValue, reset } = methods;
 
-  const onSubmit = (data) => {
-    console.log('Amount Added', data);
+
+  const onSubmit = handleSubmit(async (form) => {
+    try {
+      await axiosInstance.patch('/transactions/request-receivable', {
+        requestReceivableAmount: Number(form.requestReceivableAmount),
+      });
+
+      enqueueSnackbar('Request submitted successfully', {
+        variant: 'success'
+      });
+      refreshTrasnsactions();
+      reset();
+    } catch (error) {
+      console.error(error);
+      enqueueSnackbar(
+        error?.error?.message || error?.message || 'Failed to update address details',
+        {
+          variant: 'error',
+        }
+      );
+    }
+  });
+
+  const handleQuickAmount = (amount) => {
+    setValue('requestReceivableAmount', amount);
   };
+
+  // ----------------------------------------------------------------------
 
   return (
     <Container maxWidth={settings.themeStretch ? false : 'xl'}>
-      <Stack spacing={3}>
-        <Grid container spacing={3}>
-          <Grid item xs={12} md={3}>
-            <WidgetSummaryCard
-              title="Total Eligible Today"
-              total={`₹${formatNumber(todayEligibleTotal)}`}
-              timing={`${receivablesCount} receivables`}
-              icon="lucide:droplets"
-            />
+      <FormProvider methods={methods} onSubmit={onSubmit}>
+        <Stack spacing={3}>
+          {/* SUMMARY */}
+          <Grid container spacing={3}>
+            <Grid item xs={12} md={3}>
+              <WidgetSummaryCard
+                title="Total Eligible Today"
+                total={`₹${formatNumber(todayEligibleTotal)}`}
+                timing={`${receivablesCount} receivables`}
+                icon="lucide:droplets"
+              />
+            </Grid>
+
+            <Grid item xs={12} md={3}>
+              <WidgetSummaryCard
+                title="Available Balance"
+                total={`₹${formatNumber(availableBalance)}`} 
+                timing={`Avg haircut: ${avgHaircut}%`}
+                icon="ph:currency-inr-duotone"
+              />
+            </Grid>
+
+            <Grid item xs={12} md={3}>
+              <WidgetSummaryCard
+                title="Utilization Rate"
+                total={0}
+                timing="Of available limit"
+                icon="ph:trend-up-duotone"
+              />
+            </Grid>
+
+            <Grid item xs={12} md={3}>
+              <WidgetSummaryCard
+                title="Rail Limit Usage"
+                total={0}
+                timing="UPI | Card"
+                icon="ph:warning-circle-duotone"
+              />
+            </Grid>
           </Grid>
 
-          <Grid item xs={12} md={3}>
-            <WidgetSummaryCard
-              title="Net After Haircut"
-              total={`₹${formatNumber(totalNetAmount)}`}
-              timing={`Avg haircut: ${avgHaircut}%`}
-              icon="ph:currency-inr-duotone"
-            />
-          </Grid>
+          {/* FORM */}
+          <Grid item xs={12} md={6}>
+            <Card sx={{ p: 3 }}>
+              <Typography variant="h6" mb={2}>
+                Request Receivable Amount
+              </Typography>
 
-          <Grid item xs={12} md={3}>
-            <WidgetSummaryCard
-              title="Utilization Rate"
-              total= {0}
-              timing="Of available limit"
-              icon="ph:trend-up-duotone"
-            />
-          </Grid>
-
-          <Grid item xs={12} md={3}>
-            <WidgetSummaryCard
-              title="Rail Limit Usage"
-              total={0}  
-              timing="UPI | Card"
-              icon="ph:warning-circle-duotone"
-            />
-          </Grid>
-        </Grid>
-
-        <Grid item xs={12} md={6}>
-          <Card sx={{ p: 3 }}>
-            <Typography variant="h6" mb={2} >
-              Request Receivables Amount
-            </Typography> 
-
-            <FormProvider {...methods} onSubmit={onSubmit} >
-                <Stack spacing={2}>
-                  <Grid container spacing={2} alignItems='center' >
-                    <Grid item xs={10}>
-                      <RHFTextField
-                        name="amount"
-                        label="Enter Amount (₹)"
-                        type="number"
-                        fullWidth
-                        placeholder="e.g. 500000"
-                      />
-                    </Grid>
-                    <Grid item xs={2}>
-                      <Button
-                        type="submit"
-                        variant="contained"
-                        color='primary'
-                      >
-                        Submit Request
-                      </Button>
-                    </Grid>
+              <Stack spacing={2}>
+                <Grid container spacing={2} alignItems="center">
+                  <Grid item xs={10} md={4}>
+                    <RHFTextField
+                      name="requestReceivableAmount"
+                      label="Enter Amount (₹)"
+                      type="number"
+                      fullWidth
+                    />
                   </Grid>
 
-                  <Stack direction="row" spacing={2}>
-                    <Button variant="outlined">₹ 100000</Button>
-                    <Button variant="outlined">₹ 200000</Button>
-                    <Button variant="outlined">₹ 500000</Button>
-                  </Stack>
+                  <Grid item xs={2}>
+                    <Button type="submit" color="primary" variant="contained">
+                      Submit
+                    </Button>
+                  </Grid>
+                </Grid>
+
+                <Stack direction="row" spacing={2}>
+                  <Button variant="outlined" color="primary"  onClick={() => handleQuickAmount(100000)}>
+                    ₹ 1L
+                  </Button>
+
+                  <Button variant="outlined" color="primary" onClick={() => handleQuickAmount(200000)}>
+                    ₹ 2L
+                  </Button>
+
+                  <Button variant="outlined" color="primary" onClick={() => handleQuickAmount(500000)}>
+                    ₹ 5L
+                  </Button>
                 </Stack>
-            </FormProvider>
-          </Card>
-        </Grid>
+              </Stack>
+            </Card>
+          </Grid>
 
-
-
-        <LiquidityEngineListView transaction = {todayTransactions} />
-        <LiquidityEngineCard disbursements={DISBURSEMENT_HISTORY} />
-      </Stack>
-    </Container >
+          {/* LIST + HISTORY */}
+          <LiquidityEngineListView transaction={todayTransactions} />
+          <LiquidityEngineCard disbursements={DISBURSEMENT_HISTORY} />
+        </Stack>
+      </FormProvider>
+    </Container>
   );
 }
