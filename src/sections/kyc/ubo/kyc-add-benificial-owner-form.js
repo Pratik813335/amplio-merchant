@@ -23,6 +23,9 @@ import FormProvider, {
 import { DatePicker } from '@mui/x-date-pickers';
 import { Typography } from '@mui/material';
 import axiosInstance from 'src/utils/axios';
+import { applyAutofillValues } from 'src/utils/autofill/form';
+import { generateUboAutofill } from 'src/utils/autofill/generators';
+import { STATIC_KYC_PDF_PATHS, uploadStaticPdf } from 'src/utils/autofill/static-pdf-upload';
 
 const UBO_ROLES = [
   { value: 'proprietor', label: 'Proprietor (Sole Owner)' },
@@ -46,6 +49,8 @@ export default function KYCAddUBOsForm({
 }) {
   const { enqueueSnackbar } = useSnackbar();
   const [extractedPan, setExtractedPan] = useState(null);
+  const [isAutofilling, setIsAutofilling] = useState(false);
+  const [skipPanExtractionOnce, setSkipPanExtractionOnce] = useState(false);
 
   const NewUserSchema = Yup.object().shape({
     name: Yup.string()
@@ -245,11 +250,16 @@ export default function KYCAddUBOsForm({
         panConsent: Boolean(currentUser?.panCard),
       });
       setExtractedPan(null);
+      setSkipPanExtractionOnce(false);
     }
   }, [open, currentUser, reset]);
 
   useEffect(() => {
     if (!panFile?.id) return;
+    if (skipPanExtractionOnce) {
+      setSkipPanExtractionOnce(false);
+      return;
+    }
 
     const extractPanDetails = async () => {
       try {
@@ -310,75 +320,37 @@ export default function KYCAddUBOsForm({
     };
 
     extractPanDetails();
-  }, [panFile?.id, enqueueSnackbar, setValue]);
+  }, [panFile?.id, enqueueSnackbar, setValue, skipPanExtractionOnce]);
 
-  // const handleAutoFill = async () => {
-  //   setIsAutofilling(true);
-  //   const autoData = NewKycSignatoryDetails();
+  const handleAutoFill = async () => {
+    setIsAutofilling(true);
 
-  //   const applyValue = (name, value) =>
-  //     setValue(name, value, {
-  //       shouldValidate: true,
-  //       shouldDirty: true,
-  //       shouldTouch: true,
-  //     });
+    try {
+      const autoData = generateUboAutofill();
 
-  //   // First map everything except role
-  //   Object.entries(autoData).forEach(([key, value]) => {
-  //     if (key !== 'role') {
-  //       applyValue(key, value);
-  //     }
-  //   });
+      applyAutofillValues(setValue, autoData);
 
-  //   const matchedRole = ROLES.find(
-  //     (r) => r.label.toLowerCase() === autoData.role?.toLowerCase()
-  //   );
+      try {
+        const { uploadedFile } = await uploadStaticPdf({
+          assetPath: STATIC_KYC_PDF_PATHS.panCard,
+          fileName: `${autoData.name.replace(/\s+/g, '_').toLowerCase()}_ubo_pan_demo.pdf`,
+        });
 
-  //   applyValue('role', matchedRole ? matchedRole.value : '');
-
-  //   try {
-  //     const uploadTargets = [
-  //       { field: 'panCard', fileName: 'financial_statement_year_1.pdf' },
-  //       { field: 'boardResolution', fileName: 'income_tax_return_year_1.pdf' },
-  //     ];
-
-  //     const uploadResults = await Promise.all(
-  //       uploadTargets.map(async ({ field, fileName }) => {
-  //         try {
-  //           const response = await fetch(`/pdfs/kyb/${fileName}`);
-  //           if (!response.ok) return { field, file: null };
-
-  //           const blob = await response.blob();
-  //           const file = new File([blob], fileName, { type: 'application/pdf' });
-  //           const formData = new FormData();
-  //           formData.append('file', file);
-
-  //           const uploadRes = await axiosInstance.post('/files', formData);
-  //           return { field, file: uploadRes?.data?.files?.[0] || null };
-  //         } catch (error) {
-  //           return { field, file: null };
-  //         }
-  //       })
-  //     );
-
-  //     setSkipPanExtractionOnce(true);
-  //     uploadResults.forEach(({ field, file }) => {
-  //       if (!file?.id) return;
-  //       applyValue(field, file);
-  //     });
-
-  //     const uploadedCount = uploadResults.filter((entry) => !!entry.file?.id).length;
-  //     if (uploadedCount > 0) {
-  //       enqueueSnackbar(`Autofill uploaded ${uploadedCount} signatory document(s)`, {
-  //         variant: 'success',
-  //       });
-  //     } else {
-  //       enqueueSnackbar('Signatory data autofilled, document upload failed', { variant: 'warning' });
-  //     }
-  //   } finally {
-  //     setIsAutofilling(false);
-  //   }
-  // };
+        setSkipPanExtractionOnce(true);
+        applyAutofillValues(setValue, { panCard: uploadedFile });
+        // Keep autofill submissions aligned with the normal pending flow.
+        // We upload a real PAN document and fill submitted values, but we do not
+        // inject synthetic extracted OCR data into the create payload.
+        setExtractedPan(null);
+        enqueueSnackbar('UBO autofill completed', { variant: 'success' });
+      } catch (uploadError) {
+        console.error(uploadError);
+        enqueueSnackbar('UBO data autofilled, PAN upload failed', { variant: 'warning' });
+      }
+    } finally {
+      setIsAutofilling(false);
+    }
+  };
 
   return (
     <Dialog
@@ -521,17 +493,17 @@ export default function KYCAddUBOsForm({
               {isViewMode ? 'Close' : 'Cancel'}
             </Button>
 
-            {/* {!isViewMode && (
+            {!isViewMode && (
               <Button
                 type="button"
                 variant="contained"
-                color='primary'
+                color="primary"
                 onClick={handleAutoFill}
                 disabled={isAutofilling}
               >
                 {isAutofilling ? 'Autofilling...' : 'Autofill'}
               </Button>
-            )} */}
+            )}
 
             {!isViewMode && (
               <Button

@@ -1,5 +1,5 @@
 import * as Yup from 'yup';
-import { useMemo, useEffect, useState } from 'react';
+import { useMemo, useEffect, useState, useCallback } from 'react';
 import { useSnackbar } from 'src/components/snackbar';
 import { useForm, Controller, useWatch } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
@@ -33,6 +33,10 @@ import { useGetDealershipTypes } from 'src/api/dealershipTypes';
 import Logo from 'src/components/logo';
 import { indianStates } from 'src/_mock/_state';
 import axiosInstance from 'src/utils/axios';
+import { applyAutofillValues, resolveOptionValue } from 'src/utils/autofill/form';
+import { generateCompanyBasicInfoAutofill } from 'src/utils/autofill/generators';
+import { slugify } from 'src/utils/autofill/random';
+import { STATIC_KYC_PDF_PATHS, uploadStaticPdf } from 'src/utils/autofill/static-pdf-upload';
 import KYCFooter from './kyc-footer';
 
 // import { NewCompanyBasicInfo } from 'src/forms-autofilled-script/kyb-script/newkyb';
@@ -54,6 +58,7 @@ export default function KYCBasicInfo() {
   const [panExtractionStatus, setPanExtractionStatus] = useState('idle'); // 'idle' | 'success' | 'failed'
   const [extractedPanDetails, setExtractedPanDetails] = useState(null);
   const [skipPanExtractionOnce, setSkipPanExtractionOnce] = useState(false);
+  const [isAutofilling, setIsAutofilling] = useState(false);
 
   // State to store mapped API values
   const [dealershipOptions, setDealershipOptions] = useState([]);
@@ -412,74 +417,78 @@ export default function KYCBasicInfo() {
     extractPanDetails();
   }, [panFile?.id, skipPanExtractionOnce, enqueueSnackbar, setValue]);
 
-  // const handleAutoFill = async () => {
-  //   const autoData = NewCompanyBasicInfo();
+  const handleAutoFill = useCallback(async () => {
+    setIsAutofilling(true);
 
-  //   const applyValue = (name, value) =>
-  //     setValue(name, value, {
-  //       shouldValidate: true,
-  //       shouldDirty: true,
-  //       shouldTouch: true,
-  //     });
+    try {
+      const generatedData = generateCompanyBasicInfoAutofill();
+      const stateValue =
+        indianStates.find(
+          (stateOption) =>
+            stateOption.label.toLowerCase() === generatedData.stateLabel.toLowerCase()
+        )?.value || '';
+      const dealershipTypeId =
+        getValues('merchantDealershipTypeId') ||
+        resolveOptionValue({
+          options: dealershipOptions,
+          valueKey: 'id',
+          labelKeys: ['label', 'name'],
+          fallbackToFirst: true,
+        });
 
-  //   applyValue('cin', autoData.cin);
-  //   applyValue('companyName', autoData.companyName);
-  //   applyValue('gstin', autoData.gstin);
-  //   applyValue('dateOfIncorporation', autoData.dateOfIncorporation);
-  //   applyValue('msmeUdyamRegistrationNo', autoData.msmeUdyamRegistrationNo);
-  //   applyValue('city', autoData.city);
+      applyAutofillValues(setValue, {
+        cin: generatedData.cin,
+        companyName: generatedData.companyName,
+        gstin: generatedData.gstin,
+        msmeUdyamRegistrationNo: generatedData.msmeUdyamRegistrationNo,
+        dateOfIncorporation: generatedData.dateOfIncorporation,
+        city: generatedData.city,
+        state: stateValue,
+        country: generatedData.country,
+        panNumber: generatedData.panNumber,
+        panHoldersName: generatedData.panHoldersName,
+        panOcrConsent: true,
+        companyInfoFetchConsent: true,
+        merchantDealershipTypeId: dealershipTypeId,
+      });
+      setCompanyGSTOptions([generatedData.gstin]);
 
-  //   const stateObj = indianStates.find(
-  //     (s) => s.label === autoData.state
-  //   );
-  //   applyValue('state', stateObj ? stateObj.value : '');
-  //   applyValue('country', autoData.country);
-  //   applyValue('panNumber', autoData.panNumber);
-  //   applyValue('panHoldersName', autoData.companyName);
+      try {
+        const { uploadedFile } = await uploadStaticPdf({
+          assetPath: STATIC_KYC_PDF_PATHS.panCard,
+          fileName: `${slugify(generatedData.companyName)}_pan_card_demo.pdf`,
+        });
 
-  //   if (!getValues('merchantDealershipTypeId') && dealershipOptions.length > 0) {
-  //     applyValue('merchantDealershipTypeId', dealershipOptions[0].id);
-  //   }
-
-  //   try {
-  //     const fileName = 'financial_statement_year_1.pdf';
-  //     const response = await fetch(`/pdfs/kyb/${fileName}`);
-  //     if (!response.ok) {
-  //       enqueueSnackbar('Autofill data applied, but PAN document upload failed', {
-  //         variant: 'warning',
-  //       });
-  //       return;
-  //     }
-
-  //     const blob = await response.blob();
-  //     const file = new File([blob], fileName, { type: 'application/pdf' });
-  //     const formData = new FormData();
-  //     formData.append('file', file);
-
-  //     const uploadRes = await axiosInstance.post('/files', formData);
-  //     const uploadedFile = uploadRes?.data?.files?.[0] || null;
-
-  //     if (!uploadedFile?.id) {
-  //       enqueueSnackbar('Autofill data applied, but PAN document upload failed', {
-  //         variant: 'warning',
-  //       });
-  //       return;
-  //     }
-
-  //     setSkipPanExtractionOnce(true);
-  //     applyValue('panFile', uploadedFile);
-  //     setExtractedPanDetails({
-  //       extractedMerchantName: autoData.companyName,
-  //       extractedPanNumber: autoData.panNumber,
-  //     });
-
-  //     enqueueSnackbar('Autofill completed successfully', { variant: 'success' });
-  //   } catch (error) {
-  //     enqueueSnackbar('Autofill data applied, but PAN document upload failed', {
-  //       variant: 'warning',
-  //     });
-  //   }
-  // };
+        setSkipPanExtractionOnce(true);
+        applyAutofillValues(setValue, { panFile: uploadedFile });
+        setExtractedPanDetails({
+          extractedMerchantName: generatedData.companyName,
+          extractedPanNumber: generatedData.panNumber,
+        });
+        enqueueSnackbar('Autofill completed successfully', { variant: 'success' });
+      } catch (uploadError) {
+        console.error(uploadError);
+        enqueueSnackbar('Autofill data applied, but PAN document upload failed', {
+          variant: 'warning',
+        });
+      }
+    } catch (error) {
+      console.error(error);
+      enqueueSnackbar('Unable to autofill company information', {
+        variant: 'error',
+      });
+    } finally {
+      setIsAutofilling(false);
+    }
+  }, [
+    dealershipOptions,
+    enqueueSnackbar,
+    getValues,
+    setValue,
+    setCompanyGSTOptions,
+    setExtractedPanDetails,
+    setSkipPanExtractionOnce,
+  ]);
 
   return (
     <Container maxWidth="lg" sx={{ py: 8 }}>
@@ -847,11 +856,12 @@ export default function KYCBasicInfo() {
               textAlign="center"
               sx={{ mt: 4, display: 'flex', justifyContent: 'center', gap: 2 }}
             >
-              {/* <Button
+              <LoadingButton
                 type="button"
                 variant="contained"
                 color="primary"
                 size="large"
+                loading={isAutofilling}
                 sx={{
                   px: 6,
                   py: 1.6,
@@ -861,7 +871,7 @@ export default function KYCBasicInfo() {
                 onClick={handleAutoFill}
               >
                 Autofill
-              </Button> */}
+              </LoadingButton>
               <LoadingButton
                 type="submit"
                 variant="contained"

@@ -156,6 +156,7 @@ export default function KYCAddUBOsForm({
         email: data.email,
         phone: data.phoneNumber,
         ownershipPercentage: Number(data.ownershipPercentage),
+        status: isEditMode ? currentUser?.status ?? 0 : 0,
 
         extractedPanFullName: extractedPan?.extractedPanFullName || '',
         extractedPanNumber: extractedPan?.extractedPanNumber || '',

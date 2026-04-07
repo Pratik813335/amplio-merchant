@@ -19,6 +19,8 @@ import { enqueueSnackbar } from 'notistack';
 import { useGetKycSection } from 'src/api/merchantKyc';
 import { yupResolver } from '@hookform/resolvers/yup';
 import axiosInstance from 'src/utils/axios';
+import { applyAutofillValues } from 'src/utils/autofill/form';
+import { STATIC_KYC_PDF_PATHS, uploadStaticPdf } from 'src/utils/autofill/static-pdf-upload';
 import KYCFooter from './kyc-footer';
 
 const FILE_ACCEPT = {
@@ -374,87 +376,92 @@ export default function KYCMerchantDetails({
     }
   });
 
-  // const handleAutoFill = async () => {
-  //   if (!documents.length) {
-  //     enqueueSnackbar('No document requirements found for autofill', { variant: 'warning' });
-  //     return;
-  //   }
+  const handleAutoFill = async () => {
+    if (!documents.length) {
+      enqueueSnackbar('No document requirements found for autofill', { variant: 'warning' });
+      return;
+    }
 
-  //   setIsAutofilling(true);
+    setIsAutofilling(true);
 
-  //   try {
-  //     const pdfPool = [
-  //       'financial_statement_year_1.pdf',
-  //       'financial_statement_year_2.pdf',
-  //       'income_tax_return_year_1.pdf',
-  //       'gstr9_year_1.pdf',
-  //     ];
+    try {
+      let selectedType = moaAoaType || defaultMoaAoaType;
 
-  //     let selectedType = moaAoaType || defaultMoaAoaType;
-  //     if (!selectedType) {
-  //       if (moaDoc) {
-  //         selectedType = 'moa';
-  //       } else if (aoaDoc) {
-  //         selectedType = 'aoa';
-  //       }
-  //     }
-  //     if (selectedType) {
-  //       setValue('moaAoaType', selectedType, { shouldValidate: true, shouldDirty: true });
-  //     }
+      if (!selectedType) {
+        if (moaDoc) {
+          selectedType = 'moa';
+        } else if (aoaDoc) {
+          selectedType = 'aoa';
+        }
+      }
 
-  //     let selectedDoc = null;
-  //     if (selectedType === 'aoa') {
-  //       selectedDoc = aoaDoc;
-  //     } else if (selectedType === 'moa') {
-  //       selectedDoc = moaDoc;
-  //     }
+      if (selectedType) {
+        applyAutofillValues(setValue, { moaAoaType: selectedType });
+      }
 
-  //     const uniqueDocs = [
-  //       certificateDoc,
-  //       gstDoc,
-  //       selectedDoc,
-  //       ...remainingDocuments,
-  //     ].filter((item, index, arr) => item?.documentId && arr.findIndex((d) => d?.documentId === item.documentId) === index);
+      let selectedDoc = null;
 
-  //     const uploadedFiles = await Promise.all(
-  //       uniqueDocs.map(async (item, index) => {
-  //         const fileName = pdfPool[index % pdfPool.length];
-  //         try {
-  //           const response = await fetch(`/pdfs/kyb/${fileName}`);
-  //           if (!response.ok) return { item, file: null };
+      if (selectedType === 'aoa') {
+        selectedDoc = aoaDoc;
+      } else if (selectedType === 'moa') {
+        selectedDoc = moaDoc;
+      }
 
-  //           const blob = await response.blob();
-  //           const file = new File([blob], fileName, { type: 'application/pdf' });
-  //           const formData = new FormData();
-  //           formData.append('file', file);
+      const pdfPool = [
+        STATIC_KYC_PDF_PATHS.financialStatementYear1,
+        STATIC_KYC_PDF_PATHS.addressProof,
+        STATIC_KYC_PDF_PATHS.bankProof,
+        STATIC_KYC_PDF_PATHS.panCard,
+      ];
 
-  //           const uploadRes = await axiosInstance.post('/files', formData);
-  //           return { item, file: uploadRes?.data?.files?.[0] || null };
-  //         } catch (error) {
-  //           return { item, file: null };
-  //         }
-  //       })
-  //     );
+      const uniqueDocs = [certificateDoc, gstDoc, selectedDoc, ...remainingDocuments].filter(
+        (item, index, collection) =>
+          item?.documentId &&
+          collection.findIndex((doc) => doc?.documentId === item.documentId) === index
+      );
 
-  //     uploadedFiles.forEach(({ item, file }) => {
-  //       if (!item?.documentId || !file?.id) return;
-  //       setValue(`doc_${item.documentId}`, file, {
-  //         shouldValidate: true,
-  //         shouldDirty: true,
-  //         shouldTouch: true,
-  //       });
-  //     });
+      const uploadResults = await Promise.all(
+        uniqueDocs.map(async (item, index) => {
+          try {
+            const { uploadedFile } = await uploadStaticPdf({
+              assetPath: pdfPool[index % pdfPool.length],
+              fileName: `merchant_document_${item.documentId}_${index + 1}.pdf`,
+            });
 
-  //     const uploadedCount = uploadedFiles.filter((entry) => !!entry.file?.id).length;
-  //     if (uploadedCount > 0) {
-  //       enqueueSnackbar(`Autofill uploaded ${uploadedCount} document(s)`, { variant: 'success' });
-  //     } else {
-  //       enqueueSnackbar('Autofill could not upload documents', { variant: 'warning' });
-  //     }
-  //   } finally {
-  //     setIsAutofilling(false);
-  //   }
-  // };
+            return { item, uploadedFile };
+          } catch (error) {
+            return { item, uploadedFile: null };
+          }
+        })
+      );
+
+      uploadResults.forEach(({ item, uploadedFile }) => {
+        if (!item?.documentId || !uploadedFile?.id) {
+          return;
+        }
+
+        applyAutofillValues(setValue, {
+          [`doc_${item.documentId}`]: uploadedFile,
+        });
+      });
+
+      applyAutofillValues(setValue, { documentSubmissionConsent: true });
+
+      const uploadedCount = uploadResults.filter((entry) => Boolean(entry.uploadedFile?.id)).length;
+
+      if (uploadedCount === uniqueDocs.length) {
+        enqueueSnackbar(`Autofill uploaded ${uploadedCount} document(s)`, { variant: 'success' });
+      } else if (uploadedCount > 0) {
+        enqueueSnackbar(`Autofill uploaded ${uploadedCount} document(s), some uploads failed`, {
+          variant: 'warning',
+        });
+      } else {
+        enqueueSnackbar('Autofill could not upload documents', { variant: 'warning' });
+      }
+    } finally {
+      setIsAutofilling(false);
+    }
+  };
 
   const renderDocumentField = (item, mandatory = false) => {
     if (!item?.documentId) return null;
@@ -589,7 +596,7 @@ export default function KYCMerchantDetails({
           </Paper>
 
           <Box sx={{ display: 'flex', justifyContent: 'flex-end', gap: 2, mt: 4 }}>
-            {/* <LoadingButton
+            <LoadingButton
               type="button"
               color="primary"
               variant="contained"
@@ -597,7 +604,7 @@ export default function KYCMerchantDetails({
               onClick={handleAutoFill}
             >
               Autofill
-            </LoadingButton> */}
+            </LoadingButton>
             <LoadingButton
               type="submit"
               color="primary"

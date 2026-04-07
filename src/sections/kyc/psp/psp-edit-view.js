@@ -19,6 +19,9 @@ import { useSnackbar } from 'src/components/snackbar';
 import axiosInstance from 'src/utils/axios';
 import { useEffect, useState } from 'react';
 import { useGetPsp } from 'src/api/psp-master';
+import { LoadingButton } from '@mui/lab';
+import { applyAutofillValues } from 'src/utils/autofill/form';
+import { getPspAutofillDefaults } from 'src/utils/autofill/generators';
 
 export default function PSPIntegrationForm({
   open,
@@ -29,6 +32,7 @@ export default function PSPIntegrationForm({
 }) {
   const { enqueueSnackbar } = useSnackbar();
   const { psp = [], pspsLoading } = useGetPsp();
+  const [isAutofilling, setIsAutofilling] = useState(false);
 
   const PSPValidationSchema = Yup.object().shape({
     pspMasterId: Yup.string().required('PSP is required'),
@@ -47,6 +51,7 @@ export default function PSPIntegrationForm({
     handleSubmit,
     watch,
     reset,
+    setValue,
     formState: { isSubmitting },
   } = methods;
 
@@ -131,6 +136,34 @@ export default function PSPIntegrationForm({
     }
   });
 
+  const handleAutoFill = async () => {
+    if (!psp.length) {
+      enqueueSnackbar('No PSP options available for autofill', { variant: 'warning' });
+      return;
+    }
+
+    setIsAutofilling(true);
+
+    try {
+      const razorpayPsp =
+        psp.find((item) => String(item?.name || '').toLowerCase().includes('razorpay')) || psp[0];
+
+      const pspMasterId = razorpayPsp?.id || '';
+
+      applyAutofillValues(setValue, { pspMasterId });
+
+      (razorpayPsp?.pspMasterFields || []).forEach((field) => {
+        applyAutofillValues(setValue, {
+          [field.fieldName]: getPspAutofillDefaults(field, 'razorpay'),
+        });
+      });
+
+      enqueueSnackbar('PSP autofill completed', { variant: 'success' });
+    } finally {
+      setIsAutofilling(false);
+    }
+  };
+
   return (
     <Dialog fullWidth maxWidth="sm" open={open} onClose={onClose}>
       <FormProvider methods={methods} onSubmit={onSubmit}>
@@ -179,6 +212,16 @@ export default function PSPIntegrationForm({
           <Button variant="outlined" onClick={onClose}>
             Cancel
           </Button>
+
+          <LoadingButton
+            type="button"
+            variant="contained"
+            color="primary"
+            loading={isAutofilling}
+            onClick={handleAutoFill}
+          >
+            Autofill
+          </LoadingButton>
 
           <Button
             type="submit"
