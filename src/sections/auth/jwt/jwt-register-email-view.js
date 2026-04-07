@@ -9,11 +9,11 @@ import Stack from '@mui/material/Stack';
 import Typography from '@mui/material/Typography';
 import InputAdornment from '@mui/material/InputAdornment';
 import { Box, Card, Grid, TextField } from '@mui/material';
-import { useRouter, useSearchParams } from 'src/routes/hook';
+import { useRouter } from 'src/routes/hook';
 import { useSnackbar } from 'src/components/snackbar';
 import { paths } from 'src/routes/paths';
 import { RouterLink } from 'src/routes/components';
-import FormProvider, { RHFTextField } from 'src/components/hook-form';
+import FormProvider, { RHFCheckbox, RHFTextField } from 'src/components/hook-form';
 import axiosInstance from 'src/utils/axios';
 
 export default function JwtRegisterByEmailView() {
@@ -59,15 +59,14 @@ export default function JwtRegisterByEmailView() {
 
   const otpRefs = useRef([]);
 
-  const searchParams = useSearchParams();
-  const returnTo = searchParams.get('returnTo');
-
   const RegisterSchema = Yup.object().shape({
     email: Yup.string().email('Enter a valid email').required('Email is required'),
+    emailOtpConsent: Yup.boolean(),
   });
 
   const defaultValues = {
     email: '',
+    emailOtpConsent: false,
   };
 
   const methods = useForm({
@@ -80,7 +79,13 @@ export default function JwtRegisterByEmailView() {
     formState: { isSubmitting },
     trigger,
     getValues,
+    watch,
   } = methods;
+
+  const emailValue = watch('email') || '';
+  const emailOtpConsentValue = watch('emailOtpConsent');
+  const isEmailValid = Yup.string().email().isValidSync(emailValue);
+  const canSendOtp = emailOtpConsentValue && isEmailValid && !isOtpSent;
 
   const handleSendOtp = async () => {
     const validEmail = await trigger('email');
@@ -265,7 +270,20 @@ export default function JwtRegisterByEmailView() {
         <Stack spacing={3}>
           {!!errorMsg && <Alert severity="error">{errorMsg}</Alert>}
 
-          {/* Email Field */}
+          <RHFCheckbox
+            name="emailOtpConsent"
+            label="I authorize Merchant Portal to send a one-time password (OTP) to my email address for account registration and verification."
+            sx={{
+              alignItems: 'flex-start',
+              m: 0,
+              '& .MuiFormControlLabel-label': {
+                typography: 'body2',
+                color: 'text.secondary',
+                lineHeight: 1.5,
+              },
+            }}
+          />
+
           <Stack direction="column">
             <RHFTextField
               name="email"
@@ -277,7 +295,7 @@ export default function JwtRegisterByEmailView() {
                       variant="text"
                       size="small"
                       onClick={handleSendOtp}
-                      disabled={isOtpSent}
+                      disabled={!canSendOtp}
                     >
                       {isOtpSent ? 'OTP Sent' : 'Send OTP'}
                     </LoadingButton>

@@ -12,6 +12,7 @@ import Paper from '@mui/material/Paper';
 import { RouterLink } from 'src/routes/components';
 import { paths } from 'src/routes/paths';
 import FormProvider, {
+  RHFCheckbox,
   RHFTextField,
   RHFSelect,
   RHFCustomFileUploadBox,
@@ -47,6 +48,7 @@ export default function KYCBankDetails({
   const [isAutofilling, setIsAutofilling] = useState(false);
   const [isValidating, setIsValidating] = useState(false);
   const [isVerified, setIsVerified] = useState(false);
+  const [lastVerifiedValues, setLastVerifiedValues] = useState(null);
 
   // ---------------- VALIDATION ----------------
   const NewSchema = Yup.object().shape({
@@ -72,6 +74,8 @@ export default function KYCBankDetails({
       accountHolderName: '',
       bankAddress: '',
       bankShortCode: '',
+      bankDocumentConsent: false,
+      pennyDropConsent: false,
     }),
     []
   );
@@ -97,23 +101,35 @@ export default function KYCBankDetails({
   const watchedAccountHolderName = watch('accountHolderName');
   const values = watch();
   const documentType = useWatch({ control, name: 'documentType' });
+  const bankDocumentConsent = useWatch({ control, name: 'bankDocumentConsent' });
+  const pennyDropConsent = useWatch({ control, name: 'pennyDropConsent' });
+  const bankRecord = Array.isArray(bankDetails) ? bankDetails[0] : bankDetails;
 
   useEffect(() => {
-    if (bankDetails?.[0]?.status === 1) {
+    if (bankRecord?.status === 1) {
       setIsVerified(true);
     }
-  }, [bankDetails]);
+  }, [bankRecord]);
 
   useEffect(() => {
+    // const isSameAsBackend =
+    //   bankDetails?.[0]?.status === 1 &&
+    //   String(watchedAccountNumber) === String(bankDetails[0].accountNumber) &&
+    //   watchedIfscCode === bankDetails[0].ifscCode;
     const isSameAsBackend =
-      bankDetails?.[0]?.status === 1 &&
-      String(watchedAccountNumber) === String(bankDetails[0].accountNumber) &&
-      watchedIfscCode === bankDetails[0].ifscCode;
+      bankRecord?.status === 1 &&
+      String(watchedAccountNumber) === String(bankRecord?.accountNumber) &&
+      watchedIfscCode === bankRecord?.ifscCode;
 
-    if (!isSameAsBackend && isVerified) {
+    const isSameAsLastVerified =
+      lastVerifiedValues &&
+      String(watchedAccountNumber) === String(lastVerifiedValues.accountNumber) &&
+      watchedIfscCode === lastVerifiedValues.ifscCode;
+
+    if (!isSameAsBackend && !isSameAsLastVerified && isVerified) {
       setIsVerified(false);
     }
-  }, [watchedAccountNumber, watchedIfscCode, bankDetails, isVerified]);
+  }, [watchedAccountNumber, watchedIfscCode, bankRecord, isVerified, lastVerifiedValues]);
 
   const handleDrop = (acceptedFiles) => {
     const file = acceptedFiles[0];
@@ -152,9 +168,15 @@ export default function KYCBankDetails({
       };
 
       const res = await axiosInstance.post('/bank-details/verify-account', payload);
+      const verificationStatus = res?.data?.data?.status ?? res?.data?.data?.account?.status;
+      const verificationSucceeded = res?.data?.success === true && verificationStatus === 1;
 
-      if (res?.data?.success === true) {
+      if (verificationSucceeded) {
         setIsVerified(true);
+        setLastVerifiedValues({
+          accountNumber: payload.accountNumber,
+          ifscCode: payload.ifscCode,
+        });
         enqueueSnackbar(res?.data?.message || 'Your bank account verified successfully', {
           variant: 'success',
         });
@@ -421,12 +443,27 @@ export default function KYCBankDetails({
             </RHFSelect>
           </Box>
 
+          <Box sx={{ mt: 2 }}>
+            <RHFCheckbox
+              name="bankDocumentConsent"
+              label={`I confirm that I am uploading my ${documentType === 'cheque' ? 'cancelled cheque' : 'bank statement'} for bank account verification, and I authorize Merchant Portal to securely store and use this document for KYC and bank verification purposes.`}
+              sx={{
+                '& .MuiFormControlLabel-label': {
+                  typography: 'body2',
+                  color: 'text.secondary',
+                  lineHeight: 1.5,
+                },
+              }}
+            />
+          </Box>
+
           {/* ---------------- ADDRESS PROOF UPLOAD ---------------- */}
           <RHFCustomFileUploadBox
             name="addressProof"
             label={`Upload ${documentType === 'cheque' ? 'Cheque' : 'Bank Statement'}`}
             icon="mdi:file-document-outline"
             existing={existingProof}
+            disabled={!bankDocumentConsent}
             accept={{
               'application/pdf': ['.pdf'],
               'image/png': ['.png'],
@@ -581,6 +618,21 @@ export default function KYCBankDetails({
             </Grid>
           </Box>
 
+          <Box sx={{ mb: 2 }}>
+            <RHFCheckbox
+              name="pennyDropConsent"
+              label="I authorize Merchant Portal to perform penny drop verification on this bank account and share my bank details with regulated verification partners for account validation."
+              disabled={isVerified}
+              sx={{
+                '& .MuiFormControlLabel-label': {
+                  typography: 'body2',
+                  color: 'text.secondary',
+                  lineHeight: 1.5,
+                },
+              }}
+            />
+          </Box>
+
           {/* ---------------- FOOTER BUTTONS ---------------- */}
           <Box sx={{ display: 'flex', justifyContent: 'flex-end', gap: 2, mt: 4, mb: 2 }}>
             {!isVerified ? (
@@ -590,7 +642,11 @@ export default function KYCBankDetails({
                 color="primary"
                 loading={isValidating}
                 disabled={
-                  !watchedAccountNumber || !watchedIfscCode || !watchedAccountHolderName || isValidating
+                  !watchedAccountNumber ||
+                  !watchedIfscCode ||
+                  !watchedAccountHolderName ||
+                  !pennyDropConsent ||
+                  isValidating
                 }
                 onClick={handleValidatePennyDrop}
               >
@@ -614,7 +670,12 @@ export default function KYCBankDetails({
             >
               {isAutofilling ? 'Autofilling...' : 'Autofill'}
             </Button> */}
-            <Button variant="contained" color="primary" type="submit">
+            <Button
+              variant="contained"
+              color="primary"
+              type="submit"
+              disabled={!bankDocumentConsent || !isVerified}
+            >
               Next
             </Button>
           </Box>

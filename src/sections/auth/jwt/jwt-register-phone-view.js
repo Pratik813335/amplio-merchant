@@ -10,8 +10,8 @@ import Typography from '@mui/material/Typography';
 import InputAdornment from '@mui/material/InputAdornment';
 import { Box, Card, Grid, TextField } from '@mui/material';
 import { useSnackbar } from 'src/components/snackbar';
-import { useRouter, useSearchParams } from 'src/routes/hook';
-import FormProvider, { RHFTextField } from 'src/components/hook-form';
+import { useRouter } from 'src/routes/hook';
+import FormProvider, { RHFCheckbox, RHFTextField } from 'src/components/hook-form';
 import { paths } from 'src/routes/paths';
 import { RouterLink } from 'src/routes/components';
 import axiosInstance from 'src/utils/axios';
@@ -29,18 +29,17 @@ export default function JwtRegisterByMobileView() {
 
   const otpRefs = useRef([]);
 
-  const searchParams = useSearchParams();
-  const returnTo = searchParams.get('returnTo');
-
   const RegisterSchema = Yup.object().shape({
     mobileNo: Yup.string()
       .matches(/^[0-9]+$/, 'Only numbers allowed')
       .length(10, 'Mobile number must be 10 digits')
       .required('Mobile Number is required'),
+    otpConsent: Yup.boolean(),
   });
 
   const defaultValues = {
     mobileNo: '',
+    otpConsent: false,
   };
 
   const methods = useForm({
@@ -53,7 +52,12 @@ export default function JwtRegisterByMobileView() {
     formState: { isSubmitting },
     getValues,
     trigger,
+    watch,
   } = methods;
+
+  const mobileNoValue = watch('mobileNo') || '';
+  const otpConsentValue = watch('otpConsent');
+  const canSendOtp = otpConsentValue && mobileNoValue.length === 10 && !isOtpSent;
 
   // ------------------------------------------------------
   // Send OTP using axiosInstance
@@ -239,6 +243,20 @@ export default function JwtRegisterByMobileView() {
           <Stack spacing={3}>
             {!!errorMsg && <Alert severity="error">{errorMsg}</Alert>}
 
+            <RHFCheckbox
+              name="otpConsent"
+              label="I authorize Merchant Portal to send a one-time password (OTP) to my mobile number for account registration and verification."
+              sx={{
+                alignItems: 'flex-start',
+                m: 0,
+                '& .MuiFormControlLabel-label': {
+                  typography: 'body2',
+                  color: 'text.secondary',
+                  lineHeight: 1.5,
+                },
+              }}
+            />
+
             <RHFTextField
               name="mobileNo"
               label="Phone Number"
@@ -257,7 +275,7 @@ export default function JwtRegisterByMobileView() {
                       variant="text"
                       size="small"
                       onClick={handleSendOtp}
-                      disabled={isOtpSent}
+                      disabled={!canSendOtp}
                     >
                       {isOtpSent ? 'OTP Sent' : 'Send OTP'}
                     </LoadingButton>

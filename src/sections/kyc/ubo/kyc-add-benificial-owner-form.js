@@ -15,6 +15,7 @@ import DialogActions from '@mui/material/DialogActions';
 import DialogContent from '@mui/material/DialogContent';
 import { useSnackbar } from 'src/components/snackbar';
 import FormProvider, {
+  RHFCheckbox,
   RHFCustomFileUploadBox,
   RHFSelect,
   RHFTextField,
@@ -93,6 +94,7 @@ export default function KYCAddUBOsForm({
       submittedPanFullName: currentUser?.submittedPanFullName || '',
       submittedPanNumber: currentUser?.submittedPanNumber || '',
       submittedDateOfBirth: currentUser?.submittedDateOfBirth || '',
+      panConsent: Boolean(currentUser?.panCard),
     }),
     [currentUser]
   );
@@ -115,6 +117,10 @@ export default function KYCAddUBOsForm({
     name: 'panCard',
   });
   const isPanUploaded = Boolean(panFile?.id || panFile?.files?.[0]?.id);
+  const panConsent = useWatch({
+    control: methods.control,
+    name: 'panConsent',
+  });
 
   const watchRole = methods.watch('role');
 
@@ -236,6 +242,7 @@ export default function KYCAddUBOsForm({
         submittedPanFullName: currentUser?.submittedPanFullName || '',
         submittedPanNumber: currentUser?.submittedPanNumber || '',
         submittedDateOfBirth: currentUser?.submittedDateOfBirth || '',
+        panConsent: Boolean(currentUser?.panCard),
       });
       setExtractedPan(null);
     }
@@ -442,6 +449,19 @@ export default function KYCAddUBOsForm({
               PAN Section
             </Typography>
 
+            <RHFCheckbox
+              name="panConsent"
+              label="I authorize Merchant Portal to securely store this PAN card and use OCR to extract PAN details for UBO KYC verification."
+              disabled={isViewMode || isPanUploaded}
+              sx={{
+                '& .MuiFormControlLabel-label': {
+                  typography: 'body2',
+                  color: 'text.secondary',
+                  lineHeight: 1.5,
+                },
+              }}
+            />
+
             <RHFCustomFileUploadBox
               name="panCard"
               label="Upload PAN*"
@@ -453,7 +473,7 @@ export default function KYCAddUBOsForm({
                 'image/png': ['.png'],
                 'image/jpeg': ['.jpg', '.jpeg'],
               }}
-              disabled={isViewMode}
+              disabled={isViewMode || (!panConsent && !isPanUploaded)}
             />
 
 

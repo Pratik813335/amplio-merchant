@@ -13,12 +13,13 @@ import Button from '@mui/material/Button';
 import Typography from '@mui/material/Typography';
 import LoadingButton from '@mui/lab/LoadingButton';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
-import { Card } from '@mui/material';
+import { Card, TextField } from '@mui/material';
 // assets
 import { countries } from 'src/assets/data';
 // components
 import Iconify from 'src/components/iconify';
 import FormProvider, {
+  RHFCheckbox,
   RHFTextField,
   RHFSelect,
   RHFAutocomplete,
@@ -56,6 +57,7 @@ export default function KYCBasicInfo() {
 
   // State to store mapped API values
   const [dealershipOptions, setDealershipOptions] = useState([]);
+  const [companyGSTOptions, setCompanyGSTOptions] = useState([]);
   const { dealershipTypes, dealershipTypesEmpty } = useGetDealershipTypes();
 
   const [humanInteraction, setHumanInteraction] = useState({
@@ -111,6 +113,8 @@ export default function KYCBasicInfo() {
       .required("PAN Holder's Name is required")
       .matches(/^[A-Za-z\s]+$/, 'Only alphabets allowed'),
     merchantDealershipTypeId: Yup.string().required('Merchant type is required'),
+    companyInfoFetchConsent: Yup.boolean(),
+    panOcrConsent: Yup.boolean(),
   });
 
   const defaultValues = useMemo(
@@ -128,6 +132,8 @@ export default function KYCBasicInfo() {
       panHoldersName: '',
       panCardDocumentId: '',
       merchantDealershipTypeId: '',
+      companyInfoFetchConsent: false,
+      panOcrConsent: false,
       humanInteraction: { ...humanInteraction },
     }),
     [humanInteraction]
@@ -150,12 +156,30 @@ export default function KYCBasicInfo() {
 
   const values = watch();
   console.log('values', values);
+  const cinValue = watch('cin') || '';
+  const companyInfoFetchConsent = watch('companyInfoFetchConsent');
+  const panOcrConsent = watch('panOcrConsent');
   const panFile = useWatch({
     control: methods.control,
     name: 'panFile',
   });
+  const gstinOptions = useMemo(
+    () =>
+      (companyGSTOptions || [])
+        .map((option) => {
+          if (typeof option === 'string') return option;
+          return option?.gstin || option?.GSTIN || '';
+        })
+        .filter(Boolean),
+    [companyGSTOptions]
+  );
 
   const isPanUploaded = Boolean(panFile?.id);
+  const canUploadPan = panOcrConsent || isPanUploaded;
+  const isCinValid = Yup.string()
+    .matches(/^[LU][0-9]{5}[A-Z]{2}[0-9]{4}[A-Z]{3}[0-9]{6}$/)
+    .isValidSync((cinValue || '').trim().toUpperCase());
+  const canFetchCompanyInfo = companyInfoFetchConsent && isCinValid;
 
   const onSubmit = handleSubmit(async (formData) => {
     try {
@@ -232,7 +256,7 @@ export default function KYCBasicInfo() {
         });
 
         reset();
-        router.push(paths.auth.kyc.companyKyc);
+        router.replace(paths.auth.kyc.companyKyc);
       } else {
         throw new Error(response?.data?.message || 'Registration failed');
       }
@@ -298,6 +322,11 @@ export default function KYCBasicInfo() {
 
         merchantDealershipTypeId: p?.merchantDealershipTypeId || '',
       });
+      if (p?.GSTIN) {
+        setCompanyGSTOptions([p.GSTIN]);
+      } else {
+        setCompanyGSTOptions([]);
+      }
       if (panDocument) {
         const serverFile = {
           fileOriginalName: panDocument.fileOriginalName,
@@ -527,6 +556,22 @@ export default function KYCBasicInfo() {
 
             {/* 3 Fields in One Row */}
             <Grid container spacing={3}>
+              <Grid xs={12}>
+                <RHFCheckbox
+                  name="companyInfoFetchConsent"
+                  label="I authorize Merchant Portal to fetch my company details, including GSTIN, Udyam registration number, and incorporation information, from the CIN provided using the /extraction/merchant-company-info service."
+                  sx={{
+                    alignItems: 'flex-start',
+                    m: 0,
+                    '& .MuiFormControlLabel-label': {
+                      typography: 'body2',
+                      color: 'text.secondary',
+                      lineHeight: 1.5,
+                    },
+                  }}
+                />
+              </Grid>
+
               <Grid xs={12} md={4}>
                 <RHFTextField
                   name="cin"
@@ -543,6 +588,7 @@ export default function KYCBasicInfo() {
                           color: 'white',
                           ml: 1,
                         }}
+                        disabled={!canFetchCompanyInfo}
                         onClick={async () => {
                           const cin = getValues('cin');
                           if (!cin) {
@@ -551,16 +597,47 @@ export default function KYCBasicInfo() {
                           }
                           try {
                             const res = await axiosInstance.post('/extraction/company-info', {
-                              CIN: cin,
+                              CIN: cin.trim().toUpperCase(),
                             });
                             const data = res?.data?.data;
                             if (res.data.success && data) {
-                              setValue('companyName', data.companyName || '');
-                              setValue('gstin', data.gstin || '');
+                              let fetchedGstins = [];
+
+                              if (data.gstins?.length > 0) {
+                                fetchedGstins = data.gstins;
+                              } else if (data.gstin) {
+                                fetchedGstins = [data.gstin];
+                              }
+
+                              const primaryGstin = fetchedGstins
+                                .map((option) => {
+                                  if (typeof option === 'string') return option;
+                                  return option?.gstin || option?.GSTIN || '';
+                                })
+                                .find(Boolean)
+                                ?.toUpperCase();
+
+                              setValue('companyName', data.companyName || '', {
+                                shouldValidate: true,
+                                shouldDirty: true,
+                              });
+                              setCompanyGSTOptions(fetchedGstins);
+                              setValue('gstin', primaryGstin || '', {
+                                shouldValidate: true,
+                                shouldDirty: true,
+                              });
                               setValue(
                                 'dateOfIncorporation',
-                                data.dateOfIncorporation ? new Date(data.dateOfIncorporation) : null
+                                data.dateOfIncorporation ? new Date(data.dateOfIncorporation) : null,
+                                {
+                                  shouldValidate: true,
+                                  shouldDirty: true,
+                                }
                               );
+                              setValue('msmeUdyamRegistrationNo', data.udyamRegistrationNumber || '', {
+                                shouldValidate: true,
+                                shouldDirty: true,
+                              });
                               setValue('city', data.cityOfIncorporation || '', {
                                 shouldValidate: true,
                                 shouldDirty: true,
@@ -576,9 +653,17 @@ export default function KYCBasicInfo() {
                                 shouldDirty: true,
                               });
 
+                              setValue('panNumber', data.companyPanNumber || '', {
+                                shouldValidate: true,
+                                shouldDirty: true,
+                              });
+
                               enqueueSnackbar('CIN details fetched!', { variant: 'success' });
+                            } else {
+                              setCompanyGSTOptions([]);
                             }
                           } catch (err) {
+                            setCompanyGSTOptions([]);
                             enqueueSnackbar('Unable to fetch CIN details', { variant: 'error' });
                           }
                         }}
@@ -633,7 +718,34 @@ export default function KYCBasicInfo() {
               </Grid>
 
               <Grid xs={12} md={4}>
-                <RHFTextField name="gstin" label="GSTIN *" placeholder="Enter GSTIN" />
+                <RHFAutocomplete
+                  name="gstin"
+                  label="GSTIN *"
+                  freeSolo
+                  options={gstinOptions}
+                  getOptionLabel={(option) => option || ''}
+                  isOptionEqualToValue={(option, value) => option === value}
+                  onInputChange={(_, newInputValue, reason) => {
+                    if (reason === 'input' || reason === 'clear') {
+                      setValue('gstin', newInputValue?.toUpperCase() || '', {
+                        shouldValidate: true,
+                        shouldDirty: true,
+                      });
+                      handleHumanInteraction('gstin');
+                    }
+                  }}
+                  renderInput={(params) => (
+                    <TextField
+                      {...params}
+                      label="GSTIN *"
+                      inputProps={{
+                        ...params.inputProps,
+                        style: { textTransform: 'uppercase' },
+                      }}
+                      onFocus={() => handleHumanInteraction('gstin')}
+                    />
+                  )}
+                />
               </Grid>
 
               <Grid xs={12} md={4}>
@@ -679,11 +791,28 @@ export default function KYCBasicInfo() {
             </Typography>
 
             <Grid container spacing={3}>
+              <Grid xs={12}>
+                <RHFCheckbox
+                  name="panOcrConsent"
+                  label="I authorize Merchant Portal to securely store my PAN card document and use OCR to extract PAN details for auto-filling this form."
+                  sx={{
+                    alignItems: 'flex-start',
+                    m: 0,
+                    '& .MuiFormControlLabel-label': {
+                      typography: 'body2',
+                      color: 'text.secondary',
+                      lineHeight: 1.5,
+                    },
+                  }}
+                />
+              </Grid>
+
               <Grid xs={12} md={12}>
                 <RHFCustomFileUploadBox
                   name="panFile"
                   label="Upload PAN Card *"
                   icon="mdi:file-document-outline"
+                  disabled={!canUploadPan}
                   accept={{
                     'image/png': ['.png'],
                     'image/jpeg': ['.jpg', '.jpeg'],

@@ -187,15 +187,31 @@ export default function KYCReviewAndSubmit() {
       </Container>
       <Box sx={{ backgroundColor: '#383535', p: 3, mb: 5 }}>
         <FormControlLabel
-          control={<Checkbox sx={{ color: '#FFFFFF', '&.Mui-checked': { color: '#FFFFFF' } }} />}
+          control={
+            <Checkbox
+              sx={{
+                color: '#FFFFFF',
+                p: 0,
+                mt: '2px',
+                alignSelf: 'flex-start',
+                '&.Mui-checked': { color: '#FFFFFF' },
+              }}
+            />
+          }
           label={
-            <Typography variant="body2" sx={{ color: '#FFFFFF' }}>
+            <Typography variant="body2" sx={{ color: '#FFFFFF', mt: '2px', lineHeight: 1.5 }}>
               I agree to electronically sign this application and acknowledge that I have reviewed
               all information provided above. I understand that submitting false information may
               result in rejection of this application.
             </Typography>
           }
-          sx={{ m: 0 }}
+          sx={{
+            m: 0,
+            alignItems: 'flex-start',
+            '& .MuiButtonBase-root': {
+              alignSelf: 'flex-start',
+            },
+          }}
         />
       </Box>
       <Container>

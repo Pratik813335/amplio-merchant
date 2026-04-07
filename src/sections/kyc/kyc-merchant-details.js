@@ -10,7 +10,7 @@ import Stack from '@mui/material/Stack';
 import Typography from '@mui/material/Typography';
 import { Card } from '@mui/material';
 
-import FormProvider, { RHFCustomFileUploadBox } from 'src/components/hook-form';
+import FormProvider, { RHFCheckbox, RHFCustomFileUploadBox } from 'src/components/hook-form';
 import { RHFSelect } from 'src/components/hook-form/rhf-select';
 
 import { useForm, useWatch } from 'react-hook-form';
@@ -34,6 +34,14 @@ const FILE_ACCEPT = {
 // };
 
 const SPECIAL_DOC_VALUES = ['certificate_of_incorporation', 'gst_certificate'];
+
+function formatDocumentLabels(labels) {
+  if (!labels.length) return 'the required merchant documents';
+  if (labels.length === 1) return labels[0];
+  if (labels.length === 2) return `${labels[0]} and ${labels[1]}`;
+
+  return `${labels.slice(0, -1).join(', ')}, and ${labels[labels.length - 1]}`;
+}
 
 function getDocStatusMeta(item, file) {
   const serverDocument = item?.documentFile;
@@ -98,6 +106,7 @@ export default function KYCMerchantDetails({
     });
 
     values.moaAoaType = defaultMoaAoaType;
+    values.documentSubmissionConsent = false;
     return values;
   }, [documents, defaultMoaAoaType]);
 
@@ -165,6 +174,7 @@ export default function KYCMerchantDetails({
 
   const values = useWatch({ control });
   const moaAoaType = useWatch({ control, name: 'moaAoaType' });
+  const documentSubmissionConsent = useWatch({ control, name: 'documentSubmissionConsent' });
   const prevPercentRef = useRef(null);
 
   const selectedMoaAoaDoc = useMemo(() => {
@@ -208,6 +218,22 @@ export default function KYCMerchantDetails({
     () => documents.some((item) => item?.documentFile?.documentFile?.id),
     [documents]
   );
+
+  const consentDocumentLabels = useMemo(() => {
+    const selectedDocumentIds = new Set(mandatoryDocumentIds);
+
+    return documents
+      .filter((item) => selectedDocumentIds.has(item?.documentId))
+      .map((item) => item?.documentLabel)
+      .filter(Boolean)
+      .filter((label, index, arr) => arr.indexOf(label) === index);
+  }, [documents, mandatoryDocumentIds]);
+
+  const consentLabel = useMemo(() => {
+    const formattedLabels = formatDocumentLabels(consentDocumentLabels);
+
+    return `I confirm that I am submitting ${formattedLabels} for this merchant and I consent to their use for KYC verification.`;
+  }, [consentDocumentLabels]);
 
   useEffect(() => {
     reset(defaultValues);
@@ -543,6 +569,22 @@ export default function KYCMerchantDetails({
                 remainingDocuments.map((item) =>
                   renderDocumentField(item, Boolean(item?.isMandatory))
                 )}
+
+              {!kycSectionLoading && !kycSectionError && Boolean(documents.length) && (
+                <RHFCheckbox
+                  name="documentSubmissionConsent"
+                  label={consentLabel}
+                  sx={{
+                    alignItems: 'flex-start',
+                    m: 0,
+                    '& .MuiFormControlLabel-label': {
+                      typography: 'body2',
+                      color: 'text.secondary',
+                      lineHeight: 1.5,
+                    },
+                  }}
+                />
+              )}
             </Box>
           </Paper>
 
@@ -556,7 +598,13 @@ export default function KYCMerchantDetails({
             >
               Autofill
             </LoadingButton> */}
-            <LoadingButton type="submit" color="primary" variant="contained" loading={isSubmitting}>
+            <LoadingButton
+              type="submit"
+              color="primary"
+              variant="contained"
+              loading={isSubmitting}
+              disabled={Boolean(documents.length) && !documentSubmissionConsent}
+            >
               Next
             </LoadingButton>
           </Box>

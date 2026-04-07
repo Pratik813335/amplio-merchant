@@ -12,6 +12,7 @@ import FormControlLabel, { formControlLabelClasses } from '@mui/material/FormCon
 
 export function RHFCheckbox({ name, helperText, ...other }) {
   const { control } = useFormContext();
+  const { sx, ...rest } = other;
 
   return (
     <Controller
@@ -19,7 +20,22 @@ export function RHFCheckbox({ name, helperText, ...other }) {
       control={control}
       render={({ field, fieldState: { error } }) => (
         <div>
-          <FormControlLabel control={<Checkbox {...field} checked={field.value} />} {...other} />
+          <FormControlLabel
+            control={<Checkbox {...field} checked={field.value} sx={{ p: 0, mt: '2px' }} />}
+            sx={{
+              alignItems: 'flex-start',
+              m: 0,
+              gap: 1,
+              '& .MuiButtonBase-root': {
+                alignSelf: 'flex-start',
+              },
+              '& .MuiFormControlLabel-label': {
+                marginTop: '2px',
+              },
+              ...sx,
+            }}
+            {...rest}
+          />
 
           {(!!error || helperText) && (
             <FormHelperText error={!!error}>{error ? error?.message : helperText}</FormHelperText>
