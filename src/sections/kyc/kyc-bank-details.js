@@ -43,7 +43,7 @@ export default function KYCBankDetails({
   setDataInitializedSteps,
 }) {
   const router = useRouter();
-  const { Details: bankDetails, Loading: bankLoading } = useGetDetails();
+  const { Details: bankDetails, Loading: bankLoading, refreshDetails } = useGetDetails();
   const [isAutofilling, setIsAutofilling] = useState(false);
   const [isValidating, setIsValidating] = useState(false);
   const [isVerified, setIsVerified] = useState(false);
@@ -54,7 +54,7 @@ export default function KYCBankDetails({
     addressProof: Yup.mixed().required('Address proof is required'),
     bankName: Yup.string().required('Bank Name is required'),
     branchName: Yup.string().required('Branch Name is required'),
-    accountNumber: Yup.number().required('Account Number is required'),
+    accountNumber: Yup.string().required('Account Number is required'),
     ifscCode: Yup.string().required('IFSC Code is required'),
     accountType: Yup.string().required('Account Type is required'),
     accountHolderName: Yup.string().required('Account Holder Name is required'),
@@ -85,14 +85,35 @@ export default function KYCBankDetails({
     handleSubmit,
     getValues,
     setValue,
+    trigger,
     watch,
     reset,
     control,
     formState: { isSubmitting, isValid },
   } = methods;
 
+  const watchedAccountNumber = watch('accountNumber');
+  const watchedIfscCode = watch('ifscCode');
+  const watchedAccountHolderName = watch('accountHolderName');
   const values = watch();
   const documentType = useWatch({ control, name: 'documentType' });
+
+  useEffect(() => {
+    if (bankDetails?.[0]?.status === 1) {
+      setIsVerified(true);
+    }
+  }, [bankDetails]);
+
+  useEffect(() => {
+    const isSameAsBackend =
+      bankDetails?.[0]?.status === 1 &&
+      String(watchedAccountNumber) === String(bankDetails[0].accountNumber) &&
+      watchedIfscCode === bankDetails[0].ifscCode;
+
+    if (!isSameAsBackend && isVerified) {
+      setIsVerified(false);
+    }
+  }, [watchedAccountNumber, watchedIfscCode, bankDetails, isVerified]);
 
   const handleDrop = (acceptedFiles) => {
     const file = acceptedFiles[0];
@@ -104,17 +125,53 @@ export default function KYCBankDetails({
   const handleValidatePennyDrop = async () => {
     if (isVerified) return;
 
+    const isVerificationFormValid = await trigger([
+      'accountNumber',
+      'ifscCode',
+      'accountHolderName',
+    ]);
+
+    if (!isVerificationFormValid) return;
+
+    const usersId = sessionStorage.getItem('merchant_user_id');
+
+    if (!usersId) {
+      enqueueSnackbar('User ID missing. Please restart KYC process.', { variant: 'error' });
+      return;
+    }
+
     setIsValidating(true);
 
-    // simulate API delay (1 second)
-    setTimeout(() => {
-      setIsValidating(false);
-      setIsVerified(true);
+    try {
+      const payload = {
+        usersId,
+        roleValue: 'merchant',
+        accountNumber: String(getValues('accountNumber')).trim(),
+        ifscCode: getValues('ifscCode')?.trim(),
+        accountHolderName: getValues('accountHolderName')?.trim(),
+      };
 
-      enqueueSnackbar('Your bank account verified successfully', {
-        variant: 'success',
-      });
-    }, 1000);
+      const res = await axiosInstance.post('/bank-details/verify-account', payload);
+
+      if (res?.data?.success === true) {
+        setIsVerified(true);
+        enqueueSnackbar(res?.data?.message || 'Your bank account verified successfully', {
+          variant: 'success',
+        });
+        refreshDetails();
+      } else {
+        enqueueSnackbar(res?.data?.message || 'Verification failed', {
+          variant: 'error',
+        });
+      }
+    } catch (error) {
+      console.error(error);
+      const errorMessage =
+        error?.message || error?.error || error?.response?.data?.message || 'Failed to verify bank account';
+      enqueueSnackbar(errorMessage, { variant: 'error' });
+    } finally {
+      setIsValidating(false);
+    }
   };
 
   const existingProof = bankDetails?.bankAccountProof
@@ -387,11 +444,13 @@ export default function KYCBankDetails({
                       name="ifscCode"
                       label="IFSC Code"
                       placeholder="Enter IFSC Code"
+                      disabled={isVerified}
                       InputProps={{
                         endAdornment: (
                           <Button
                             variant="contained"
                             size="small"
+                            disabled={isVerified}
                             sx={{
                               ml: 1,
                               bgcolor: '#00328A',
@@ -430,9 +489,6 @@ export default function KYCBankDetails({
                                 setValue('branchName', data.branchName || '');
                                 setValue('bankShortCode', data.bankShortCode || '');
                                 setValue('bankAddress', data.bankAddress || '');
-                                setValue('city', data.city || '');
-                                setValue('state', data.state || '');
-                                setValue('district', data.district || '');
 
                                 enqueueSnackbar('Bank details fetched successfully', {
                                   variant: 'success',
@@ -440,7 +496,7 @@ export default function KYCBankDetails({
                               } catch (error) {
                                 console.error(error);
                                 enqueueSnackbar(
-                                  error?.response?.data?.message || 'Invalid IFSC Code',
+                                  error?.message || error?.error || error?.response?.data?.message || 'Invalid IFSC Code',
                                   { variant: 'error' }
                                 );
                               }
@@ -454,13 +510,14 @@ export default function KYCBankDetails({
                   </Box>
 
                   <Box>
-                    <RHFTextField name="bankName" label="Bank Name" placeholder="Enter Bank Name" />
+                    <RHFTextField name="bankName" label="Bank Name" placeholder="Enter Bank Name" disabled={isVerified} />
                   </Box>
                   <Box>
                     <RHFTextField
                       name="branchName"
                       label="Branch Name"
                       placeholder="Enter Branch Name"
+                      disabled={isVerified}
                     />
                   </Box>
                   <Box>
@@ -468,6 +525,7 @@ export default function KYCBankDetails({
                       name="accountHolderName"
                       label="Account Holder Name"
                       placeholder="Enter Account Holder Name"
+                      disabled={isVerified}
                     />
                   </Box>
                   <Box>
@@ -475,6 +533,7 @@ export default function KYCBankDetails({
                       name="accountNumber"
                       label="Account Number"
                       placeholder="Enter Account Number"
+                      disabled={isVerified}
                       inputProps={{
                         inputMode: 'numeric', // mobile numeric keypad
                         pattern: '[0-9]*', // HTML validation hint
@@ -489,6 +548,7 @@ export default function KYCBankDetails({
                       name="bankAddress"
                       label="Bank Address"
                       placeholder="Bank Address"
+                      disabled={isVerified}
                       InputLabelProps={{
                         shrink: Boolean(getValues('bankAddress')),
                       }}
@@ -500,7 +560,7 @@ export default function KYCBankDetails({
               <Grid xs={12} md={3}>
                 <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
                   <Box>
-                    <RHFSelect name="accountType" label="Account Type" disabled>
+                    <RHFSelect name="accountType" label="Account Type" disabled={isVerified}>
                       <MenuItem value="SAVINGS">Savings</MenuItem>
                       <MenuItem value="CURRENT">Current</MenuItem>
                     </RHFSelect>
@@ -510,6 +570,7 @@ export default function KYCBankDetails({
                       name="bankShortCode"
                       label="Bank Short Code"
                       placeholder="Bank Short Code"
+                      disabled={isVerified}
                       InputLabelProps={{
                         shrink: Boolean(getValues('bankShortCode')),
                       }}
@@ -522,21 +583,27 @@ export default function KYCBankDetails({
 
           {/* ---------------- FOOTER BUTTONS ---------------- */}
           <Box sx={{ display: 'flex', justifyContent: 'flex-end', gap: 2, mt: 4, mb: 2 }}>
-            <LoadingButton
-              type="button" // 🔥 VERY IMPORTANT
-              variant="outlined"
-              color={isVerified ? 'success' : 'primary'}
-              loading={isValidating}
-              disabled={!isValid || isVerified}
-              onClick={handleValidatePennyDrop}
-              endIcon={
-                isVerified ? (
-                  <Iconify icon="mdi:check-circle" width={20} sx={{ color: 'success.main' }} />
-                ) : null
-              }
-            >
-              Validate (Penny Drop)
-            </LoadingButton>
+            {!isVerified ? (
+              <LoadingButton
+                type="button"
+                variant="outlined"
+                color="primary"
+                loading={isValidating}
+                disabled={
+                  !watchedAccountNumber || !watchedIfscCode || !watchedAccountHolderName || isValidating
+                }
+                onClick={handleValidatePennyDrop}
+              >
+                Validate (Penny Drop)
+              </LoadingButton>
+            ) : (
+              <Stack direction="row" alignItems="center" spacing={1} sx={{ color: 'success.main', mr: 2 }}>
+                <Iconify icon="mdi:check-circle" width={24} />
+                <Typography variant="subtitle2" sx={{ fontWeight: 600 }}>
+                  Verified
+                </Typography>
+              </Stack>
+            )}
 
             {/* <Button
               variant="contained"

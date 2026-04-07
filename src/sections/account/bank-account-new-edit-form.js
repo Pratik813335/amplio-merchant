@@ -214,11 +214,19 @@ export default function BankNewForm({onclose,bankDetails, refreshBankDetail}) {
             boxShadow: '0px 4px 20px rgba(0,0,0,0.08)',
           }}
         > */}
-        <Stack pt={2}>
+        <Stack pt={2} direction="row" alignItems="center" justifyContent="space-between">
           <Typography variant="h6" sx={{ fontWeight: 500, mb: 2 }}>
             Select Document Type:
           </Typography>
-          </Stack>
+          {bankDetails?.status === 1 && (
+            <Stack direction="row" alignItems="center" spacing={0.5} sx={{ color: 'success.main', mb: 2 }}>
+              <Iconify icon="mdi:check-circle" width={20} />
+              <Typography variant="subtitle2" sx={{ fontWeight: 600 }}>
+                Verified
+              </Typography>
+            </Stack>
+          )}
+        </Stack>
 
           <Box sx={{ width: 200, mb: 3 }}>
             <RHFSelect name="documentType" label="Document Type" disabled={!isEdit} sx={{ width: 200 }}>
@@ -351,9 +359,6 @@ export default function BankNewForm({onclose,bankDetails, refreshBankDetail}) {
                                 setValue('branchName', data.branchName || '');
                                 setValue('bankShortCode', data.bankShortCode || '');
                                 setValue('bankAddress', data.bankAddress || '');
-                                setValue('city', data.city || '');
-                                setValue('state', data.state || '');
-                                setValue('district', data.district || '');
 
                                 enqueueSnackbar('Bank details fetched successfully', {
                                   variant: 'success',
