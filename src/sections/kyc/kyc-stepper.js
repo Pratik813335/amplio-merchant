@@ -128,13 +128,14 @@ export default function Stepper() {
       >
         <Logo />
       </Box>
-
-      <ProgressStepper
-        steps={steps}
-        activeStepId={activeStepId}
-        stepsProgress={stepsProgress}
-        onStepClick={handleStepClick}
-      />
+      <Box sx={{ pt: 4 }}>
+        <ProgressStepper
+          steps={steps}
+          activeStepId={activeStepId}
+          stepsProgress={stepsProgress}
+          onStepClick={handleStepClick}
+        />
+      </Box>
 
       <Stack sx={{ mt: 3 }}>
         <AnimatePresence mode="wait">

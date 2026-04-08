@@ -440,7 +440,7 @@ export default function KYCBankDetails({
           <Box sx={{ mt: 2 }}>
             <RHFCheckbox
               name="bankDocumentConsent"
-              label={`I confirm that I am uploading my ${documentType === 'cheque' ? 'cancelled cheque' : 'bank statement'} for bank account verification, and I authorize Merchant Portal to securely store and use this document for KYC and bank verification purposes.`}
+              label={`I confirm that I am uploading my ${documentType === 'cheque' ? 'cancelled cheque' : 'bank statement'} for bank account verification and authorize its secure storage for KYC purposes.`}
               sx={{
                 '& .MuiFormControlLabel-label': {
                   typography: 'body2',
@@ -615,7 +615,7 @@ export default function KYCBankDetails({
           <Box sx={{ mb: 2 }}>
             <RHFCheckbox
               name="pennyDropConsent"
-              label="I authorize Merchant Portal to perform penny drop verification on this bank account and share my bank details with regulated verification partners for account validation."
+              label="I confirm and agree to the bank verification process, including the Rs. 1 debit."
               disabled={isVerified}
               sx={{
                 '& .MuiFormControlLabel-label': {

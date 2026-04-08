@@ -13,7 +13,7 @@ import DialogContent from '@mui/material/DialogContent';
 import Typography from '@mui/material/Typography';
 import Alert from '@mui/material/Alert';
 
-import FormProvider, { RHFSelect, RHFTextField } from 'src/components/hook-form';
+import FormProvider, { RHFCheckbox, RHFSelect, RHFTextField } from 'src/components/hook-form';
 
 import { useSnackbar } from 'src/components/snackbar';
 import axiosInstance from 'src/utils/axios';
@@ -36,10 +36,15 @@ export default function PSPIntegrationForm({
 
   const PSPValidationSchema = Yup.object().shape({
     pspMasterId: Yup.string().required('PSP is required'),
+    pspConsent: Yup.boolean().oneOf(
+      [true],
+      'Please provide consent to use PSP details for payment processing and integration'
+    ),
   });
 
   const defaultValues = {
     pspMasterId: '',
+    pspConsent: false,
   };
 
   const methods = useForm({
@@ -66,6 +71,7 @@ export default function PSPIntegrationForm({
     if (currentPSP && psp.length) {
       const resetData = {
         pspMasterId: currentPSP.pspMasterId,
+        pspConsent: true,
       };
 
       const pspMaster = psp.find((p) => p.id === currentPSP.pspMasterId);
@@ -81,6 +87,7 @@ export default function PSPIntegrationForm({
     if (!currentPSP) {
       reset({
         pspMasterId: '',
+        pspConsent: false,
       });
     }
   }, [currentPSP, psp, reset]);
@@ -205,6 +212,20 @@ export default function PSPIntegrationForm({
               Your integration request will be reviewed by our operations team within 24 hours.
               You&#39;ll be notified once approved.
             </Alert>
+
+            <RHFCheckbox
+              name="pspConsent"
+              label="I agree to the use of PSP details for payment processing and integration."
+              sx={{
+                alignItems: 'flex-start',
+                m: 0,
+                '& .MuiFormControlLabel-label': {
+                  typography: 'body2',
+                  color: 'text.secondary',
+                  lineHeight: 1.5,
+                },
+              }}
+            />
           </Box>
         </DialogContent>
 

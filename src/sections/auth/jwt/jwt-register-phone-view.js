@@ -11,7 +11,7 @@ import InputAdornment from '@mui/material/InputAdornment';
 import { Box, Card, Grid, TextField } from '@mui/material';
 import { useSnackbar } from 'src/components/snackbar';
 import { useRouter } from 'src/routes/hook';
-import FormProvider, { RHFCheckbox, RHFTextField } from 'src/components/hook-form';
+import FormProvider, { RHFTextField } from 'src/components/hook-form';
 import { paths } from 'src/routes/paths';
 import { RouterLink } from 'src/routes/components';
 import axiosInstance from 'src/utils/axios';
@@ -34,12 +34,10 @@ export default function JwtRegisterByMobileView() {
       .matches(/^[0-9]+$/, 'Only numbers allowed')
       .length(10, 'Mobile number must be 10 digits')
       .required('Mobile Number is required'),
-    otpConsent: Yup.boolean(),
   });
 
   const defaultValues = {
     mobileNo: '',
-    otpConsent: false,
   };
 
   const methods = useForm({
@@ -56,8 +54,7 @@ export default function JwtRegisterByMobileView() {
   } = methods;
 
   const mobileNoValue = watch('mobileNo') || '';
-  const otpConsentValue = watch('otpConsent');
-  const canSendOtp = otpConsentValue && mobileNoValue.length === 10 && !isOtpSent;
+  const canSendOtp = mobileNoValue.length === 10 && !isOtpSent;
 
   // ------------------------------------------------------
   // Send OTP using axiosInstance
@@ -243,20 +240,6 @@ export default function JwtRegisterByMobileView() {
           <Stack spacing={3}>
             {!!errorMsg && <Alert severity="error">{errorMsg}</Alert>}
 
-            <RHFCheckbox
-              name="otpConsent"
-              label="I authorize Merchant Portal to send a one-time password (OTP) to my mobile number for account registration and verification."
-              sx={{
-                alignItems: 'flex-start',
-                m: 0,
-                '& .MuiFormControlLabel-label': {
-                  typography: 'body2',
-                  color: 'text.secondary',
-                  lineHeight: 1.5,
-                },
-              }}
-            />
-
             <RHFTextField
               name="mobileNo"
               label="Phone Number"
@@ -298,22 +281,22 @@ export default function JwtRegisterByMobileView() {
             >
               Verify
             </LoadingButton>
+
+            <Typography
+              sx={{ color: 'text.secondary', typography: 'caption', textAlign: 'center' }}
+            >
+              By continuing, you agree to the{' '}
+              <Link underline="always" color="text.primary">
+                Privacy Notice
+              </Link>{' '}
+              and{' '}
+              <Link underline="always" color="text.primary">
+                Terms of Service
+              </Link>
+              .
+            </Typography>
           </Stack>
         </FormProvider>
-
-        <Typography
-          sx={{ color: 'text.secondary', mt: 2.5, typography: 'caption', textAlign: 'center' }}
-        >
-          By signing up, you agree to our{' '}
-          <Link underline="always" color="text.primary">
-            Terms of Service
-          </Link>{' '}
-          &{' '}
-          <Link underline="always" color="text.primary">
-            Privacy Policy
-          </Link>
-          .
-        </Typography>
       </Card>
     </Box>
   );
