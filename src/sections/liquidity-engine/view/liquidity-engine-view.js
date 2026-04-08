@@ -53,7 +53,7 @@ export default function LiquidityEngineView() {
   const { enqueueSnackbar } = useSnackbar();
 
   const RequestSchema = Yup.object().shape({
-    requestReceivableAmount: Yup.number().required('Amount is Required'),
+    requestReceivableAmount: Yup.number().min(100000).required('Amount is Required'),
   });
 
   const { transaction = [], refreshTrasnsactions } = useGetTransactions();
@@ -176,7 +176,7 @@ export default function LiquidityEngineView() {
           </Grid>
 
           {/* FORM */}
-          <Grid item xs={12} md={6}>
+          {/* <Grid item xs={12} md={6}>
             <Card sx={{ p: 3 }}>
               <Typography variant="h6" mb={2}>
                 Request Receivable Amount
@@ -215,7 +215,7 @@ export default function LiquidityEngineView() {
                 </Stack>
               </Stack>
             </Card>
-          </Grid>
+          </Grid> */}
 
           {/* LIST + HISTORY */}
           <LiquidityEngineListView transaction={todayTransactions} />
