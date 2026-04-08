@@ -5,18 +5,11 @@ import { useRouter } from 'src/routes/hook';
 import Tab from '@mui/material/Tab';
 import Tabs from '@mui/material/Tabs';
 import Container from '@mui/material/Container';
-// routes
-import { paths } from 'src/routes/paths';
-// _mock
-import { _userAbout, _userPlans, _userPayment, _userInvoices, _userAddressBook } from 'src/_mock';
 // components
 import Iconify from 'src/components/iconify';
 import { useSettingsContext } from 'src/components/settings';
-import CustomBreadcrumbs from 'src/components/custom-breadcrumbs';
 //
 import BusinessProfile from '../account-general';
-import AccountBilling from '../account-billing';
-import AccountSocialLinks from '../account-social-links';
 import AccountNotifications from '../account-notifications';
 import AccountChangePassword from '../account-change-password';
 import BusinessBankPage from '../bank-account';
@@ -24,6 +17,7 @@ import PspAccountPage from '../psp-account';
 import UbosListView from '../ubo/view/kyc-ubo-list-view';
 import MerchantDocumentDetails from '../merchant-document-details';
 import AccountAddressDetails from '../account-address-details';
+import AccountConfiguration from '../account-configuration';
 
 
 // ----------------------------------------------------------------------
@@ -58,6 +52,11 @@ const TABS = [
     value: 'pspIntegration',
     label: 'PSP Integration',
     icon: <Iconify icon="hugeicons:transaction" width={24} />,
+  },
+  {
+    value: 'configuration',
+    label: 'Configuration',
+    icon: <Iconify icon="solar:settings-bold" width={24} />,
   },
   // {
   //   value: 'notifications',
@@ -112,6 +111,8 @@ export default function AccountView() {
       <Tabs
         value={currentTab}
         onChange={handleChangeTab}
+        variant="scrollable"
+        scrollButtons="auto"
         sx={{
           mb: { xs: 3, md: 5 },
         }}
@@ -137,6 +138,7 @@ export default function AccountView() {
       {currentTab === 'bankAccount' && <BusinessBankPage />}
       {currentTab === 'UBO' && <UbosListView />}
       {currentTab === 'pspIntegration' && <PspAccountPage />}
+      {currentTab === 'configuration' && <AccountConfiguration />}
       {currentTab === 'notifications' && <AccountNotifications />}
 
       {/* {currentTab === 'social' && <AccountSocialLinks socialLinks={_userAbout.socialLinks} />} */}
