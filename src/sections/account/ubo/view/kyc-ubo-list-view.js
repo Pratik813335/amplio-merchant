@@ -82,6 +82,12 @@ export default function UbosListView() {
   }, [uboDetails]);
 
   const [filters, setFilters] = useState(defaultFilters);
+  const totalOwnershipPercentage = useCallback(
+    () => uboDetails.reduce((sum, ubo) => sum + (Number(ubo?.ownershipPercentage) || 0), 0),
+    [uboDetails]
+  );
+  const currentOwnershipTotal = totalOwnershipPercentage();
+  const canCreateUbo = currentOwnershipTotal < 100;
 
   const dataFiltered = applyFilter({
     inputData: tableData,
@@ -183,20 +189,27 @@ export default function UbosListView() {
           </Typography>
         </Stack>
 
-        {/* <Stack direction="row" justifyContent="space-between" alignItems="center" sx={{ mb: 2 }}>
-          <Typography variant="h4" color="primary">
-            Add UBO
-          </Typography>
+        <Stack direction="row" justifyContent="space-between" alignItems="center" sx={{ mb: 2 }}>
+          <Box>
+            <Typography variant="h4" color="primary">
+              Add UBO
+            </Typography>
+            <Typography variant="body2" color="text.secondary">
+              Ownership allocated: {currentOwnershipTotal}% of 100%
+            </Typography>
+          </Box>
 
-          <Button
-            onClick={handleAdd}
-            variant="contained"
-            color="primary"
-            startIcon={<Iconify icon="mingcute:add-line" />}
-          >
-            New UBO
-          </Button>
-        </Stack> */}
+          {canCreateUbo && (
+            <Button
+              onClick={handleAdd}
+              variant="contained"
+              color="primary"
+              startIcon={<Iconify icon="mingcute:add-line" />}
+            >
+              New UBO
+            </Button>
+          )}
+        </Stack>
 
         <Card>
           <UboTableToolbar
@@ -286,6 +299,7 @@ export default function UbosListView() {
       <KYCAddUBOsForm
         open={open}
         currentUser={selectedUBO}
+        existingUbos={uboDetails}
         isViewMode={viewMode}
         isEditMode={editMode}
         onClose={handleClose}
