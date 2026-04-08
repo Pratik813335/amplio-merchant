@@ -49,6 +49,10 @@ export default function KYCAddUBOsForm({
   const [extractedPan, setExtractedPan] = useState(null);
 
   const NewUserSchema = Yup.object().shape({
+    uboConsent: Yup.boolean().oneOf(
+      [true],
+      'Please provide consent to use and store UBO details for compliance purposes'
+    ),
     name: Yup.string()
       .transform((value) => value?.toUpperCase())
       .required('Name is required')
@@ -99,7 +103,7 @@ export default function KYCAddUBOsForm({
       submittedPanFullName: currentUser?.submittedPanFullName || '',
       submittedPanNumber: currentUser?.submittedPanNumber || '',
       submittedDateOfBirth: currentUser?.submittedDateOfBirth || '',
-      panConsent: Boolean(currentUser?.panCard),
+      uboConsent: Boolean(currentUser),
     }),
     [currentUser]
   );
@@ -121,10 +125,9 @@ export default function KYCAddUBOsForm({
     control: methods.control,
     name: 'panCard',
   });
-  const isPanUploaded = Boolean(panFile?.id || panFile?.files?.[0]?.id);
-  const panConsent = useWatch({
+  const uboConsent = useWatch({
     control: methods.control,
-    name: 'panConsent',
+    name: 'uboConsent',
   });
 
   const watchRole = methods.watch('role');
@@ -268,7 +271,7 @@ export default function KYCAddUBOsForm({
         submittedPanFullName: currentUser?.submittedPanFullName || '',
         submittedPanNumber: currentUser?.submittedPanNumber || '',
         submittedDateOfBirth: currentUser?.submittedDateOfBirth || '',
-        panConsent: Boolean(currentUser?.panCard),
+        uboConsent: Boolean(currentUser),
       });
       setExtractedPan(null);
     }
@@ -431,28 +434,46 @@ export default function KYCAddUBOsForm({
           }}
         >
           <Box rowGap={3} display="grid" mt={2}>
+            <RHFCheckbox
+              name="uboConsent"
+              label="I confirm and agree to the use and storage of UBO details for compliance purposes."
+              disabled={isViewMode}
+              sx={{
+                '& .MuiFormControlLabel-label': {
+                  typography: 'body2',
+                  color: 'text.secondary',
+                  lineHeight: 1.5,
+                },
+              }}
+            />
+
             <RHFTextField
               name="name"
               label="Name*"
-              disabled={isViewMode}
+              disabled={isViewMode || !uboConsent}
               inputProps={{ style: { textTransform: 'uppercase' } }}
             />
 
-            <RHFTextField name="email" label="Email*" type="email" disabled={isViewMode} />
+            <RHFTextField
+              name="email"
+              label="Email*"
+              type="email"
+              disabled={isViewMode || !uboConsent}
+            />
 
             <RHFTextField
               name="phoneNumber"
               label="Phone Number*"
-              disabled={isViewMode}
+              disabled={isViewMode || !uboConsent}
               inputProps={{ maxLength: 10 }}
             />
             <RHFTextField
               name="ownershipPercentage"
               label="Ownership Percentage*"
-              disabled={isViewMode}
+              disabled={isViewMode || !uboConsent}
               inputProps={{ min: 1, max: 100 }}
             />
-            <RHFSelect name="role" label="Designation*" disabled={isViewMode}>
+            <RHFSelect name="role" label="Designation*" disabled={isViewMode || !uboConsent}>
               <MenuItem value="" disabled>
                 Select Designation
               </MenuItem>
@@ -468,25 +489,13 @@ export default function KYCAddUBOsForm({
                 name="customDesignation"
                 label="Enter Custom Designation*"
                 placeholder="Enter custom designation"
+                disabled={!uboConsent}
               />
             )}
 
             <Typography variant="subtitle2" color="primary">
               PAN Section
             </Typography>
-
-            <RHFCheckbox
-              name="panConsent"
-              label="I authorize Merchant Portal to securely store this PAN card and use OCR to extract PAN details for UBO KYC verification."
-              disabled={isViewMode || isPanUploaded}
-              sx={{
-                '& .MuiFormControlLabel-label': {
-                  typography: 'body2',
-                  color: 'text.secondary',
-                  lineHeight: 1.5,
-                },
-              }}
-            />
 
             <RHFCustomFileUploadBox
               name="panCard"
@@ -499,20 +508,20 @@ export default function KYCAddUBOsForm({
                 'image/png': ['.png'],
                 'image/jpeg': ['.jpg', '.jpeg'],
               }}
-              disabled={isViewMode || (!panConsent && !isPanUploaded)}
+              disabled={isViewMode || !uboConsent}
             />
 
 
             <RHFTextField
               name="submittedPanFullName"
               label="PAN Holder Full Name*"
-              disabled={isViewMode}
+              disabled={isViewMode || !uboConsent}
             />
 
             <RHFTextField
               name="submittedPanNumber"
               label="PAN Number*"
-              disabled={isViewMode}
+              disabled={isViewMode || !uboConsent}
             />
 
             <Controller
@@ -522,7 +531,7 @@ export default function KYCAddUBOsForm({
                 <DatePicker
                   {...field}
                   label="PAN Date of Birth*"
-                  disabled={isViewMode}
+                  disabled={isViewMode || !uboConsent}
                   value={field.value ? new Date(field.value) : null}
                   onChange={(newValue) =>
                     field.onChange(newValue ? format(newValue, 'yyyy-MM-dd') : '')
