@@ -13,7 +13,7 @@ import { useRouter } from 'src/routes/hook';
 import { useSnackbar } from 'src/components/snackbar';
 import { paths } from 'src/routes/paths';
 import { RouterLink } from 'src/routes/components';
-import FormProvider, { RHFCheckbox, RHFTextField } from 'src/components/hook-form';
+import FormProvider, { RHFTextField } from 'src/components/hook-form';
 import axiosInstance from 'src/utils/axios';
 
 export default function JwtRegisterByEmailView() {
@@ -61,12 +61,10 @@ export default function JwtRegisterByEmailView() {
 
   const RegisterSchema = Yup.object().shape({
     email: Yup.string().email('Enter a valid email').required('Email is required'),
-    emailOtpConsent: Yup.boolean(),
   });
 
   const defaultValues = {
     email: '',
-    emailOtpConsent: false,
   };
 
   const methods = useForm({
@@ -83,9 +81,8 @@ export default function JwtRegisterByEmailView() {
   } = methods;
 
   const emailValue = watch('email') || '';
-  const emailOtpConsentValue = watch('emailOtpConsent');
   const isEmailValid = Yup.string().email().isValidSync(emailValue);
-  const canSendOtp = emailOtpConsentValue && isEmailValid && !isOtpSent;
+  const canSendOtp = isEmailValid && !isOtpSent;
 
   const handleSendOtp = async () => {
     const validEmail = await trigger('email');
@@ -270,20 +267,6 @@ export default function JwtRegisterByEmailView() {
         <Stack spacing={3}>
           {!!errorMsg && <Alert severity="error">{errorMsg}</Alert>}
 
-          <RHFCheckbox
-            name="emailOtpConsent"
-            label="I authorize Merchant Portal to send a one-time password (OTP) to my email address for account registration and verification."
-            sx={{
-              alignItems: 'flex-start',
-              m: 0,
-              '& .MuiFormControlLabel-label': {
-                typography: 'body2',
-                color: 'text.secondary',
-                lineHeight: 1.5,
-              },
-            }}
-          />
-
           <Stack direction="column">
             <RHFTextField
               name="email"
@@ -325,6 +308,20 @@ export default function JwtRegisterByEmailView() {
           >
             Verify
           </LoadingButton>
+
+          <Typography
+            sx={{ color: 'text.secondary', typography: 'caption', textAlign: 'center' }}
+          >
+            By continuing, you agree to the{' '}
+            <Link underline="always" color="text.primary">
+              Privacy Notice
+            </Link>{' '}
+            and{' '}
+            <Link underline="always" color="text.primary">
+              Terms of Service
+            </Link>
+            .
+          </Typography>
         </Stack>
       </FormProvider>
     </Card>

@@ -559,7 +559,7 @@ export default function KYCBasicInfo() {
               <Grid xs={12}>
                 <RHFCheckbox
                   name="companyInfoFetchConsent"
-                  label="I authorize Merchant Portal to fetch my company details, including GSTIN, Udyam registration number, and incorporation information, from the CIN provided using the /extraction/merchant-company-info service."
+                  label="I agree to fetch and use my company data from authorized third-party sources."
                   sx={{
                     alignItems: 'flex-start',
                     m: 0,
@@ -794,7 +794,7 @@ export default function KYCBasicInfo() {
               <Grid xs={12}>
                 <RHFCheckbox
                   name="panOcrConsent"
-                  label="I authorize Merchant Portal to securely store my PAN card document and use OCR to extract PAN details for auto-filling this form."
+                  label="I confirm and agree to the use and storage of my PAN details for verification and compliance."
                   sx={{
                     alignItems: 'flex-start',
                     m: 0,

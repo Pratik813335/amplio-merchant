@@ -10,11 +10,6 @@ import Stack from '@mui/material/Stack';
 import IconButton from '@mui/material/IconButton';
 import Typography from '@mui/material/Typography';
 import InputAdornment from '@mui/material/InputAdornment';
-import Dialog from '@mui/material/Dialog';
-import Button from '@mui/material/Button';
-import DialogTitle from '@mui/material/DialogTitle';
-import DialogContent from '@mui/material/DialogContent';
-import DialogActions from '@mui/material/DialogActions';
 // routes
 import { paths } from 'src/routes/paths';
 import { useSearchParams, useRouter } from 'src/routes/hook';
@@ -28,9 +23,7 @@ import { useAuthContext } from 'src/auth/hooks';
 import Iconify from 'src/components/iconify';
 import FormProvider, { RHFCheckbox, RHFTextField } from 'src/components/hook-form';
 import { Card } from '@mui/material';
-import disclaimerPdf from 'src/assets/documents/merchant-registration-disclaimer.pdf';
-
-// ----------------------------------------------------------------------
+import JwtRegistrationDisclaimerDialog from './jwt-registration-disclaimer-dialog';
 
 export default function JwtLoginView() {
   const { login } = useAuthContext();
@@ -178,42 +171,11 @@ export default function JwtLoginView() {
         <Card sx={{ p: 3, py: 5 }}>{renderForm}</Card>
       </FormProvider>
 
-      <Dialog open={isDisclaimerOpen} onClose={handleCloseDisclaimer} fullWidth maxWidth="md">
-        <DialogTitle>Registration Disclaimer</DialogTitle>
-
-        <DialogContent dividers>
-          <Typography variant="body2" sx={{ mb: 2, color: 'text.secondary' }}>
-            Please review this disclaimer before continuing to account registration.
-          </Typography>
-
-          <Card variant="outlined" sx={{ overflow: 'hidden' }}>
-            <iframe
-              title="Registration Disclaimer PDF"
-              src={disclaimerPdf}
-              width="100%"
-              height="520"
-              style={{ border: 0, display: 'block' }}
-            />
-          </Card>
-
-          <Link
-            href={disclaimerPdf}
-            target="_blank"
-            rel="noopener noreferrer"
-            underline="hover"
-            sx={{ display: 'inline-flex', mt: 2 }}
-          >
-            Open disclaimer in a new tab
-          </Link>
-        </DialogContent>
-
-        <DialogActions sx={{ px: 3, py: 2 }}>
-          <Button onClick={handleCloseDisclaimer}>Cancel</Button>
-          <Button variant="contained" color="inherit" onClick={handleContinueToRegister}>
-            I agree and continue
-          </Button>
-        </DialogActions>
-      </Dialog>
+      <JwtRegistrationDisclaimerDialog
+        open={isDisclaimerOpen}
+        onClose={handleCloseDisclaimer}
+        onContinue={handleContinueToRegister}
+      />
     </>
   );
 }
