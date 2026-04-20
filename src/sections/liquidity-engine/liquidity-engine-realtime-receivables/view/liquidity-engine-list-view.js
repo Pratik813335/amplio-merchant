@@ -33,7 +33,7 @@ import {
   TablePaginationCustom,
 } from 'src/components/table';
 import PropTypes from 'prop-types';
-import LiquidityEngineTableRow from '../liquidity-engine-row';
+import LiquidityEngineTableRow, { getReceivableFundingStatus } from '../liquidity-engine-row';
 import LiquidityEngineHaircutCalculationCard from '../liquidity-engine-haircut-calculation-card';
 
 // ----------------------------------------------------------------------
@@ -43,6 +43,7 @@ const TABLE_HEAD = [
   { id: 'amount', label: 'Amount' },
   { id: 'rail', label: 'Rail' },
   { id: 'bank', label: 'Bank' },
+  { id: 'platformStatus', label: 'Funding Status' },
   { id: 'settlementDate', label: 'Settlement Date' },
   { id: 'haircut', label: 'Haircut' },
   { id: 'netAmount', label: 'Net Amount' },
@@ -218,7 +219,9 @@ LiquidityEngineListView.propTypes = {
       amount: PropTypes.number,
       netAmount: PropTypes.number,
       haircut: PropTypes.number,
+      releasedAmount: PropTypes.number,
       status: PropTypes.string,
+      platformStatus: PropTypes.string,
       createdAt: PropTypes.string,
       method: PropTypes.string,
       bank: PropTypes.string,
@@ -248,7 +251,16 @@ function applyFilter({ inputData, comparator, filters }) {
   }
 
   if (status !== 'all') {
-    inputData = inputData.filter((item) => item.risk === status);
+    const normalizedStatus = status.toLowerCase();
+
+    inputData = inputData.filter((item) => {
+      const fundingStatus = getReceivableFundingStatus(item);
+
+      return (
+        fundingStatus.value === normalizedStatus ||
+        fundingStatus.label.toLowerCase() === normalizedStatus
+      );
+    });
   }
 
   if (role.length) {
