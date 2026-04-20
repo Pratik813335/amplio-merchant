@@ -125,6 +125,11 @@ export const endpoints = {
     documents: '/merchant-profiles/documents',
     addressDetails: '/merchant-profiles/address-details'
   },
+  merchantPayoutConfig: {
+    me: '/merchant-payout-config/me',
+    stop: '/merchant-payout-config/me/stop',
+    reactivate: '/merchant-payout-config/me/reactivate',
+  },
   transactions:{
     list: '/transactions'
   },
