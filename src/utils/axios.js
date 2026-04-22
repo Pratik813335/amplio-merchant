@@ -183,8 +183,9 @@ export const endpoints = {
   },
   bankDetails: {
     list: '/merchant-profiles/bank-details',
-    filterList: (filter) => `/company-profiles/bank-details?filter=${filter}`,
-    details: (accountId) => `/company-profiles/bank-details/${accountId}`,
+    filterList: (filter) => `/merchant-profiles/bank-details?filter=${filter}`,
+    details: (accountId) => `/merchant-profiles/bank-details/${accountId}`,
+    primary: (accountId) => `/merchant-profiles/bank-details/${accountId}/primary`,
   },
   psp: {
     list: '/company-profiles/bank-details',

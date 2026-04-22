@@ -6,7 +6,8 @@ import Typography from '@mui/material/Typography';
 import Grid from '@mui/material/Unstable_Grid2';
 import MenuItem from '@mui/material/MenuItem';
 import Stack from '@mui/material/Stack';
-import Paper from '@mui/material/Paper';
+import Switch from '@mui/material/Switch';
+import FormControlLabel from '@mui/material/FormControlLabel';
 
 // components
 import { RouterLink } from 'src/routes/components';
@@ -38,6 +39,7 @@ export default function BankNewForm({onclose,bankDetails, refreshBankDetail}) {
   const router = useRouter();
   const navigate = useNavigate();
    const [isEdit, setIsEdit] = useState();
+   const [isPrimaryUpdating, setIsPrimaryUpdating] = useState(false);
 
   useEffect(() => {
     if (bankDetails?.status === 1) {
@@ -46,6 +48,9 @@ export default function BankNewForm({onclose,bankDetails, refreshBankDetail}) {
       setIsEdit(true);   // Edit mode
     }
   }, [bankDetails?.status]);
+
+  const isApprovedAccount = bankDetails?.status === 1;
+  const isPrimaryAccount = bankDetails?.isPrimary === true;
 
 
   // ---------------- VALIDATION ----------------
@@ -169,6 +174,40 @@ export default function BankNewForm({onclose,bankDetails, refreshBankDetail}) {
     }
   });
 
+  const handlePrimaryToggle = async (event) => {
+    if (!event.target.checked || !bankDetails?.id || !isApprovedAccount || isPrimaryAccount) {
+      return;
+    }
+
+    try {
+      setIsPrimaryUpdating(true);
+      const res = await axiosInstance.patch(
+        `/merchant-profiles/bank-details/${bankDetails.id}/primary`
+      );
+
+      if (res?.data?.success) {
+        enqueueSnackbar(res?.data?.message || 'Primary bank account updated successfully!', {
+          variant: 'success',
+        });
+        refreshBankDetail?.();
+        onclose?.();
+        return;
+      }
+
+      enqueueSnackbar(res?.data?.message || 'Unable to update primary bank account', {
+        variant: 'error',
+      });
+    } catch (error) {
+      console.error(error);
+      enqueueSnackbar(
+        error?.message || 'Failed to update primary bank account',
+        { variant: 'error' }
+      );
+    } finally {
+      setIsPrimaryUpdating(false);
+    }
+  };
+
 
   const requiredFields = ['addressProof', 'bankName', 'branchName', 'accountNumber', 'ifscCode'];
 
@@ -218,12 +257,29 @@ export default function BankNewForm({onclose,bankDetails, refreshBankDetail}) {
           <Typography variant="h6" sx={{ fontWeight: 500, mb: 2 }}>
             Select Document Type:
           </Typography>
-          {bankDetails?.status === 1 && (
-            <Stack direction="row" alignItems="center" spacing={0.5} sx={{ color: 'success.main', mb: 2 }}>
-              <Iconify icon="mdi:check-circle" width={20} />
-              <Typography variant="subtitle2" sx={{ fontWeight: 600 }}>
-                Verified
-              </Typography>
+          {bankDetails?.id && (
+            <Stack direction="row" alignItems="center" spacing={2} sx={{ mb: 2 }}>
+              {isApprovedAccount && (
+                <Stack direction="row" alignItems="center" spacing={0.5} sx={{ color: 'success.main' }}>
+                  <Iconify icon="mdi:check-circle" width={20} />
+                  <Typography variant="subtitle2" sx={{ fontWeight: 600 }}>
+                    Verified
+                  </Typography>
+                </Stack>
+              )}
+
+              <FormControlLabel
+                control={
+                  <Switch
+                    checked={isPrimaryAccount}
+                    onChange={handlePrimaryToggle}
+                    disabled={!isApprovedAccount || isPrimaryUpdating || isPrimaryAccount}
+                    color="primary"
+                  />
+                }
+                label={isPrimaryAccount ? 'Primary account' : 'Set as primary'}
+                sx={{ mr: 0 }}
+              />
             </Stack>
           )}
         </Stack>
