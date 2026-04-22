@@ -1,5 +1,5 @@
 import * as Yup from 'yup';
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import PropTypes from 'prop-types';
 import Box from '@mui/material/Box';
 import Container from '@mui/material/Container';
@@ -16,8 +16,11 @@ import { RHFSelect } from 'src/components/hook-form/rhf-select';
 import { useForm, useWatch } from 'react-hook-form';
 
 import { enqueueSnackbar } from 'notistack';
+import { useAuthContext } from 'src/auth/hooks';
 import { useGetKycSection } from 'src/api/merchantKyc';
 import { yupResolver } from '@hookform/resolvers/yup';
+import { useRouter } from 'src/routes/hook';
+import { paths } from 'src/routes/paths';
 import axiosInstance from 'src/utils/axios';
 import { applyAutofillValues } from 'src/utils/autofill/form';
 import { STATIC_KYC_PDF_PATHS, uploadStaticPdf } from 'src/utils/autofill/static-pdf-upload';
@@ -54,8 +57,11 @@ export default function KYCMerchantDetails({
   dataInitializedSteps,
   setDataInitializedSteps,
 }) {
+  const router = useRouter();
+  const { authenticated, loading } = useAuthContext();
+  const sessionExpiredHandled = useRef(false);
   const { kycSectionData, kycSectionLoading, kycSectionError, refreshKycSection } =
-    useGetKycSection('merchant_documents', '/company-kyc/company-details');
+    useGetKycSection('merchant_documents', paths.auth.kyc.merchantKyc);
 
   const documents = useMemo(
     () => (Array.isArray(kycSectionData?.data) ? kycSectionData.data : []),
@@ -177,6 +183,22 @@ export default function KYCMerchantDetails({
     return null;
   }, [moaAoaType, moaDoc, aoaDoc]);
 
+  const handleSessionExpired = useCallback(() => {
+    if (sessionExpiredHandled.current) return;
+
+    sessionExpiredHandled.current = true;
+    enqueueSnackbar('Your session has expired. Please restart onboarding.', {
+      variant: 'error',
+    });
+    router.push(`${paths.auth.jwt.registerPhone}?reason=session_expired`);
+  }, [router]);
+
+  useEffect(() => {
+    if (!loading && !authenticated) {
+      handleSessionExpired();
+    }
+  }, [authenticated, handleSessionExpired, loading]);
+
   const mandatoryDocumentIds = useMemo(() => {
     const mandatoryIds = new Set();
 
@@ -260,6 +282,11 @@ export default function KYCMerchantDetails({
 
   const onSubmit = handleSubmit(async (formData) => {
     try {
+      if (!authenticated) {
+        handleSessionExpired();
+        return;
+      }
+
       const usersId =
         sessionStorage.getItem('merchant_user_id') || sessionStorage.getItem('merchant_profile_id');
 

@@ -106,10 +106,10 @@ export const endpoints = {
     kycProgress: (sessionId) => `/merchant-profiles/kyc-progress/${sessionId}`,
     getSection: (section, profileId, route = '') =>
       `/merchant-profiles/kyc-get-data/${section}/${profileId}?route=${encodeURIComponent(route)}`,
-    addressDetails: 'company-profiles/address-details',
-    details: (id) => `/company-profiles/bank-details/${id}`,
-    getBankDetails: `/company-profiles/bank-details`,
-    getDocuments: `/company-profiles/documents`,
+    addressDetails: '/merchant-profiles/address-details',
+    details: (id) => `/merchant-profiles/bank-details/${id}`,
+    getBankDetails: `/merchant-profiles/bank-details`,
+    getDocuments: `/merchant-profiles/documents`,
     getProfileData: `/merchant-profiles/me`,
   },
   merchantDealershipType: {
@@ -124,6 +124,11 @@ export const endpoints = {
     pspDetails: '/merchant-profiles/PSP-details',
     documents: '/merchant-profiles/documents',
     addressDetails: '/merchant-profiles/address-details'
+  },
+  merchantPayoutConfig: {
+    me: '/merchant-payout-config/me',
+    stop: '/merchant-payout-config/me/stop',
+    reactivate: '/merchant-payout-config/me/reactivate',
   },
   transactions:{
     list: '/transactions'
@@ -178,8 +183,9 @@ export const endpoints = {
   },
   bankDetails: {
     list: '/merchant-profiles/bank-details',
-    filterList: (filter) => `/company-profiles/bank-details?filter=${filter}`,
-    details: (accountId) => `/company-profiles/bank-details/${accountId}`,
+    filterList: (filter) => `/merchant-profiles/bank-details?filter=${filter}`,
+    details: (accountId) => `/merchant-profiles/bank-details/${accountId}`,
+    primary: (accountId) => `/merchant-profiles/bank-details/${accountId}/primary`,
   },
   psp: {
     list: '/company-profiles/bank-details',

@@ -1,5 +1,5 @@
 import PropTypes from 'prop-types';
-import { useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Controller, useForm, useWatch } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
 import * as Yup from 'yup';
@@ -14,6 +14,7 @@ import DialogTitle from '@mui/material/DialogTitle';
 import DialogActions from '@mui/material/DialogActions';
 import DialogContent from '@mui/material/DialogContent';
 import { useSnackbar } from 'src/components/snackbar';
+import { useAuthContext } from 'src/auth/hooks';
 import FormProvider, {
   RHFCheckbox,
   RHFCustomFileUploadBox,
@@ -22,6 +23,8 @@ import FormProvider, {
 } from 'src/components/hook-form';
 import { DatePicker } from '@mui/x-date-pickers';
 import { Typography } from '@mui/material';
+import { useRouter } from 'src/routes/hook';
+import { paths } from 'src/routes/paths';
 import axiosInstance from 'src/utils/axios';
 import { applyAutofillValues } from 'src/utils/autofill/form';
 import { generateUboAutofill } from 'src/utils/autofill/generators';
@@ -49,6 +52,9 @@ export default function KYCAddUBOsForm({
   existingUbos = [],
 }) {
   const { enqueueSnackbar } = useSnackbar();
+  const router = useRouter();
+  const { authenticated, loading } = useAuthContext();
+  const sessionExpiredHandled = useRef(false);
   const [extractedPan, setExtractedPan] = useState(null);
   const [isAutofilling, setIsAutofilling] = useState(false);
   const [skipPanExtractionOnce, setSkipPanExtractionOnce] = useState(false);
@@ -137,6 +143,22 @@ export default function KYCAddUBOsForm({
 
   const watchRole = methods.watch('role');
 
+  const handleSessionExpired = useCallback(() => {
+    if (sessionExpiredHandled.current) return;
+
+    sessionExpiredHandled.current = true;
+    enqueueSnackbar('Your session has expired. Please restart onboarding.', {
+      variant: 'error',
+    });
+    router.push(`${paths.auth.jwt.registerPhone}?reason=session_expired`);
+  }, [enqueueSnackbar, router]);
+
+  useEffect(() => {
+    if (!loading && !authenticated) {
+      handleSessionExpired();
+    }
+  }, [authenticated, handleSessionExpired, loading]);
+
   const getFileId = (fileValue) => {
     if (!fileValue) return null;
 
@@ -163,6 +185,11 @@ export default function KYCAddUBOsForm({
 
   const onSubmit = handleSubmit(async (data) => {
     try {
+      if (!authenticated) {
+        handleSessionExpired();
+        return;
+      }
+
       const usersId = sessionStorage.getItem('merchant_user_id');
 
       if (!usersId) {
@@ -406,23 +433,10 @@ export default function KYCAddUBOsForm({
           }}
         >
           <Box rowGap={3} display="grid" mt={2}>
-            <RHFCheckbox
-              name="uboConsent"
-              label="I confirm and agree to the use and storage of UBO details for compliance purposes."
-              disabled={isViewMode}
-              sx={{
-                '& .MuiFormControlLabel-label': {
-                  typography: 'body2',
-                  color: 'text.secondary',
-                  lineHeight: 1.5,
-                },
-              }}
-            />
-
             <RHFTextField
               name="name"
               label="Name*"
-              disabled={isViewMode || !uboConsent}
+              disabled={isViewMode}
               inputProps={{ style: { textTransform: 'uppercase' } }}
             />
 
@@ -430,22 +444,22 @@ export default function KYCAddUBOsForm({
               name="email"
               label="Email*"
               type="email"
-              disabled={isViewMode || !uboConsent}
+              disabled={isViewMode}
             />
 
             <RHFTextField
               name="phoneNumber"
               label="Phone Number*"
-              disabled={isViewMode || !uboConsent}
+              disabled={isViewMode}
               inputProps={{ maxLength: 10 }}
             />
             <RHFTextField
               name="ownershipPercentage"
               label="Ownership Percentage*"
-              disabled={isViewMode || !uboConsent}
+              disabled={isViewMode}
               inputProps={{ min: 1, max: 100 }}
             />
-            <RHFSelect name="role" label="Designation*" disabled={isViewMode || !uboConsent}>
+            <RHFSelect name="role" label="Designation*" disabled={isViewMode}>
               <MenuItem value="" disabled>
                 Select Designation
               </MenuItem>
@@ -461,7 +475,6 @@ export default function KYCAddUBOsForm({
                 name="customDesignation"
                 label="Enter Custom Designation*"
                 placeholder="Enter custom designation"
-                disabled={!uboConsent}
               />
             )}
 
@@ -480,20 +493,20 @@ export default function KYCAddUBOsForm({
                 'image/png': ['.png'],
                 'image/jpeg': ['.jpg', '.jpeg'],
               }}
-              disabled={isViewMode || !uboConsent}
+              disabled={isViewMode}
             />
 
 
             <RHFTextField
               name="submittedPanFullName"
               label="PAN Holder Full Name*"
-              disabled={isViewMode || !uboConsent}
+              disabled={isViewMode}
             />
 
             <RHFTextField
               name="submittedPanNumber"
               label="PAN Number*"
-              disabled={isViewMode || !uboConsent}
+              disabled={isViewMode}
             />
 
             <Controller
@@ -503,7 +516,7 @@ export default function KYCAddUBOsForm({
                 <DatePicker
                   {...field}
                   label="PAN Date of Birth*"
-                  disabled={isViewMode || !uboConsent}
+                  disabled={isViewMode}
                   value={field.value ? new Date(field.value) : null}
                   onChange={(newValue) =>
                     field.onChange(newValue ? format(newValue, 'yyyy-MM-dd') : '')
@@ -518,6 +531,19 @@ export default function KYCAddUBOsForm({
                   }}
                 />
               )}
+            />
+
+            <RHFCheckbox
+              name="uboConsent"
+              label="I confirm and agree to the use and storage of UBO details for compliance purposes."
+              disabled={isViewMode}
+              sx={{
+                '& .MuiFormControlLabel-label': {
+                  typography: 'body2',
+                  color: 'text.secondary',
+                  lineHeight: 1.5,
+                },
+              }}
             />
           </Box>
         </DialogContent>
@@ -545,7 +571,7 @@ export default function KYCAddUBOsForm({
                 type="submit"
                 variant="contained"
                 color="primary"
-                disabled={isSubmitting}
+                disabled={isSubmitting || !uboConsent}
                 startIcon={isSubmitting ? <CircularProgress size={20} /> : null}
               >
                 {isEditMode ? 'Update' : 'Add'}

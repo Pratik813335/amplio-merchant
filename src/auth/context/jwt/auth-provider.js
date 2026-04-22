@@ -116,6 +116,15 @@ export function AuthProvider({ children }) {
     });
   }, []);
 
+  const loginWithUser = useCallback((user) => {
+    dispatch({
+      type: 'LOGIN',
+      payload: {
+        user,
+      },
+    });
+  }, []);
+
   // REGISTER
   const register = useCallback(async (email, password, firstName, lastName) => {
     const data = {
@@ -162,10 +171,11 @@ export function AuthProvider({ children }) {
       unauthenticated: status === 'unauthenticated',
       //
       login,
+      loginWithUser,
       register,
       logout,
     }),
-    [login, logout, register, state.user, status]
+    [login, loginWithUser, logout, register, state.user, status]
   );
 
   return <AuthContext.Provider value={memoizedValue}>{children}</AuthContext.Provider>;

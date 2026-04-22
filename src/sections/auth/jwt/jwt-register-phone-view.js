@@ -1,6 +1,6 @@
 import * as Yup from 'yup';
 import { useForm } from 'react-hook-form';
-import { useState, useRef, useEffect } from 'react';
+import { useCallback, useState, useRef, useEffect } from 'react';
 import { yupResolver } from '@hookform/resolvers/yup';
 import LoadingButton from '@mui/lab/LoadingButton';
 import Link from '@mui/material/Link';
@@ -56,6 +56,20 @@ export default function JwtRegisterByMobileView() {
   const mobileNoValue = watch('mobileNo') || '';
   const canSendOtp = mobileNoValue.length === 10 && !isOtpSent;
 
+  const clearMerchantOnboardingState = useCallback(() => {
+    sessionStorage.removeItem('merchant_user_id');
+    sessionStorage.removeItem('merchant_profile_id');
+
+    Object.keys(sessionStorage)
+      .filter((key) => key.startsWith('kyc_ubo_next_confirmed:'))
+      .forEach((key) => sessionStorage.removeItem(key));
+  }, []);
+
+  const persistSessionId = useCallback((nextSessionId) => {
+    setSessionId(nextSessionId);
+    localStorage.setItem('sessionId', nextSessionId);
+  }, []);
+
   // ------------------------------------------------------
   // Send OTP using axiosInstance
   // ------------------------------------------------------
@@ -73,9 +87,9 @@ export default function JwtRegisterByMobileView() {
 
       enqueueSnackbar(res.data.message, { variant: 'success' });
 
-      // save sessionId
-      setSessionId(res.data.sessionId);
-      localStorage.setItem('sessionId', res.data.sessionId);
+      clearMerchantOnboardingState();
+      persistSessionId(res.data.sessionId);
+      setErrorMsg('');
 
       // reset OTP boxes
       setOtp(Array(4).fill(''));
@@ -116,6 +130,7 @@ export default function JwtRegisterByMobileView() {
   // Verify OTP using axiosInstance
   // ------------------------------------------------------
   const onSubmit = handleSubmit(async () => {
+    const currentSessionId = localStorage.getItem('sessionId') || sessionId;
     const enteredOtp = otp.join('');
 
     if (enteredOtp.length !== 4) {
@@ -123,11 +138,20 @@ export default function JwtRegisterByMobileView() {
       return;
     }
 
+    if (!currentSessionId) {
+      setErrorMsg('Session expired. Please verify phone again.');
+      return;
+    }
+
     try {
       const res = await axiosInstance.post('/auth/verify-phone-otp', {
-        sessionId,
+        sessionId: currentSessionId,
         otp: enteredOtp,
       });
+
+      if (res?.data?.sessionId) {
+        persistSessionId(res.data.sessionId);
+      }
 
       enqueueSnackbar(res.data.message, { variant: 'success' });
 

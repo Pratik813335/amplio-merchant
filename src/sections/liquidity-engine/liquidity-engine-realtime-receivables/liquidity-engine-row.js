@@ -14,6 +14,20 @@ import { fCurrencyindia } from 'src/utils/format-number';
 
 // ----------------------------------------------------------------------
 
+export function getReceivableFundingStatus(row) {
+  const normalizedPlatformStatus = row?.platformStatus?.toLowerCase();
+  const isFunded =
+    normalizedPlatformStatus === 'fundeed' ||
+    normalizedPlatformStatus === 'funded' ||
+    Number(row?.releasedAmount ?? 0) > 0;
+
+  return isFunded
+    ? { value: 'fundeed', label: 'Funded', color: 'success' }
+    : { value: 'notfunded', label: 'Pending', color: 'warning' };
+}
+
+// ----------------------------------------------------------------------
+
 export default function LiquidityEngineTableRow({
   row,
   selected,
@@ -23,7 +37,9 @@ export default function LiquidityEngineTableRow({
   onViewHaircut,
 }) {
   const theme = useTheme();
-  const { tnsId, totalRecieved, method, bank, settlementDate, haircut, netAmount, risk } = row;
+  const { tnsId, totalRecieved, method, bank, settlementDate, haircut, netAmount } =
+    row;
+  const fundingStatus = getReceivableFundingStatus(row);
 
   // const getRiskColor = () => {
   //   if (risk === 'Low') return 'success';
@@ -45,6 +61,12 @@ export default function LiquidityEngineTableRow({
       </TableCell>
 
       <TableCell>{bank}</TableCell>
+
+      <TableCell>
+        <Label variant="soft" color={fundingStatus.color}>
+          {fundingStatus.label}
+        </Label>
+      </TableCell>
 
       <TableCell>
         <ListItemText
