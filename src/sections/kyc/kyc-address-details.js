@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import PropTypes from 'prop-types';
 import * as Yup from 'yup';
 import {
@@ -16,7 +16,10 @@ import { LoadingButton } from '@mui/lab';
 import { useForm, useWatch } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
 import { useSnackbar } from 'notistack';
+import { useAuthContext } from 'src/auth/hooks';
 import FormProvider, { RHFTextField, RHFSelect, RHFCustomFileUploadBox } from 'src/components/hook-form';
+import { useRouter } from 'src/routes/hook';
+import { paths } from 'src/routes/paths';
 import axiosInstance from 'src/utils/axios';
 import { useGetKycAddressDetails } from 'src/api/merchantKyc';
 import KYCFooter from './kyc-footer';
@@ -29,6 +32,9 @@ export default function KYCAddressDetails({
   setDataInitializedSteps,
 }) {
   const { enqueueSnackbar } = useSnackbar();
+  const router = useRouter();
+  const { authenticated, loading } = useAuthContext();
+  const sessionExpiredHandled = useRef(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isAutofilling, setIsAutofilling] = useState(false);
   const { registeredAddress, correspondenceAddress, addressDetailsLoading } = useGetKycAddressDetails();
@@ -110,6 +116,22 @@ export default function KYCAddressDetails({
   const sameAsRegistered = watch('sameAsRegistered');
   const documentType = useWatch({ control, name: 'documentType' });
 
+  const handleSessionExpired = useCallback(() => {
+    if (sessionExpiredHandled.current) return;
+
+    sessionExpiredHandled.current = true;
+    enqueueSnackbar('Your session has expired. Please restart onboarding.', {
+      variant: 'error',
+    });
+    router.push(`${paths.auth.jwt.registerPhone}?reason=session_expired`);
+  }, [enqueueSnackbar, router]);
+
+  useEffect(() => {
+    if (!loading && !authenticated) {
+      handleSessionExpired();
+    }
+  }, [authenticated, handleSessionExpired, loading]);
+
   useEffect(() => {
     if (sameAsRegistered) {
       setValue('correspondenceAddressLine1', watch('registeredAddressLine1'));
@@ -151,6 +173,11 @@ export default function KYCAddressDetails({
 
   const onSubmit = async (form) => {
     try {
+      if (!authenticated) {
+        handleSessionExpired();
+        return;
+      }
+
       const usersId = sessionStorage.getItem('merchant_user_id');
       if (!usersId) {
         enqueueSnackbar('User ID missing. Please restart KYC process.', { variant: 'error' });

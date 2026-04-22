@@ -479,7 +479,7 @@ export default function BankNewForm({onclose,bankDetails, refreshBankDetail}) {
               <Grid xs={12} md={3}>
                 <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
                   <Box>
-                    <RHFSelect name="accountType" label="Account Type" disabled>
+                    <RHFSelect name="accountType" label="Account Type" disabled={!isEdit}>
                       <MenuItem value="SAVINGS">Savings</MenuItem>
                       <MenuItem value="CURRENT">Current</MenuItem>
                     </RHFSelect>

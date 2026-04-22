@@ -4,7 +4,7 @@ import { KYCView } from 'src/sections/kyc/view';
 
 // ----------------------------------------------------------------------
 
-export default function CompanyKycPage() {
+export default function MerchantKycPage() {
   return (
     <>
       <Helmet>

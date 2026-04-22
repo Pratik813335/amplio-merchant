@@ -16,9 +16,12 @@ import Alert from '@mui/material/Alert';
 import FormProvider, { RHFCheckbox, RHFSelect, RHFTextField } from 'src/components/hook-form';
 
 import { useSnackbar } from 'src/components/snackbar';
+import { useAuthContext } from 'src/auth/hooks';
 import axiosInstance from 'src/utils/axios';
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { useGetPsp } from 'src/api/psp-master';
+import { useRouter } from 'src/routes/hook';
+import { paths } from 'src/routes/paths';
 
 export default function PSPIntegrationForm({
   open,
@@ -28,6 +31,9 @@ export default function PSPIntegrationForm({
   onSubmitSuccess,
 }) {
   const { enqueueSnackbar } = useSnackbar();
+  const router = useRouter();
+  const { authenticated, loading } = useAuthContext();
+  const sessionExpiredHandled = useRef(false);
   const { psp = [], pspsLoading } = useGetPsp();
 
   const PSPValidationSchema = Yup.object().shape({
@@ -62,6 +68,22 @@ export default function PSPIntegrationForm({
   const fields = selectedPsp?.pspMasterFields || [];
   const sortedFields = [...fields].sort((a, b) => a.order - b.order);
 
+  const handleSessionExpired = useCallback(() => {
+    if (sessionExpiredHandled.current) return;
+
+    sessionExpiredHandled.current = true;
+    enqueueSnackbar('Your session has expired. Please restart onboarding.', {
+      variant: 'error',
+    });
+    router.push(`${paths.auth.jwt.registerPhone}?reason=session_expired`);
+  }, [enqueueSnackbar, router]);
+
+  useEffect(() => {
+    if (!loading && !authenticated) {
+      handleSessionExpired();
+    }
+  }, [authenticated, handleSessionExpired, loading]);
+
   useEffect(() => {
     if (currentPSP && psp.length) {
       const resetData = {
@@ -89,6 +111,11 @@ export default function PSPIntegrationForm({
 
   const onSubmit = handleSubmit(async (data) => {
     try {
+      if (!authenticated) {
+        handleSessionExpired();
+        return;
+      }
+
       const usersId = sessionStorage.getItem('merchant_user_id');
 
       if (!usersId) {

@@ -106,10 +106,10 @@ export const endpoints = {
     kycProgress: (sessionId) => `/merchant-profiles/kyc-progress/${sessionId}`,
     getSection: (section, profileId, route = '') =>
       `/merchant-profiles/kyc-get-data/${section}/${profileId}?route=${encodeURIComponent(route)}`,
-    addressDetails: 'company-profiles/address-details',
-    details: (id) => `/company-profiles/bank-details/${id}`,
-    getBankDetails: `/company-profiles/bank-details`,
-    getDocuments: `/company-profiles/documents`,
+    addressDetails: '/merchant-profiles/address-details',
+    details: (id) => `/merchant-profiles/bank-details/${id}`,
+    getBankDetails: `/merchant-profiles/bank-details`,
+    getDocuments: `/merchant-profiles/documents`,
     getProfileData: `/merchant-profiles/me`,
   },
   merchantDealershipType: {

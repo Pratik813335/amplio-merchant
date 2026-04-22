@@ -37,7 +37,7 @@ const Auth0Callback = lazy(() => import('src/pages/auth/auth0/callback'));
 
 // KYC pages
 const KYCBasicInfoPage = lazy(() => import('src/pages/kyc/kyc-basic-info'));
-const CompanyKycPage = lazy(() => import('src/pages/kyc/company-kyc'));
+const MerchantKycPage = lazy(() => import('src/pages/kyc/merchant-kyc'));
 const CompanyKycSuccessPage = lazy(() => import('src/pages/kyc/kyc-sucessfull'));
 const CompanyKycPendingPage = lazy(() => import('src/pages/kyc/kyc-pending'));
 
@@ -227,7 +227,7 @@ const authKyc = {
     },
     {
       path: 'merchant-kyc',
-      element: <CompanyKycPage />,
+      element: <MerchantKycPage />,
     },
   ],
 };

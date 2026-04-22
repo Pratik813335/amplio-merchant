@@ -68,7 +68,7 @@ export const paths = {
       forgotPassword: `${ROOTS.AUTH}/jwt/forgot-password`,
     },
     kyc: {
-      companyKyc: `${ROOTS.AUTH}/kyc/merchant-kyc`,
+      merchantKyc: `${ROOTS.AUTH}/kyc/merchant-kyc`,
       kycBasicInfo: `${ROOTS.AUTH}/kyc/basic-info`,
       kycSuccessful: `${ROOTS.AUTH}/kyc/kyc-successful`,
       kycPending: `${ROOTS.AUTH}/kyc/kyc-pending`,

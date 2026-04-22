@@ -1,3 +1,4 @@
+import { useCallback } from 'react';
 import { m } from 'framer-motion';
 // @mui
 import { alpha, styled } from '@mui/material/styles';
@@ -8,8 +9,8 @@ import Stack from '@mui/material/Stack';
 import Typography from '@mui/material/Typography';
 import Grid from '@mui/material/Unstable_Grid2';
 import { Icon } from '@iconify/react';
-// components
-import { RouterLink } from 'src/routes/components';
+import { useAuthContext } from 'src/auth/hooks';
+import { useRouter } from 'src/routes/hook';
 import { MotionContainer, varFade } from 'src/components/animate';
 import { paths } from 'src/routes/paths';
 
@@ -46,6 +47,24 @@ const StyledIcon = styled('div')(({ theme }) => ({
 }));
 
 export default function KYCPending() {
+  const router = useRouter();
+  const { logout } = useAuthContext();
+
+  const handleGoToLogin = useCallback(async () => {
+    await logout?.();
+
+    sessionStorage.removeItem('merchant_user_id');
+    sessionStorage.removeItem('merchant_profile_id');
+
+    Object.keys(sessionStorage)
+      .filter((key) => key.startsWith('kyc_ubo_next_confirmed:'))
+      .forEach((key) => sessionStorage.removeItem(key));
+
+    localStorage.removeItem('sessionId');
+
+    router.push(paths.auth.jwt.login);
+  }, [logout, router]);
+
   return (
     <Container maxWidth="md" sx={{ position: 'relative', py: { xs: 2, sm: 4, md: 5 } }}>
       <Box
@@ -135,12 +154,10 @@ export default function KYCPending() {
       <m.div variants={varFade().inUp}>
         <Stack alignItems="center" sx={{ mt: 3 }}>
           <Button
-            component={RouterLink}
-            to={paths.auth.jwt.login}
+            onClick={handleGoToLogin}
             variant="contained"
             color="primary"
             size="small"
-
           >
             Go To Login
           </Button>
