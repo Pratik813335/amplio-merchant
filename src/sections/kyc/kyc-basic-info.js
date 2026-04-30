@@ -615,11 +615,9 @@ export default function KYCBasicInfo() {
                       <Button
                         size="small"
                         variant="contained"
+                        color="primary"
                         sx={{
-                          textTransform: 'none',
-                          bgcolor: 'primary.main',
-                          color: 'white',
-                          ml: 1,
+                          borderRadius: 1,
                         }}
                         disabled={!canFetchCompanyInfo}
                         onClick={async () => {
@@ -661,16 +659,22 @@ export default function KYCBasicInfo() {
                               });
                               setValue(
                                 'dateOfIncorporation',
-                                data.dateOfIncorporation ? new Date(data.dateOfIncorporation) : null,
+                                data.dateOfIncorporation
+                                  ? new Date(data.dateOfIncorporation)
+                                  : null,
                                 {
                                   shouldValidate: true,
                                   shouldDirty: true,
                                 }
                               );
-                              setValue('msmeUdyamRegistrationNo', data.udyamRegistrationNumber || '', {
-                                shouldValidate: true,
-                                shouldDirty: true,
-                              });
+                              setValue(
+                                'msmeUdyamRegistrationNo',
+                                data.udyamRegistrationNumber || '',
+                                {
+                                  shouldValidate: true,
+                                  shouldDirty: true,
+                                }
+                              );
                               setValue('city', data.cityOfIncorporation || '', {
                                 shouldValidate: true,
                                 shouldDirty: true,

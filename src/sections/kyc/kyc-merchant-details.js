@@ -152,6 +152,13 @@ export default function KYCMerchantDetails({
       }
     });
 
+    if (documents.length) {
+      shape.documentSubmissionConsent = Yup.boolean().oneOf(
+        [true],
+        'Please provide consent to continue'
+      );
+    }
+
     return Yup.object().shape(shape);
   }, [documents, certificateDoc, gstDoc, moaDoc, aoaDoc]);
 
@@ -171,6 +178,7 @@ export default function KYCMerchantDetails({
 
   const values = useWatch({ control });
   const moaAoaType = useWatch({ control, name: 'moaAoaType' });
+  const documentSubmissionConsent = useWatch({ control, name: 'documentSubmissionConsent' });
   const prevPercentRef = useRef(null);
 
   const selectedMoaAoaDoc = useMemo(() => {
@@ -604,6 +612,7 @@ export default function KYCMerchantDetails({
               color="primary"
               variant="contained"
               loading={isSubmitting}
+              disabled={isSubmitting || !documentSubmissionConsent}
             >
               Next
             </LoadingButton>
