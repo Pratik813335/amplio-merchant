@@ -5,6 +5,7 @@ import axios, { endpoints } from 'src/utils/axios';
 //
 import { AuthContext } from './auth-context';
 import { isValidToken, setSession } from './utils';
+import { ACCESS_TOKEN_STORAGE_KEY } from './storage-keys';
 
 // ----------------------------------------------------------------------
 
@@ -49,14 +50,12 @@ const reducer = (state, action) => {
 
 // ----------------------------------------------------------------------
 
-const STORAGE_KEY = 'accessToken';
-
 export function AuthProvider({ children }) {
   const [state, dispatch] = useReducer(reducer, initialState);
 
   const initialize = useCallback(async () => {
     try {
-      const accessToken = sessionStorage.getItem(STORAGE_KEY);
+      const accessToken = sessionStorage.getItem(ACCESS_TOKEN_STORAGE_KEY);
 
       if (accessToken && isValidToken(accessToken)) {
         setSession(accessToken);
@@ -116,15 +115,6 @@ export function AuthProvider({ children }) {
     });
   }, []);
 
-  const loginWithUser = useCallback((user) => {
-    dispatch({
-      type: 'LOGIN',
-      payload: {
-        user,
-      },
-    });
-  }, []);
-
   // REGISTER
   const register = useCallback(async (email, password, firstName, lastName) => {
     const data = {
@@ -138,7 +128,7 @@ export function AuthProvider({ children }) {
 
     const { accessToken, user } = response.data;
 
-    sessionStorage.setItem(STORAGE_KEY, accessToken);
+    sessionStorage.setItem(ACCESS_TOKEN_STORAGE_KEY, accessToken);
 
     dispatch({
       type: 'REGISTER',
@@ -171,11 +161,10 @@ export function AuthProvider({ children }) {
       unauthenticated: status === 'unauthenticated',
       //
       login,
-      loginWithUser,
       register,
       logout,
     }),
-    [login, loginWithUser, logout, register, state.user, status]
+    [login, logout, register, state.user, status]
   );
 
   return <AuthContext.Provider value={memoizedValue}>{children}</AuthContext.Provider>;

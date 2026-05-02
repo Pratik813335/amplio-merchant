@@ -24,12 +24,11 @@ import * as Yup from 'yup';
 import { yupResolver } from '@hookform/resolvers/yup';
 import { useRouter } from 'src/routes/hook';
 import { enqueueSnackbar } from 'notistack';
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { Card } from '@mui/material';
 import { LoadingButton } from '@mui/lab';
 import Iconify from 'src/components/iconify';
 import PropTypes from 'prop-types';
-import { useAuthContext } from 'src/auth/hooks';
 import { useGetDetails } from 'src/api/merchantKyc';
 import axiosInstance from 'src/utils/axios';
 import KYCFooter from './kyc-footer';
@@ -45,8 +44,6 @@ export default function KYCBankDetails({
   setDataInitializedSteps,
 }) {
   const router = useRouter();
-  const { authenticated, loading } = useAuthContext();
-  const sessionExpiredHandled = useRef(false);
   const { Details: bankDetails, Loading: bankLoading, refreshDetails } = useGetDetails();
   const [isAutofilling, setIsAutofilling] = useState(false);
   const [isValidating, setIsValidating] = useState(false);
@@ -108,22 +105,6 @@ export default function KYCBankDetails({
   const pennyDropConsent = useWatch({ control, name: 'pennyDropConsent' });
   const bankRecord = Array.isArray(bankDetails) ? bankDetails[0] : bankDetails;
 
-  const handleSessionExpired = useCallback(() => {
-    if (sessionExpiredHandled.current) return;
-
-    sessionExpiredHandled.current = true;
-    enqueueSnackbar('Your session has expired. Please restart onboarding.', {
-      variant: 'error',
-    });
-    router.push(`${paths.auth.jwt.registerPhone}?reason=session_expired`);
-  }, [router]);
-
-  useEffect(() => {
-    if (!loading && !authenticated) {
-      handleSessionExpired();
-    }
-  }, [authenticated, handleSessionExpired, loading]);
-
   useEffect(() => {
     if (bankRecord?.status === 1) {
       setIsVerified(true);
@@ -158,11 +139,6 @@ export default function KYCBankDetails({
   };
 
   const handleValidatePennyDrop = async () => {
-    if (!authenticated) {
-      handleSessionExpired();
-      return;
-    }
-
     if (isVerified) return;
 
     const isVerificationFormValid = await trigger([
@@ -232,11 +208,6 @@ export default function KYCBankDetails({
 
   const onSubmit = handleSubmit(async (data) => {
     try {
-      if (!authenticated) {
-        handleSessionExpired();
-        return;
-      }
-
       const usersId = sessionStorage.getItem('merchant_user_id');
 
       if (!usersId) {
@@ -414,7 +385,6 @@ export default function KYCBankDetails({
       });
       if (!dataInitializedSteps.includes('kyc_bank_details')) {
         setDataInitializedSteps?.((prev = []) => [...prev, 'kyc_bank_details']);
-        setActiveStepId();
       }
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps

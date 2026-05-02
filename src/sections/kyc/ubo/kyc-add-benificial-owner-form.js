@@ -1,5 +1,5 @@
 import PropTypes from 'prop-types';
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { Controller, useForm, useWatch } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
 import * as Yup from 'yup';
@@ -14,7 +14,6 @@ import DialogTitle from '@mui/material/DialogTitle';
 import DialogActions from '@mui/material/DialogActions';
 import DialogContent from '@mui/material/DialogContent';
 import { useSnackbar } from 'src/components/snackbar';
-import { useAuthContext } from 'src/auth/hooks';
 import FormProvider, {
   RHFCheckbox,
   RHFCustomFileUploadBox,
@@ -23,8 +22,6 @@ import FormProvider, {
 } from 'src/components/hook-form';
 import { DatePicker } from '@mui/x-date-pickers';
 import { Typography } from '@mui/material';
-import { useRouter } from 'src/routes/hook';
-import { paths } from 'src/routes/paths';
 import axiosInstance from 'src/utils/axios';
 
 const UBO_ROLES = [
@@ -49,9 +46,6 @@ export default function KYCAddUBOsForm({
   existingUbos = [],
 }) {
   const { enqueueSnackbar } = useSnackbar();
-  const router = useRouter();
-  const { authenticated, loading } = useAuthContext();
-  const sessionExpiredHandled = useRef(false);
   const [extractedPan, setExtractedPan] = useState(null);
 
   const NewUserSchema = Yup.object().shape({
@@ -138,22 +132,6 @@ export default function KYCAddUBOsForm({
 
   const watchRole = methods.watch('role');
 
-  const handleSessionExpired = useCallback(() => {
-    if (sessionExpiredHandled.current) return;
-
-    sessionExpiredHandled.current = true;
-    enqueueSnackbar('Your session has expired. Please restart onboarding.', {
-      variant: 'error',
-    });
-    router.push(`${paths.auth.jwt.registerPhone}?reason=session_expired`);
-  }, [enqueueSnackbar, router]);
-
-  useEffect(() => {
-    if (!loading && !authenticated) {
-      handleSessionExpired();
-    }
-  }, [authenticated, handleSessionExpired, loading]);
-
   const getFileId = (fileValue) => {
     if (!fileValue) return null;
 
@@ -180,11 +158,6 @@ export default function KYCAddUBOsForm({
 
   const onSubmit = handleSubmit(async (data) => {
     try {
-      if (!authenticated) {
-        handleSessionExpired();
-        return;
-      }
-
       const usersId = sessionStorage.getItem('merchant_user_id');
 
       if (!usersId) {

@@ -216,7 +216,7 @@ export default function KYCReviewAndSubmit() {
       </Box>
       <Container>
         <Box sx={{ display: 'flex', justifyContent: 'space-between', mt: 4, mb: 2 }}>
-          <Button component={RouterLink} href={paths.kycBasicInfo} variant="outlined">
+          <Button component={RouterLink} href={paths.auth.kyc.kycBasicInfo} variant="outlined">
             Back
           </Button>
           <Button variant="contained">Submit For Review</Button>

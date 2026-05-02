@@ -1,6 +1,5 @@
 import * as Yup from 'yup';
 import { useMemo, useEffect, useState } from 'react';
-import { flushSync } from 'react-dom';
 import { useSnackbar } from 'src/components/snackbar';
 import { useForm, Controller, useWatch } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
@@ -33,9 +32,8 @@ import { useRouter } from 'src/routes/hook';
 import { useGetDealershipTypes } from 'src/api/dealershipTypes';
 import Logo from 'src/components/logo';
 import { indianStates } from 'src/_mock/_state';
-import { useAuthContext } from 'src/auth/hooks';
-import { setSession } from 'src/auth/context/jwt/utils';
 import axiosInstance from 'src/utils/axios';
+import { setOnboardingSession } from 'src/auth/context/jwt/utils';
 import KYCFooter from './kyc-footer';
 
 // import { NewCompanyBasicInfo } from 'src/forms-autofilled-script/kyb-script/newkyb';
@@ -44,7 +42,6 @@ import KYCFooter from './kyc-footer';
 
 export default function KYCBasicInfo() {
   const { enqueueSnackbar } = useSnackbar();
-  const { loginWithUser } = useAuthContext();
   const router = useRouter();
   const storedUsersId = sessionStorage.getItem('merchant_user_id');
   const storedCompanyProfileId = sessionStorage.getItem('merchant_profile_id');
@@ -248,31 +245,11 @@ export default function KYCBasicInfo() {
 
       if (response?.data?.success) {
         const usersId = response?.data?.usersId;
-        const accessToken = response?.data?.accessToken;
-        const user = response?.data?.user;
-
-        if (!accessToken) {
-          console.error(
-            'merchant-registration response missing accessToken - cannot enter protected KYC'
+        if (response?.data?.onboardingToken || response?.data?.accessToken) {
+          setOnboardingSession(
+            response.data.onboardingToken || response.data.accessToken
           );
-          enqueueSnackbar('Unable to continue onboarding. Please try again in a moment.', {
-            variant: 'error',
-          });
-          return;
         }
-
-        if (!user) {
-          console.error('merchant-registration response missing user - cannot enter protected KYC');
-          enqueueSnackbar('Unable to continue onboarding. Please try again in a moment.', {
-            variant: 'error',
-          });
-          return;
-        }
-
-        setSession(accessToken);
-        flushSync(() => {
-          loginWithUser?.(user);
-        });
 
         // ✅ Store it so next page can access it
         if (usersId) {
@@ -280,10 +257,6 @@ export default function KYCBasicInfo() {
         } else {
           console.warn('No usersId found in /merchant-registration response');
         }
-        if (user?.merchantProfilesId) {
-          sessionStorage.setItem('merchant_profile_id', user.merchantProfilesId);
-        }
-
         enqueueSnackbar(response.data.message || 'Merchant Registration Successful', {
           variant: 'success',
         });

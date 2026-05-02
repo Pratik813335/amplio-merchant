@@ -2,10 +2,26 @@
 import axios from 'axios';
 // config
 import { HOST_API } from 'src/config-global';
+import { getActiveAuthToken } from 'src/auth/context/jwt/storage-keys';
 
 // ----------------------------------------------------------------------
 
 const axiosInstance = axios.create({ baseURL: HOST_API });
+
+axiosInstance.interceptors.request.use((config) => {
+  if (typeof window !== 'undefined') {
+    const accessToken = getActiveAuthToken();
+
+    if (accessToken) {
+      config.headers = config.headers || {};
+      config.headers.Authorization = `Bearer ${accessToken}`;
+    } else if (config.headers?.Authorization) {
+      delete config.headers.Authorization;
+    }
+  }
+
+  return config;
+});
 
 axiosInstance.interceptors.response.use(
   (res) => res,

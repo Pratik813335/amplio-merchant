@@ -1,18 +1,18 @@
-import { useCallback } from 'react';
 import { m } from 'framer-motion';
 // @mui
-import { alpha, styled } from '@mui/material/styles';
+import { styled } from '@mui/material/styles';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import Container from '@mui/material/Container';
 import Stack from '@mui/material/Stack';
 import Typography from '@mui/material/Typography';
-import Grid from '@mui/material/Unstable_Grid2';
 import { Icon } from '@iconify/react';
-import { useAuthContext } from 'src/auth/hooks';
-import { useRouter } from 'src/routes/hook';
+// components
 import { MotionContainer, varFade } from 'src/components/animate';
 import { paths } from 'src/routes/paths';
+import { useRouter } from 'src/routes/hook';
+import { useAuthContext } from 'src/auth/hooks';
+import { clearMerchantOnboardingStorage } from 'src/auth/context/jwt/storage-keys';
 
 // ----------------------------------------------------------------------
 
@@ -50,20 +50,11 @@ export default function KYCPending() {
   const router = useRouter();
   const { logout } = useAuthContext();
 
-  const handleGoToLogin = useCallback(async () => {
+  const handleGoToLogin = async () => {
+    clearMerchantOnboardingStorage();
     await logout?.();
-
-    sessionStorage.removeItem('merchant_user_id');
-    sessionStorage.removeItem('merchant_profile_id');
-
-    Object.keys(sessionStorage)
-      .filter((key) => key.startsWith('kyc_ubo_next_confirmed:'))
-      .forEach((key) => sessionStorage.removeItem(key));
-
-    localStorage.removeItem('sessionId');
-
     router.push(paths.auth.jwt.login);
-  }, [logout, router]);
+  };
 
   return (
     <Container maxWidth="md" sx={{ position: 'relative', py: { xs: 2, sm: 4, md: 5 } }}>
@@ -90,12 +81,12 @@ export default function KYCPending() {
               </StyledIcon>
             </div>
             <Typography variant="h5" sx={{ mt: 2, color: '#000' }}>
-              Our compliance team will review your application within{' '}
+              Your KYC is complete and is waiting for super admin approval. Our compliance team
+              will review your application within{' '}
               <Box component="span" sx={{ pl: 0.2, color: 'error.main' }}>
                 2-3 business days
               </Box>
               . You&apos;ll receive email updates on your application status.
-
             </Typography>
           </m.div>
           <Box sx={{ display: 'flex', justifyContent: 'center' }}>
@@ -129,41 +120,34 @@ export default function KYCPending() {
               </Typography>
               <Typography variant="body2" sx={{ mb: 1, display: 'flex', alignItems: 'flex-start' }}>
                 <Box component="span" sx={{ mr: 1, color: 'success.main' }}>
-                  •
+                  {'\u2022'}
                 </Box>
                 <span>You&apos;ll receive an email confirmation shortly</span>
               </Typography>
               <Typography variant="body2" sx={{ display: 'flex', alignItems: 'flex-start', mb: 1 }}>
                 <Box component="span" sx={{ mr: 1, color: 'success.main' }}>
-                  •
+                  {'\u2022'}
                 </Box>
                 <span>Our team may contact you for additional documents</span>
               </Typography>
               <Typography variant="body2" sx={{ display: 'flex', alignItems: 'flex-start' }}>
                 <Box component="span" sx={{ mr: 1, color: 'success.main' }}>
-                  •
+                  {'\u2022'}
                 </Box>
                 <span>Once approved, you can start issuing bonds</span>
               </Typography>
             </Box>
           </m.div>
-
         </MotionContainer>
       </Box>
 
       <m.div variants={varFade().inUp}>
         <Stack alignItems="center" sx={{ mt: 3 }}>
-          <Button
-            onClick={handleGoToLogin}
-            variant="contained"
-            color="primary"
-            size="small"
-          >
+          <Button onClick={handleGoToLogin} variant="contained" color="primary" size="small">
             Go To Login
           </Button>
         </Stack>
       </m.div>
-
     </Container>
   );
 }
