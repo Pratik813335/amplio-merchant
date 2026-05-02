@@ -100,7 +100,7 @@ export default function KYCHero() {
           <m.div variants={varFade().inUp}>
             <Button
               component={RouterLink}
-              to={paths.kycBasicInfo}
+              to={paths.auth.kyc.kycBasicInfo}
               size="large"
               variant="contained"
               sx={{

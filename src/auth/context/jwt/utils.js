@@ -2,6 +2,11 @@
 import { paths } from 'src/routes/paths';
 // utils
 import axios from 'src/utils/axios';
+import {
+  ACCESS_TOKEN_STORAGE_KEY,
+  ONBOARDING_TOKEN_STORAGE_KEY,
+  getActiveAuthToken,
+} from './storage-keys';
 
 // ----------------------------------------------------------------------
 
@@ -50,7 +55,7 @@ export const tokenExpired = (exp) => {
   expiredTimer = setTimeout(() => {
     alert('Token expired');
 
-    sessionStorage.removeItem('accessToken');
+    sessionStorage.removeItem(ACCESS_TOKEN_STORAGE_KEY);
 
     window.location.href = paths.auth.jwt.login;
   }, timeLeft);
@@ -58,18 +63,36 @@ export const tokenExpired = (exp) => {
 
 // ----------------------------------------------------------------------
 
+const syncAuthorizationHeader = () => {
+  const activeToken = getActiveAuthToken();
+
+  if (activeToken) {
+    axios.defaults.headers.common.Authorization = `Bearer ${activeToken}`;
+  } else {
+    delete axios.defaults.headers.common.Authorization;
+  }
+};
+
 export const setSession = (accessToken) => {
   if (accessToken) {
-    sessionStorage.setItem('accessToken', accessToken);
-
-    axios.defaults.headers.common.Authorization = `Bearer ${accessToken}`;
+    sessionStorage.setItem(ACCESS_TOKEN_STORAGE_KEY, accessToken);
+    syncAuthorizationHeader();
 
     // This function below will handle when token is expired
     const { exp } = jwtDecode(accessToken); // ~3 days by minimals server
     tokenExpired(exp);
   } else {
-    sessionStorage.removeItem('accessToken');
-
-    delete axios.defaults.headers.common.Authorization;
+    sessionStorage.removeItem(ACCESS_TOKEN_STORAGE_KEY);
+    syncAuthorizationHeader();
   }
+};
+
+export const setOnboardingSession = (onboardingToken) => {
+  if (onboardingToken) {
+    sessionStorage.setItem(ONBOARDING_TOKEN_STORAGE_KEY, onboardingToken);
+  } else {
+    sessionStorage.removeItem(ONBOARDING_TOKEN_STORAGE_KEY);
+  }
+
+  syncAuthorizationHeader();
 };

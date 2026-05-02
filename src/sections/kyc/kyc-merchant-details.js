@@ -1,5 +1,5 @@
 import * as Yup from 'yup';
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import PropTypes from 'prop-types';
 import Box from '@mui/material/Box';
 import Container from '@mui/material/Container';
@@ -16,10 +16,8 @@ import { RHFSelect } from 'src/components/hook-form/rhf-select';
 import { useForm, useWatch } from 'react-hook-form';
 
 import { enqueueSnackbar } from 'notistack';
-import { useAuthContext } from 'src/auth/hooks';
 import { useGetKycSection } from 'src/api/merchantKyc';
 import { yupResolver } from '@hookform/resolvers/yup';
-import { useRouter } from 'src/routes/hook';
 import { paths } from 'src/routes/paths';
 import axiosInstance from 'src/utils/axios';
 import { applyAutofillValues } from 'src/utils/autofill/form';
@@ -57,9 +55,6 @@ export default function KYCMerchantDetails({
   dataInitializedSteps,
   setDataInitializedSteps,
 }) {
-  const router = useRouter();
-  const { authenticated, loading } = useAuthContext();
-  const sessionExpiredHandled = useRef(false);
   const { kycSectionData, kycSectionLoading, kycSectionError, refreshKycSection } =
     useGetKycSection('merchant_documents', paths.auth.kyc.merchantKyc);
 
@@ -154,6 +149,13 @@ export default function KYCMerchantDetails({
       }
     });
 
+    if (documents.length) {
+      shape.documentSubmissionConsent = Yup.boolean().oneOf(
+        [true],
+        'Please provide consent to continue'
+      );
+    }
+
     return Yup.object().shape(shape);
   }, [documents, certificateDoc, gstDoc, moaDoc, aoaDoc]);
 
@@ -173,6 +175,7 @@ export default function KYCMerchantDetails({
 
   const values = useWatch({ control });
   const moaAoaType = useWatch({ control, name: 'moaAoaType' });
+  const documentSubmissionConsent = useWatch({ control, name: 'documentSubmissionConsent' });
   const prevPercentRef = useRef(null);
 
   const selectedMoaAoaDoc = useMemo(() => {
@@ -182,22 +185,6 @@ export default function KYCMerchantDetails({
     if (aoaDoc) return aoaDoc;
     return null;
   }, [moaAoaType, moaDoc, aoaDoc]);
-
-  const handleSessionExpired = useCallback(() => {
-    if (sessionExpiredHandled.current) return;
-
-    sessionExpiredHandled.current = true;
-    enqueueSnackbar('Your session has expired. Please restart onboarding.', {
-      variant: 'error',
-    });
-    router.push(`${paths.auth.jwt.registerPhone}?reason=session_expired`);
-  }, [router]);
-
-  useEffect(() => {
-    if (!loading && !authenticated) {
-      handleSessionExpired();
-    }
-  }, [authenticated, handleSessionExpired, loading]);
 
   const mandatoryDocumentIds = useMemo(() => {
     const mandatoryIds = new Set();
@@ -269,7 +256,6 @@ export default function KYCMerchantDetails({
 
     if (isStepComplete && !dataInitializedSteps?.includes('kyc_merchant_documents')) {
       setDataInitializedSteps();
-      setActiveStepId();
     }
   }, [
     mandatoryDocumentIds,
@@ -282,11 +268,6 @@ export default function KYCMerchantDetails({
 
   const onSubmit = handleSubmit(async (formData) => {
     try {
-      if (!authenticated) {
-        handleSessionExpired();
-        return;
-      }
-
       const usersId =
         sessionStorage.getItem('merchant_user_id') || sessionStorage.getItem('merchant_profile_id');
 
@@ -611,6 +592,7 @@ export default function KYCMerchantDetails({
               color="primary"
               variant="contained"
               loading={isSubmitting}
+              disabled={isSubmitting || !documentSubmissionConsent}
             >
               Next
             </LoadingButton>

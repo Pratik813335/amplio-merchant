@@ -1,6 +1,6 @@
 import * as Yup from 'yup';
 import { useForm } from 'react-hook-form';
-import { useCallback, useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { yupResolver } from '@hookform/resolvers/yup';
 import LoadingButton from '@mui/lab/LoadingButton';
 import Link from '@mui/material/Link';
@@ -15,82 +15,55 @@ import { paths } from 'src/routes/paths';
 import { RouterLink } from 'src/routes/components';
 import FormProvider, { RHFTextField } from 'src/components/hook-form';
 import axiosInstance from 'src/utils/axios';
+import { setOnboardingSession } from 'src/auth/context/jwt/utils';
+import { getMerchantOnboardingState } from 'src/utils/merchant-onboarding';
 
 export default function JwtRegisterByEmailView() {
   const router = useRouter();
   const { enqueueSnackbar } = useSnackbar();
 
-  const clearMerchantOnboardingState = useCallback(() => {
-    sessionStorage.removeItem('merchant_user_id');
-    sessionStorage.removeItem('merchant_profile_id');
-
-    Object.keys(sessionStorage)
-      .filter((key) => key.startsWith('kyc_ubo_next_confirmed:'))
-      .forEach((key) => sessionStorage.removeItem(key));
-  }, []);
-
-  const restartOnboardingSession = useCallback(() => {
-    clearMerchantOnboardingState();
-    localStorage.removeItem('sessionId');
-    router.push(`${paths.auth.jwt.registerPhone}?reason=session_expired`);
-  }, [clearMerchantOnboardingState, router]);
-
-  const isSessionExpiredError = useCallback((error) => {
-    const message =
-      typeof error === 'string'
-        ? error
-        : error?.error?.message ||
-          error?.response?.data?.message ||
-          error?.message ||
-          '';
-
-    const normalizedMessage = String(message).toLowerCase();
-
-    return normalizedMessage.includes('invalid session') || normalizedMessage.includes('session expired');
-  }, []);
-
-  const persistMerchantProfile = useCallback((profile) => {
-    if (profile?.usersId) {
-      sessionStorage.setItem('merchant_user_id', profile.usersId);
-    }
-
-    if (profile?.id) {
-      sessionStorage.setItem('merchant_profile_id', profile.id);
-    }
-  }, []);
-
-  const redirectBasedOnProgress = useCallback(async (sessionId) => {
+  const redirectBasedOnProgress = async (sessionId) => {
     try {
       const res = await axiosInstance.get(`/merchant-profiles/kyc-progress/${sessionId}`);
 
       const progress = res?.data?.currentProgress || [];
       const profile = res?.data?.profile;
+      const onboardingState = getMerchantOnboardingState(res?.data);
 
-      persistMerchantProfile(profile);
+      console.log('CURRENT PROGRESS:', progress);
 
-      const hasExistingMerchantKyc = Boolean(profile?.usersId || profile?.id || progress.length);
+      if (profile?.usersId) {
+        sessionStorage.setItem('merchant_user_id', profile.usersId);
+      }
 
-      if (hasExistingMerchantKyc) {
+      if (profile?.id) {
+        sessionStorage.setItem('merchant_profile_id', profile.id);
+      }
+
+      if (onboardingState === 'approved') {
+        enqueueSnackbar('User is already registered. Please sign in.', { variant: 'error' });
+        router.push(paths.auth.jwt.login);
+        return;
+      }
+
+      if (onboardingState === 'pending_approval') {
         router.push(paths.auth.kyc.kycPending);
         return;
       }
 
-      router.push(paths.auth.kyc.kycBasicInfo);
-    } catch (err) {
-      console.error('KYC Progress Fetch Error:', err);
-
-      if (isSessionExpiredError(err)) {
-        enqueueSnackbar('Your session has expired. Please restart onboarding.', {
-          variant: 'error',
-        });
-        restartOnboardingSession();
+      if (onboardingState === 'basic_info') {
+        router.push(paths.auth.kyc.kycBasicInfo);
         return;
       }
 
+      router.push(paths.auth.kyc.merchantKyc);
+    } catch (err) {
+      console.error('KYC Progress Fetch Error:', err);
       enqueueSnackbar('Unable to fetch KYC progress', { variant: 'error' });
+
       router.push(paths.auth.kyc.kycBasicInfo);
     }
-  }, [enqueueSnackbar, isSessionExpiredError, persistMerchantProfile, restartOnboardingSession, router]);
+  };
 
   const [errorMsg, setErrorMsg] = useState('');
   const [isOtpSent, setIsOtpSent] = useState(false);
@@ -125,13 +98,11 @@ export default function JwtRegisterByEmailView() {
   const isEmailValid = Yup.string().email().isValidSync(emailValue);
   const canSendOtp = isEmailValid && !isOtpSent;
 
-  const getCurrentSessionId = useCallback(() => localStorage.getItem('sessionId') || '', []);
-
   const handleSendOtp = async () => {
     const validEmail = await trigger('email');
     if (!validEmail) return;
 
-    const sessionId = getCurrentSessionId();
+    const sessionId = localStorage.getItem('sessionId');
     const email = getValues('email');
 
     if (!sessionId) {
@@ -146,21 +117,12 @@ export default function JwtRegisterByEmailView() {
       });
 
       enqueueSnackbar(res.data.message || 'OTP Sent!', { variant: 'success' });
-      setErrorMsg('');
 
       setOtp(Array(4).fill(''));
       setOtpStarted(false);
       setIsOtpSent(true);
       setTimer(60);
     } catch (error) {
-      if (isSessionExpiredError(error)) {
-        enqueueSnackbar('Your session has expired. Please restart onboarding.', {
-          variant: 'error',
-        });
-        restartOnboardingSession();
-        return;
-      }
-
       const message =
         typeof error === 'string'
           ? error
@@ -191,7 +153,7 @@ export default function JwtRegisterByEmailView() {
   };
 
   const onSubmit = handleSubmit(async () => {
-    const sessionId = getCurrentSessionId();
+    const sessionId = localStorage.getItem('sessionId');
     const enteredOtp = otp.join('');
 
     if (enteredOtp.length !== 4) {
@@ -210,23 +172,15 @@ export default function JwtRegisterByEmailView() {
         otp: enteredOtp,
       });
 
-      if (res?.data?.sessionId) {
-        localStorage.setItem('sessionId', res.data.sessionId);
+      if (res?.data?.onboardingToken || res?.data?.accessToken) {
+        setOnboardingSession(res.data.onboardingToken || res.data.accessToken);
       }
 
       enqueueSnackbar(res.data.message || 'Email Verified!', { variant: 'success' });
-      await redirectBasedOnProgress(res?.data?.sessionId || sessionId);
+      await redirectBasedOnProgress(sessionId);
 
       // router.push(paths.auth.kyc.kycBasicInfo);
     } catch (error) {
-      if (isSessionExpiredError(error)) {
-        enqueueSnackbar('Your session has expired. Please restart onboarding.', {
-          variant: 'error',
-        });
-        restartOnboardingSession();
-        return;
-      }
-
       const message =
         typeof error === 'string'
           ? error

@@ -65,13 +65,6 @@ const defaultFilters = {
   status: 'all',
 };
 
-const handledUboAutoNavigationByMerchant = new Set();
-
-const getMerchantStorageId = () =>
-  sessionStorage.getItem('merchant_user_id') || sessionStorage.getItem('merchant_profile_id');
-
-const getUboNextConfirmedKey = (merchantId) => `kyc_ubo_next_confirmed:${merchantId}`;
-
 // ----------------------------------------------------------------------
 
 export default function UbosListView({
@@ -137,20 +130,6 @@ export default function UbosListView({
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [dataInitializedSteps, loading, ubos]);
-
-  useEffect(() => {
-    if (loading) return;
-
-    const merchantId = getMerchantStorageId();
-
-    if (!merchantId || handledUboAutoNavigationByMerchant.has(merchantId)) return;
-
-    handledUboAutoNavigationByMerchant.add(merchantId);
-
-    if (ubos.length >= 1 && sessionStorage.getItem(getUboNextConfirmedKey(merchantId)) === 'true') {
-      setActiveStepId();
-    }
-  }, [loading, setActiveStepId, ubos]);
 
   const notFound = (!dataFiltered.length && canReset) || !dataFiltered.length;
 
@@ -233,12 +212,6 @@ export default function UbosListView({
   }, []);
 
   const handleNext = () => {
-    const merchantId = getMerchantStorageId();
-
-    if (merchantId) {
-      sessionStorage.setItem(getUboNextConfirmedKey(merchantId), 'true');
-    }
-
     percent(100);
     setActiveStepId();
   };

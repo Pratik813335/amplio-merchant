@@ -1,6 +1,6 @@
 import * as Yup from 'yup';
 import { useForm } from 'react-hook-form';
-import { useCallback, useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { yupResolver } from '@hookform/resolvers/yup';
 import LoadingButton from '@mui/lab/LoadingButton';
 import Link from '@mui/material/Link';
@@ -15,10 +15,32 @@ import FormProvider, { RHFTextField } from 'src/components/hook-form';
 import { paths } from 'src/routes/paths';
 import { RouterLink } from 'src/routes/components';
 import axiosInstance from 'src/utils/axios';
+import { clearMerchantOnboardingStorage } from 'src/auth/context/jwt/storage-keys';
+import { getMerchantOnboardingState } from 'src/utils/merchant-onboarding';
 
 export default function JwtRegisterByMobileView() {
   const router = useRouter();
   const { enqueueSnackbar } = useSnackbar();
+
+  const handleExistingMerchantState = (payload) => {
+    const onboardingState = getMerchantOnboardingState(payload);
+
+    if (onboardingState === 'pending_approval') {
+      if (payload?.sessionId) {
+        localStorage.setItem('sessionId', payload.sessionId);
+      }
+      router.push(paths.auth.kyc.kycPending);
+      return true;
+    }
+
+    if (onboardingState === 'approved') {
+      enqueueSnackbar('User is already registered. Please sign in.', { variant: 'error' });
+      router.push(paths.auth.jwt.login);
+      return true;
+    }
+
+    return false;
+  };
 
   const [errorMsg, setErrorMsg] = useState('');
   const [isOtpSent, setIsOtpSent] = useState(false);
@@ -56,20 +78,6 @@ export default function JwtRegisterByMobileView() {
   const mobileNoValue = watch('mobileNo') || '';
   const canSendOtp = mobileNoValue.length === 10 && !isOtpSent;
 
-  const clearMerchantOnboardingState = useCallback(() => {
-    sessionStorage.removeItem('merchant_user_id');
-    sessionStorage.removeItem('merchant_profile_id');
-
-    Object.keys(sessionStorage)
-      .filter((key) => key.startsWith('kyc_ubo_next_confirmed:'))
-      .forEach((key) => sessionStorage.removeItem(key));
-  }, []);
-
-  const persistSessionId = useCallback((nextSessionId) => {
-    setSessionId(nextSessionId);
-    localStorage.setItem('sessionId', nextSessionId);
-  }, []);
-
   // ------------------------------------------------------
   // Send OTP using axiosInstance
   // ------------------------------------------------------
@@ -85,11 +93,16 @@ export default function JwtRegisterByMobileView() {
         role: 'merchant',
       });
 
-      enqueueSnackbar(res.data.message, { variant: 'success' });
+      if (handleExistingMerchantState(res?.data)) {
+        return;
+      }
 
-      clearMerchantOnboardingState();
-      persistSessionId(res.data.sessionId);
-      setErrorMsg('');
+      enqueueSnackbar(res.data.message, { variant: 'success' });
+      clearMerchantOnboardingStorage();
+
+      // save sessionId
+      setSessionId(res.data.sessionId);
+      localStorage.setItem('sessionId', res.data.sessionId);
 
       // reset OTP boxes
       setOtp(Array(4).fill(''));
@@ -130,7 +143,6 @@ export default function JwtRegisterByMobileView() {
   // Verify OTP using axiosInstance
   // ------------------------------------------------------
   const onSubmit = handleSubmit(async () => {
-    const currentSessionId = localStorage.getItem('sessionId') || sessionId;
     const enteredOtp = otp.join('');
 
     if (enteredOtp.length !== 4) {
@@ -138,19 +150,14 @@ export default function JwtRegisterByMobileView() {
       return;
     }
 
-    if (!currentSessionId) {
-      setErrorMsg('Session expired. Please verify phone again.');
-      return;
-    }
-
     try {
       const res = await axiosInstance.post('/auth/verify-phone-otp', {
-        sessionId: currentSessionId,
+        sessionId,
         otp: enteredOtp,
       });
 
-      if (res?.data?.sessionId) {
-        persistSessionId(res.data.sessionId);
+      if (handleExistingMerchantState(res?.data)) {
+        return;
       }
 
       enqueueSnackbar(res.data.message, { variant: 'success' });

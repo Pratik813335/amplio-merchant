@@ -99,10 +99,10 @@ export default function ProgressStepper({
         return (
           <Step
             key={step.id}
-            onClick={() => (isCompleted || isActive) && onStepClick(step.id)}
+            onClick={() => onStepClick?.(step.id)}
             completed={isCompleted}
             sx={{
-               cursor: isCompleted || isActive ? 'pointer' : 'not-allowed',
+              cursor: 'pointer',
               '& .MuiStepConnector-line': {
                 borderColor:
                   index === 0

@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { Box, Stack } from '@mui/material';
 
 import { AnimatePresence, m } from 'framer-motion';
@@ -6,6 +6,8 @@ import { useRouter } from 'src/routes/hook';
 import { paths } from 'src/routes/paths';
 import Logo from 'src/components/logo';
 import ProgressStepper from 'src/components/progress-stepper/ProgressStepper';
+import { useGetKycProgress } from 'src/api/merchantKyc';
+import { getMerchantOnboardingState } from 'src/utils/merchant-onboarding';
 // import KYCUBOs from './kyc-ubo-list';
 import KYCMerchantDetails from './kyc-merchant-details';
 import KYCBankDetails from './kyc-bank-details';
@@ -15,6 +17,9 @@ import UbosListView from './ubo/view/kyc-ubo-list-view';
 
 export default function Stepper() {
   const router = useRouter();
+  const sessionId = localStorage.getItem('sessionId');
+  const { kycProgress } = useGetKycProgress(sessionId);
+  const onboardingState = getMerchantOnboardingState(kycProgress);
   const steps = [
     { id: 'kyc_merchant_documents', number: 1, lines: ['Merchant', 'Documents'] },
     { id: 'kyc_address_details', number: 2, lines: ['Address', 'Details'] },
@@ -22,6 +27,17 @@ export default function Stepper() {
     { id: 'kyc_ubo_details', number: 4, lines: ['UBO', 'Details'] },
     { id: 'kyc_psp', number: 5, lines: ['PSP', 'Details'] },
   ];
+
+  const stepProgressKeyMap = useMemo(
+    () => ({
+      kyc_merchant_documents: 'merchant_documents',
+      kyc_address_details: 'merchant_address_details',
+      kyc_bank_details: 'merchant_bank_details',
+      kyc_ubo_details: 'merchant_ubo_details',
+      kyc_psp: 'merchant_psp_details',
+    }),
+    []
+  );
 
   const [activeStepId, setActiveStepId] = useState('kyc_merchant_documents');
   const [dataInitializedSteps, setDataInitializedSteps] = useState([]);
@@ -32,6 +48,60 @@ export default function Stepper() {
     kyc_ubo_details: { percent: 0 },
     kyc_psp: { percent: 0 },
   });
+  const lastProgressSignatureRef = useRef('');
+
+  const nextIncompleteStepId = useMemo(() => {
+    const progress = kycProgress?.currentProgress || [];
+
+    if (!progress.includes('merchant_documents')) return 'kyc_merchant_documents';
+    if (!progress.includes('merchant_address_details')) return 'kyc_address_details';
+    if (!progress.includes('merchant_bank_details')) return 'kyc_bank_details';
+    if (!progress.includes('merchant_ubo_details')) return 'kyc_ubo_details';
+    if (!progress.includes('merchant_psp_details')) return 'kyc_psp';
+
+    return 'kyc_psp';
+  }, [kycProgress]);
+
+  useEffect(() => {
+    if (onboardingState === 'pending_approval') {
+      router.push(paths.auth.kyc.kycPending);
+    }
+  }, [onboardingState, router]);
+
+  useEffect(() => {
+    const progress = kycProgress?.currentProgress || [];
+    const progressSignature = JSON.stringify(progress);
+    const hasProgressChanged = lastProgressSignatureRef.current !== progressSignature;
+
+    setStepsProgress({
+      kyc_merchant_documents: {
+        percent: progress.includes(stepProgressKeyMap.kyc_merchant_documents) ? 100 : 0,
+      },
+      kyc_address_details: {
+        percent: progress.includes(stepProgressKeyMap.kyc_address_details) ? 100 : 0,
+      },
+      kyc_bank_details: {
+        percent: progress.includes(stepProgressKeyMap.kyc_bank_details) ? 100 : 0,
+      },
+      kyc_ubo_details: {
+        percent: progress.includes(stepProgressKeyMap.kyc_ubo_details) ? 100 : 0,
+      },
+      kyc_psp: {
+        percent: progress.includes(stepProgressKeyMap.kyc_psp) ? 100 : 0,
+      },
+    });
+
+    setDataInitializedSteps(
+      Object.keys(stepProgressKeyMap).filter((stepId) =>
+        progress.includes(stepProgressKeyMap[stepId])
+      )
+    );
+
+    if (hasProgressChanged) {
+      setActiveStepId(nextIncompleteStepId);
+      lastProgressSignatureRef.current = progressSignature;
+    }
+  }, [kycProgress, nextIncompleteStepId, stepProgressKeyMap]);
 
   const updateStepPercent = (stepId, percent) => {
     setStepsProgress((prev) => ({
