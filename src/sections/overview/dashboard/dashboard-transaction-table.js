@@ -18,7 +18,7 @@ import { useBoolean } from 'src/hooks/use-boolean';
 // _mock
 import { PRODUCT_STOCK_OPTIONS } from 'src/_mock';
 // api
-import { useGetProducts } from 'src/api/product';
+// import { useGetProducts } from 'src/api/product';
 // components
 import { useSettingsContext } from 'src/components/settings';
 import {
@@ -156,15 +156,15 @@ export default function DashboardTransactionTable() {
 
     const [filters, setFilters] = useState(defaultFilters);
 
-    const { products, productsLoading, productsEmpty } = useGetProducts();
+    // const { products, productsLoading, productsEmpty } = useGetProducts();
 
     const confirm = useBoolean();
 
-    useEffect(() => {
-        if (products.length) {
-            setTableData(products);
-        }
-    }, [products]);
+    // useEffect(() => {
+    //     if (products.length) {
+    //         setTableData(products);
+    //     }
+    // }, [products]);
 
     const dataFiltered = applyFilter({
         inputData: tableData,
@@ -298,12 +298,6 @@ export default function DashboardTransactionTable() {
                             />
 
                             <TableBody>
-                                {productsLoading ? (
-                                    [...Array(table.rowsPerPage)].map((i, index) => (
-                                        <TableSkeleton key={index} sx={{ height: denseHeight }} />
-                                    ))
-                                ) : (
-                                    <>
                                         {dataFiltered
                                             .slice(
                                                 table.page * table.rowsPerPage,
@@ -320,8 +314,7 @@ export default function DashboardTransactionTable() {
                                                 // onViewRow={() => handleViewRow(row.id)}
                                                 />
                                             ))}
-                                    </>
-                                )}
+                                
 
                                 <TableEmptyRows
                                     height={denseHeight}
