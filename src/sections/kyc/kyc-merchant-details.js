@@ -123,9 +123,9 @@ export default function KYCMerchantDetails({
     });
 
     values.moaAoaType = defaultMoaAoaType;
-    values.documentSubmissionConsent = Boolean(existingDocumentConsent?.isChecked);
+
     return values;
-  }, [documents, defaultMoaAoaType, existingDocumentConsent?.isChecked]);
+  }, [documents, defaultMoaAoaType]);
 
   const validationSchema = useMemo(() => {
     const shape = {};
@@ -244,15 +244,29 @@ export default function KYCMerchantDetails({
   );
   const hasSubmittedMerchantDocuments = hasServerData;
 
+  // ------------------------------------------------
+  // RESET FORM ONLY WHEN DOCUMENT DATA CHANGES
+  // ------------------------------------------------
+
   useEffect(() => {
-    reset(defaultValues, { keepDirtyValues: true });
+    reset(defaultValues);
   }, [defaultValues, reset]);
 
-  useEffect(() => {
-    if (!documentConsentDetails?.id) return;
-
-    setValue('documentSubmissionConsent', Boolean(existingDocumentConsent?.isChecked));
-  }, [documentConsentDetails?.id, existingDocumentConsent?.isChecked, setValue]);
+useEffect(() => {
+  if (existingDocumentConsent?.isChecked) {
+    setValue(
+      'documentSubmissionConsent',
+      true,
+      {
+        shouldDirty: false,
+        shouldValidate: false,
+      }
+    );
+  }
+}, [
+  existingDocumentConsent?.isChecked,
+  setValue,
+]);
 
   useEffect(() => {
     if (!mandatoryDocumentIds.length) {
@@ -632,10 +646,10 @@ export default function KYCMerchantDetails({
                 <RHFCheckbox
                   name="documentSubmissionConsent"
                   label={documentConsentLabel}
-              onChange={handleDocumentConsentChange}
-              checkboxProps={{
-                    disabled: consentSubmitting || hasSubmittedMerchantDocuments,
-              }}
+                  onChange={handleDocumentConsentChange}
+                  checkboxProps={{
+                    disabled: consentSubmitting,
+                  }}
                   sx={{
                     alignItems: 'flex-start',
                     m: 0,
