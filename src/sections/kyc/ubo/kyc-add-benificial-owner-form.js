@@ -22,7 +22,25 @@ import FormProvider, {
 } from 'src/components/hook-form';
 import { DatePicker } from '@mui/x-date-pickers';
 import { Typography } from '@mui/material';
-import axiosInstance from 'src/utils/axios';
+import axiosInstance, { endpoints } from 'src/utils/axios';
+import { useGetConsentDetails } from 'src/api/consent-details';
+import { useGetUserConsents } from 'src/api/user-consents';
+
+const UBO_CONSENT_SLUG = 'merchant-ubo-details';
+
+function getConsentLabel(content, fallbackLabel) {
+  if (!content) {
+    return fallbackLabel;
+  }
+
+  return (
+    <Box
+      component="span"
+      sx={{ display: 'inline' }}
+      dangerouslySetInnerHTML={{ __html: content }}
+    />
+  );
+}
 
 const UBO_ROLES = [
   { value: 'proprietor', label: 'Proprietor (Sole Owner)' },
@@ -47,6 +65,29 @@ export default function KYCAddUBOsForm({
 }) {
   const { enqueueSnackbar } = useSnackbar();
   const [extractedPan, setExtractedPan] = useState(null);
+  const [consentSubmitting, setConsentSubmitting] = useState(false);
+  const identifierId = sessionStorage.getItem('merchant_profile_id');
+  const { consentDetails: uboConsentDetails } = useGetConsentDetails(UBO_CONSENT_SLUG);
+  const { userConsents, refreshUserConsents } = useGetUserConsents({
+    identifierId,
+  });
+  const existingUboConsent = useMemo(
+    () =>
+      (userConsents || [])
+        .filter((item) => item?.consentTemplateId === uboConsentDetails?.id)
+        .sort((a, b) => {
+          if (Boolean(a?.isChecked) !== Boolean(b?.isChecked)) {
+            return Number(Boolean(b?.isChecked)) - Number(Boolean(a?.isChecked));
+          }
+
+          const aTime = new Date(a?.updatedAt || a?.createdAt || 0).getTime();
+          const bTime = new Date(b?.updatedAt || b?.createdAt || 0).getTime();
+          return bTime - aTime;
+        })[0] || null,
+    [uboConsentDetails?.id, userConsents]
+  );
+  const isUboConsentLocked = Boolean(existingUboConsent?.isChecked);
+  const hasSubmittedUbo = Boolean(currentUser?.id);
 
   const NewUserSchema = Yup.object().shape({
     uboConsent: Yup.boolean().oneOf(
@@ -103,7 +144,7 @@ export default function KYCAddUBOsForm({
       submittedPanFullName: currentUser?.submittedPanFullName || '',
       submittedPanNumber: currentUser?.submittedPanNumber || '',
       submittedDateOfBirth: currentUser?.submittedDateOfBirth || '',
-      uboConsent: Boolean(currentUser),
+      uboConsent: false,
     }),
     [currentUser]
   );
@@ -155,6 +196,38 @@ export default function KYCAddUBOsForm({
 
       return sum + (Number(ubo.ownershipPercentage) || 0);
     }, 0);
+
+  const handleUboConsentChange = async (_, checked, field) => {
+    if (!identifierId || !uboConsentDetails?.id) {
+      return;
+    }
+
+    setConsentSubmitting(true);
+
+    try {
+      const payload = {
+        consentTemplateId: uboConsentDetails.id,
+        isChecked: checked,
+        identifierId,
+      };
+
+      if (existingUboConsent?.identifierId || existingUboConsent?.id) {
+        await axiosInstance.patch('/user-consents', payload);
+      } else {
+        await axiosInstance.post('/user-consents', payload);
+      }
+
+      await refreshUserConsents();
+    } catch (error) {
+      console.error('Failed to save UBO consent', error);
+      field.onChange(!checked);
+      enqueueSnackbar('Failed to save consent. Please try again.', {
+        variant: 'error',
+      });
+    } finally {
+      setConsentSubmitting(false);
+    }
+  };
 
   const onSubmit = handleSubmit(async (data) => {
     try {
@@ -271,11 +344,17 @@ export default function KYCAddUBOsForm({
         submittedPanFullName: currentUser?.submittedPanFullName || '',
         submittedPanNumber: currentUser?.submittedPanNumber || '',
         submittedDateOfBirth: currentUser?.submittedDateOfBirth || '',
-        uboConsent: Boolean(currentUser),
+        uboConsent: false,
       });
       setExtractedPan(null);
     }
-  }, [open, currentUser, reset]);
+  }, [currentUser, open, reset]);
+
+  useEffect(() => {
+    if (open) {
+      setValue('uboConsent', Boolean(existingUboConsent?.isChecked));
+    }
+  }, [existingUboConsent?.isChecked, open, setValue]);
 
   useEffect(() => {
     if (!panFile?.id) return;
@@ -536,8 +615,14 @@ export default function KYCAddUBOsForm({
 
             <RHFCheckbox
               name="uboConsent"
-              label="I confirm and agree to the use and storage of UBO details for compliance purposes."
-              disabled={isViewMode}
+              label={getConsentLabel(
+                uboConsentDetails?.content,
+                'I confirm and agree to the use and storage of UBO details for compliance purposes.'
+              )}
+              onChange={handleUboConsentChange}
+              checkboxProps={{
+                disabled: isViewMode || consentSubmitting || hasSubmittedUbo,
+              }}
               sx={{
                 '& .MuiFormControlLabel-label': {
                   typography: 'body2',
@@ -572,7 +657,7 @@ export default function KYCAddUBOsForm({
                 type="submit"
                 variant="contained"
                 color="primary"
-                disabled={isSubmitting || !uboConsent}
+                disabled={isSubmitting || consentSubmitting || !uboConsent}
                 startIcon={isSubmitting ? <CircularProgress size={20} /> : null}
               >
                 {isEditMode ? 'Update' : 'Add'}

@@ -19,7 +19,9 @@ import { enqueueSnackbar } from 'notistack';
 import { useGetKycSection } from 'src/api/merchantKyc';
 import { yupResolver } from '@hookform/resolvers/yup';
 import { paths } from 'src/routes/paths';
-import axiosInstance from 'src/utils/axios';
+import axiosInstance, { endpoints } from 'src/utils/axios';
+import { useGetConsentDetails } from 'src/api/consent-details';
+import { useGetUserConsents } from 'src/api/user-consents';
 import KYCFooter from './kyc-footer';
 
 const FILE_ACCEPT = {
@@ -35,6 +37,7 @@ const FILE_ACCEPT = {
 // };
 
 const SPECIAL_DOC_VALUES = ['certificate_of_incorporation', 'gst_certificate'];
+const DOCUMENT_SUBMISSION_CONSENT_SLUG = 'merchant-document-details';
 
 function getDocStatusMeta(item, file) {
   const serverDocument = item?.documentFile;
@@ -55,6 +58,12 @@ export default function KYCMerchantDetails({
 }) {
   const { kycSectionData, kycSectionLoading, kycSectionError, refreshKycSection } =
     useGetKycSection('merchant_documents', paths.auth.kyc.merchantKyc);
+  const identifierId = sessionStorage.getItem('merchant_profile_id');
+  const { consentDetails: documentConsentDetails } = useGetConsentDetails(
+    DOCUMENT_SUBMISSION_CONSENT_SLUG
+  );
+  const { userConsents, refreshUserConsents } = useGetUserConsents({ identifierId });
+  const [consentSubmitting, setConsentSubmitting] = useState(false);
 
   const documents = useMemo(
     () => (Array.isArray(kycSectionData?.data) ? kycSectionData.data : []),
@@ -84,6 +93,22 @@ export default function KYCMerchantDetails({
     return '';
   }, [moaDoc, aoaDoc]);
 
+  const existingDocumentConsent = useMemo(
+    () =>
+      (userConsents || [])
+        .filter((item) => item?.consentTemplateId === documentConsentDetails?.id)
+        .sort((a, b) => {
+          if (Boolean(a?.isChecked) !== Boolean(b?.isChecked)) {
+            return Number(Boolean(b?.isChecked)) - Number(Boolean(a?.isChecked));
+          }
+
+          const aTime = new Date(a?.updatedAt || a?.createdAt || 0).getTime();
+          const bTime = new Date(b?.updatedAt || b?.createdAt || 0).getTime();
+          return bTime - aTime;
+        })[0] || null,
+    [documentConsentDetails?.id, userConsents]
+  );
+
   const defaultValues = useMemo(() => {
     const values = {};
 
@@ -98,9 +123,9 @@ export default function KYCMerchantDetails({
     });
 
     values.moaAoaType = defaultMoaAoaType;
-    values.documentSubmissionConsent = false;
+    values.documentSubmissionConsent = Boolean(existingDocumentConsent?.isChecked);
     return values;
-  }, [documents, defaultMoaAoaType]);
+  }, [documents, defaultMoaAoaType, existingDocumentConsent?.isChecked]);
 
   const validationSchema = useMemo(() => {
     const shape = {};
@@ -217,10 +242,17 @@ export default function KYCMerchantDetails({
     () => documents.some((item) => item?.documentFile?.documentFile?.id),
     [documents]
   );
+  const hasSubmittedMerchantDocuments = hasServerData;
 
   useEffect(() => {
-    reset(defaultValues);
+    reset(defaultValues, { keepDirtyValues: true });
   }, [defaultValues, reset]);
+
+  useEffect(() => {
+    if (!documentConsentDetails?.id) return;
+
+    setValue('documentSubmissionConsent', Boolean(existingDocumentConsent?.isChecked));
+  }, [documentConsentDetails?.id, existingDocumentConsent?.isChecked, setValue]);
 
   useEffect(() => {
     if (!mandatoryDocumentIds.length) {
@@ -355,6 +387,50 @@ export default function KYCMerchantDetails({
       enqueueSnackbar(message, { variant: 'error' });
     }
   });
+
+  const handleDocumentConsentChange = async (_, checked, field) => {
+    if (!identifierId || !documentConsentDetails?.id) {
+      return;
+    }
+
+    try {
+      setConsentSubmitting(true);
+
+      const payload = {
+        consentTemplateId: documentConsentDetails.id,
+        isChecked: checked,
+        identifierId,
+      };
+
+      if (existingDocumentConsent?.identifierId || existingDocumentConsent?.id) {
+        await axiosInstance.patch('/user-consents', payload);
+      } else {
+        await axiosInstance.post('/user-consents', payload);
+      }
+
+      await refreshUserConsents();
+    } catch (error) {
+      console.error('Failed to save merchant document consent', error);
+      field.onChange(!checked);
+      enqueueSnackbar('Failed to save consent. Please try again.', { variant: 'error' });
+    } finally {
+      setConsentSubmitting(false);
+    }
+  };
+
+  const documentConsentLabel = useMemo(() => {
+    if (!documentConsentDetails?.content) {
+      return 'I confirm that the uploaded documents may be used for verification and stored securely.';
+    }
+
+    return (
+      <Box
+        component="span"
+        sx={{ display: 'inline' }}
+        dangerouslySetInnerHTML={{ __html: documentConsentDetails.content }}
+      />
+    );
+  }, [documentConsentDetails?.content]);
 
   // const handleAutoFill = async () => {
   //   if (!documents.length) {
@@ -555,7 +631,11 @@ export default function KYCMerchantDetails({
               {!kycSectionLoading && !kycSectionError && Boolean(documents.length) && (
                 <RHFCheckbox
                   name="documentSubmissionConsent"
-                  label="I confirm that the uploaded documents may be used for verification and stored securely."
+                  label={documentConsentLabel}
+              onChange={handleDocumentConsentChange}
+              checkboxProps={{
+                    disabled: consentSubmitting || hasSubmittedMerchantDocuments,
+              }}
                   sx={{
                     alignItems: 'flex-start',
                     m: 0,

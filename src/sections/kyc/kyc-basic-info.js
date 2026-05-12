@@ -34,11 +34,30 @@ import Logo from 'src/components/logo';
 import { indianStates } from 'src/_mock/_state';
 import axiosInstance from 'src/utils/axios';
 import { setOnboardingSession } from 'src/auth/context/jwt/utils';
+import { useGetConsentDetails } from 'src/api/consent-details';
+import { useGetUserConsents } from 'src/api/user-consents';
 import KYCFooter from './kyc-footer';
 
 // import { NewCompanyBasicInfo } from 'src/forms-autofilled-script/kyb-script/newkyb';
 
 // ----------------------------------------------------------------------
+
+const COMPANY_INFO_CONSENT_SLUG = 'merchant-company-details';
+const PAN_DETAILS_CONSENT_SLUG = 'merchant-pan-details';
+
+function getConsentLabel(content, fallbackLabel) {
+  if (!content) {
+    return fallbackLabel;
+  }
+
+  return (
+    <Box
+      component="span"
+      sx={{ display: 'inline' }}
+      dangerouslySetInnerHTML={{ __html: content }}
+    />
+  );
+}
 
 export default function KYCBasicInfo() {
   const { enqueueSnackbar } = useSnackbar();
@@ -48,7 +67,13 @@ export default function KYCBasicInfo() {
 
   const sessionId = localStorage.getItem('sessionId');
   const { kycProgress, profileId: fetchedProfileId } = useGetKycProgress(sessionId);
-
+  const { userConsents, refreshUserConsents } = useGetUserConsents({ sessionId });
+  const [consentSubmitting, setConsentSubmitting] = useState({
+    companyInfoFetchConsent: false,
+    panOcrConsent: false,
+  });
+  const { consentDetails: companyConsentDetails } = useGetConsentDetails(COMPANY_INFO_CONSENT_SLUG);
+  const { consentDetails: panConsentDetails } = useGetConsentDetails(PAN_DETAILS_CONSENT_SLUG);
   const profileId = storedCompanyProfileId || fetchedProfileId;
   console.log('KYCBasicInfo profileId:', profileId);
 
@@ -181,6 +206,56 @@ export default function KYCBasicInfo() {
     .matches(/^[LU][0-9]{5}[A-Z]{2}[0-9]{4}[A-Z]{3}[0-9]{6}$/)
     .isValidSync((cinValue || '').trim().toUpperCase());
   const canFetchCompanyInfo = companyInfoFetchConsent && isCinValid;
+  const acceptedConsentMap = useMemo(
+    () =>
+      new Map(
+        (userConsents || [])
+          .filter((item) => item?.consentTemplateId)
+          .map((item) => [item.consentTemplateId, Boolean(item.isChecked)])
+      ),
+    [userConsents]
+  );
+
+  const handleConsentChange = async (fieldName, consentTemplateId, checked, field) => {
+    if (!sessionId || !consentTemplateId) {
+      return;
+    }
+
+    try {
+      setConsentSubmitting((prev) => ({
+        ...prev,
+        [fieldName]: true,
+      }));
+
+      const payload = {
+        consentTemplateId,
+        isChecked: checked,
+        sessionId,
+      };
+
+      const response = await axiosInstance.post('/user-consents', payload);
+
+      if (response?.data?.sessionId) {
+        await axiosInstance.patch('/user-consents', {
+          ...payload,
+          sessionId: response.data.sessionId,
+        });
+      }
+
+      await refreshUserConsents();
+    } catch (error) {
+      console.error('Failed to save user consent', error);
+      field.onChange(!checked);
+      enqueueSnackbar('Failed to save consent. Please try again.', {
+        variant: 'error',
+      });
+    } finally {
+      setConsentSubmitting((prev) => ({
+        ...prev,
+        [fieldName]: false,
+      }));
+    }
+  };
 
   const onSubmit = handleSubmit(async (formData) => {
     try {
@@ -418,6 +493,19 @@ export default function KYCBasicInfo() {
     extractPanDetails();
   }, [panFile?.id, skipPanExtractionOnce, enqueueSnackbar, setValue]);
 
+  useEffect(() => {
+    if (companyConsentDetails?.id) {
+      setValue(
+        'companyInfoFetchConsent',
+        acceptedConsentMap.get(companyConsentDetails.id) ?? false
+      );
+    }
+
+    if (panConsentDetails?.id) {
+      setValue('panOcrConsent', acceptedConsentMap.get(panConsentDetails.id) ?? false);
+    }
+  }, [acceptedConsentMap, companyConsentDetails, panConsentDetails, setValue]);
+
   // const handleAutoFill = async () => {
   //   const autoData = NewCompanyBasicInfo();
 
@@ -565,7 +653,21 @@ export default function KYCBasicInfo() {
               <Grid xs={12}>
                 <RHFCheckbox
                   name="companyInfoFetchConsent"
-                  label="I agree to fetch and use my company data from authorized third-party sources."
+                  label={getConsentLabel(
+                    companyConsentDetails?.content,
+                    'I agree to fetch and use my company data from authorized third-party sources.'
+                  )}
+                  onChange={async (_, checked, field) => {
+                    await handleConsentChange(
+                      'companyInfoFetchConsent',
+                      companyConsentDetails?.id,
+                      checked,
+                      field
+                    );
+                  }}
+                  checkboxProps={{
+                    disabled: consentSubmitting.companyInfoFetchConsent,
+                  }}
                   sx={{
                     alignItems: 'flex-start',
                     m: 0,
@@ -804,7 +906,21 @@ export default function KYCBasicInfo() {
               <Grid xs={12}>
                 <RHFCheckbox
                   name="panOcrConsent"
-                  label="I confirm and agree to the use and storage of my PAN details for verification and compliance."
+                  label={getConsentLabel(
+                    panConsentDetails?.content,
+                    'I confirm and agree to the use and storage of my PAN details for verification and compliance.'
+                  )}
+                  onChange={async (_, checked, field) => {
+                    await handleConsentChange(
+                      'panOcrConsent',
+                      panConsentDetails?.id,
+                      checked,
+                      field
+                    );
+                  }}
+                  checkboxProps={{
+                    disabled: consentSubmitting.panOcrConsent,
+                  }}
                   sx={{
                     alignItems: 'flex-start',
                     m: 0,
