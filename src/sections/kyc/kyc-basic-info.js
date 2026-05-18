@@ -114,8 +114,7 @@ export default function KYCBasicInfo() {
       .required('CIN is required'),
     companyName: Yup.string()
       .transform((value) => value?.toUpperCase())
-      .required('Company Name is required')
-      .matches(/^[A-Za-z\s]+$/, 'Only alphabets allowed'),
+      .required('Company Name is required'),
     gstin: Yup.string()
       .transform((value) => value?.toUpperCase())
       .matches(/^[0-9]{2}[A-Z]{5}[0-9]{4}[A-Z][1-9A-Z]Z[0-9A-Z]$/, 'Invalid GSTIN format')
@@ -136,8 +135,7 @@ export default function KYCBasicInfo() {
       .required('PAN Number is required'),
     panHoldersName: Yup.string()
       .transform((value) => value?.toUpperCase())
-      .required("PAN Holder's Name is required")
-      .matches(/^[A-Za-z\s]+$/, 'Only alphabets allowed'),
+      .required("PAN Holder's Name is required"),
     merchantDealershipTypeId: Yup.string().required('Merchant type is required'),
     companyInfoFetchConsent: Yup.boolean(),
     panOcrConsent: Yup.boolean(),
@@ -257,7 +255,8 @@ export default function KYCBasicInfo() {
     }
   };
 
-  const onSubmit = handleSubmit(async (formData) => {
+  const onSubmit = handleSubmit(
+    async (formData) => {
     try {
       // eslint-disable-next-line no-shadow
       const sessionId = localStorage.getItem('sessionId') || '';
@@ -343,11 +342,19 @@ export default function KYCBasicInfo() {
       }
     } catch (error) {
       console.error(error);
-      enqueueSnackbar(error?.error?.message || 'Something went wrong', {
-        variant: 'error',
-      });
+      enqueueSnackbar(
+        error?.error?.message || error?.response?.data?.message || error?.message || 'Something went wrong',
+        { variant: 'error' }
+      );
     }
-  });
+  },
+  (validationErrors) => {
+    const first = Object.values(validationErrors)[0];
+    const message = first?.message || 'Please fill all required fields correctly';
+    enqueueSnackbar(message, { variant: 'error' });
+    console.error('Form validation errors:', validationErrors);
+  }
+  );
 
   const existingPAN = useMemo(() => {
     const p = kycProgress?.profile?.merchantPanCard;
