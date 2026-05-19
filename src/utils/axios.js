@@ -92,6 +92,17 @@ export const endpoints = {
     data: '/company-profiles/bank-details'
   },
 
+  consent:{
+    data: '/consent-templates/slug/{slug}',
+  },
+  userConsents: {
+    listBySessionId: (sessionId) => `/user-consents?sessionId=${encodeURIComponent(sessionId)}`,
+    listByIdentifierId: (identifierId) =>
+      `/user-consents?identifierId=${encodeURIComponent(identifierId)}`,
+    create: '/user-consents',
+    update: '/user-consents',
+  },
+
   scheduler: {
     list: '/schedulers',
     filterList: (filter) => `/schedulers?filter=${filter}`,

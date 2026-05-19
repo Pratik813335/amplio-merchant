@@ -30,6 +30,8 @@ import { LoadingButton } from '@mui/lab';
 import Iconify from 'src/components/iconify';
 import PropTypes from 'prop-types';
 import { useGetDetails } from 'src/api/merchantKyc';
+import { useGetConsentDetails } from 'src/api/consent-details';
+import { useGetUserConsents } from 'src/api/user-consents';
 import axiosInstance from 'src/utils/axios';
 import { applyAutofillValues } from 'src/utils/autofill/form';
 import { generateBankDetailsAutofill } from 'src/utils/autofill/generators';
@@ -40,6 +42,23 @@ import KYCFooter from './kyc-footer';
 
 // ----------------------------------------------------------------------
 
+const BANK_DOCUMENT_CONSENT_SLUG = 'merchant-bank-cancel-check';
+const PENNY_DROP_CONSENT_SLUG = 'merchant-bank-details';
+
+function getConsentLabel(content, fallbackLabel) {
+  if (!content) {
+    return fallbackLabel;
+  }
+
+  return (
+    <Box
+      component="span"
+      sx={{ display: 'inline' }}
+      dangerouslySetInnerHTML={{ __html: content }}
+    />
+  );
+}
+
 export default function KYCBankDetails({
   percent,
   setActiveStepId,
@@ -48,10 +67,23 @@ export default function KYCBankDetails({
 }) {
   const router = useRouter();
   const { Details: bankDetails, Loading: bankLoading, refreshDetails } = useGetDetails();
+  const identifierId =
+    sessionStorage.getItem('merchant_profile_id') || sessionStorage.getItem('merchant_user_id');
+  const { consentDetails: bankDocumentConsentDetails } = useGetConsentDetails(
+    BANK_DOCUMENT_CONSENT_SLUG
+  );
+  const { consentDetails: pennyDropConsentDetails } = useGetConsentDetails(
+    PENNY_DROP_CONSENT_SLUG
+  );
+  const { userConsents, refreshUserConsents } = useGetUserConsents({ identifierId });
   const [isAutofilling, setIsAutofilling] = useState(false);
   const [isValidating, setIsValidating] = useState(false);
   const [isVerified, setIsVerified] = useState(false);
   const [lastVerifiedValues, setLastVerifiedValues] = useState(null);
+  const [consentSubmitting, setConsentSubmitting] = useState({
+    bankDocumentConsent: false,
+    pennyDropConsent: false,
+  });
 
   // ---------------- VALIDATION ----------------
   const NewSchema = Yup.object().shape({
@@ -107,12 +139,48 @@ export default function KYCBankDetails({
   const bankDocumentConsent = useWatch({ control, name: 'bankDocumentConsent' });
   const pennyDropConsent = useWatch({ control, name: 'pennyDropConsent' });
   const bankRecord = Array.isArray(bankDetails) ? bankDetails[0] : bankDetails;
+  const hasSubmittedBankDetails = Boolean(
+    bankRecord?.id ||
+      bankRecord?.accountNumber ||
+      bankRecord?.bankAccountProof?.id ||
+      bankRecord?.bankAccountProofId
+  );
+  const existingBankDocumentConsent = useMemo(
+    () =>
+      (userConsents || []).find(
+        (item) => item?.consentTemplateId === bankDocumentConsentDetails?.id
+      ) || null,
+    [bankDocumentConsentDetails?.id, userConsents]
+  );
+  const existingPennyDropConsent = useMemo(
+    () =>
+      (userConsents || []).find(
+        (item) => item?.consentTemplateId === pennyDropConsentDetails?.id
+      ) || null,
+    [pennyDropConsentDetails?.id, userConsents]
+  );
 
   useEffect(() => {
     if (bankRecord?.status === 1) {
       setIsVerified(true);
     }
   }, [bankRecord]);
+
+  useEffect(() => {
+    if (bankDocumentConsentDetails?.id) {
+      setValue('bankDocumentConsent', Boolean(existingBankDocumentConsent?.isChecked));
+    }
+
+    if (pennyDropConsentDetails?.id) {
+      setValue('pennyDropConsent', Boolean(existingPennyDropConsent?.isChecked));
+    }
+  }, [
+    bankDocumentConsentDetails?.id,
+    existingBankDocumentConsent,
+    existingPennyDropConsent,
+    pennyDropConsentDetails?.id,
+    setValue,
+  ]);
 
   useEffect(() => {
     // const isSameAsBackend =
@@ -138,6 +206,44 @@ export default function KYCBankDetails({
     const file = acceptedFiles[0];
     if (file) {
       setValue('addressProof', file, { shouldValidate: true });
+    }
+  };
+
+  const handleConsentChange = async (fieldName, consentDetails, existingConsent, checked, field) => {
+    if (!identifierId || !consentDetails?.id) {
+      return;
+    }
+
+    try {
+      setConsentSubmitting((prev) => ({
+        ...prev,
+        [fieldName]: true,
+      }));
+
+      const payload = {
+        consentTemplateId: consentDetails.id,
+        isChecked: checked,
+        identifierId,
+      };
+
+      if (existingConsent?.identifierId || existingConsent?.id) {
+        await axiosInstance.patch('/user-consents', payload);
+      } else {
+        await axiosInstance.post('/user-consents', payload);
+      }
+
+      await refreshUserConsents();
+    } catch (error) {
+      console.error('Failed to save bank consent', error);
+      field.onChange(!checked);
+      enqueueSnackbar('Failed to save consent. Please try again.', {
+        variant: 'error',
+      });
+    } finally {
+      setConsentSubmitting((prev) => ({
+        ...prev,
+        [fieldName]: false,
+      }));
     }
   };
 
@@ -376,13 +482,20 @@ export default function KYCBankDetails({
         accountHolderName: bankDetails[0]?.accountHolderName || '',
         bankAddress: bankDetails[0]?.bankAddress || '',
         bankShortCode: bankDetails[0]?.bankShortCode || '',
+        bankDocumentConsent: Boolean(existingBankDocumentConsent?.isChecked),
+        pennyDropConsent: Boolean(existingPennyDropConsent?.isChecked),
       });
       if (!dataInitializedSteps.includes('kyc_bank_details')) {
         setDataInitializedSteps?.((prev = []) => [...prev, 'kyc_bank_details']);
       }
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [bankDetails, reset]);
+  }, [
+    bankDetails,
+    existingBankDocumentConsent?.isChecked,
+    existingPennyDropConsent?.isChecked,
+    reset,
+  ]);
 
   return (
     <Container>
@@ -439,7 +552,23 @@ export default function KYCBankDetails({
           <Box sx={{ my: 2 }}>
             <RHFCheckbox
               name="bankDocumentConsent"
-              label={`I confirm that I am uploading my ${documentType === 'cheque' ? 'cancelled cheque' : 'bank statement'} for bank account verification and authorize its secure storage for KYC purposes.`}
+              label={getConsentLabel(
+                bankDocumentConsentDetails?.content,
+                `I confirm that I am uploading my ${documentType === 'cheque' ? 'cancelled cheque' : 'bank statement'} for bank account verification and authorize its secure storage for KYC purposes.`
+              )}
+              onChange={async (_, checked, field) => {
+                await handleConsentChange(
+                  'bankDocumentConsent',
+                  bankDocumentConsentDetails,
+                  existingBankDocumentConsent,
+                  checked,
+                  field
+                );
+              }}
+              checkboxProps={{
+                disabled:
+                  consentSubmitting.bankDocumentConsent || hasSubmittedBankDetails,
+              }}
               sx={{
                 '& .MuiFormControlLabel-label': {
                   typography: 'body2',
@@ -614,8 +743,23 @@ export default function KYCBankDetails({
           <Box sx={{ mb: 2 }}>
             <RHFCheckbox
               name="pennyDropConsent"
-              label="I confirm and agree to the bank verification process, including the Rs. 1 debit."
-              disabled={isVerified}
+              label={getConsentLabel(
+                pennyDropConsentDetails?.content,
+                'I confirm and agree to the bank verification process, including the Rs. 1 debit.'
+              )}
+              onChange={async (_, checked, field) => {
+                await handleConsentChange(
+                  'pennyDropConsent',
+                  pennyDropConsentDetails,
+                  existingPennyDropConsent,
+                  checked,
+                  field
+                );
+              }}
+              checkboxProps={{
+                disabled:
+                  isVerified || consentSubmitting.pennyDropConsent || hasSubmittedBankDetails,
+              }}
               sx={{
                 '& .MuiFormControlLabel-label': {
                   typography: 'body2',

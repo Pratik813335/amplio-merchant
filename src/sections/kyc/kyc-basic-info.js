@@ -38,11 +38,30 @@ import { generateCompanyBasicInfoAutofill } from 'src/utils/autofill/generators'
 import { slugify } from 'src/utils/autofill/random';
 import { STATIC_KYC_PDF_PATHS, uploadStaticPdf } from 'src/utils/autofill/static-pdf-upload';
 import { setOnboardingSession } from 'src/auth/context/jwt/utils';
+import { useGetConsentDetails } from 'src/api/consent-details';
+import { useGetUserConsents } from 'src/api/user-consents';
 import KYCFooter from './kyc-footer';
 
 // import { NewCompanyBasicInfo } from 'src/forms-autofilled-script/kyb-script/newkyb';
 
 // ----------------------------------------------------------------------
+
+const COMPANY_INFO_CONSENT_SLUG = 'merchant-company-details';
+const PAN_DETAILS_CONSENT_SLUG = 'merchant-pan-details';
+
+function getConsentLabel(content, fallbackLabel) {
+  if (!content) {
+    return fallbackLabel;
+  }
+
+  return (
+    <Box
+      component="span"
+      sx={{ display: 'inline' }}
+      dangerouslySetInnerHTML={{ __html: content }}
+    />
+  );
+}
 
 export default function KYCBasicInfo() {
   const { enqueueSnackbar } = useSnackbar();
@@ -52,7 +71,13 @@ export default function KYCBasicInfo() {
 
   const sessionId = localStorage.getItem('sessionId');
   const { kycProgress, profileId: fetchedProfileId } = useGetKycProgress(sessionId);
-
+  const { userConsents, refreshUserConsents } = useGetUserConsents({ sessionId });
+  const [consentSubmitting, setConsentSubmitting] = useState({
+    companyInfoFetchConsent: false,
+    panOcrConsent: false,
+  });
+  const { consentDetails: companyConsentDetails } = useGetConsentDetails(COMPANY_INFO_CONSENT_SLUG);
+  const { consentDetails: panConsentDetails } = useGetConsentDetails(PAN_DETAILS_CONSENT_SLUG);
   const profileId = storedCompanyProfileId || fetchedProfileId;
   console.log('KYCBasicInfo profileId:', profileId);
 
@@ -94,8 +119,7 @@ export default function KYCBasicInfo() {
       .required('CIN is required'),
     companyName: Yup.string()
       .transform((value) => value?.toUpperCase())
-      .required('Company Name is required')
-      .matches(/^[A-Za-z\s]+$/, 'Only alphabets allowed'),
+      .required('Company Name is required'),
     gstin: Yup.string()
       .transform((value) => value?.toUpperCase())
       .matches(/^[0-9]{2}[A-Z]{5}[0-9]{4}[A-Z][1-9A-Z]Z[0-9A-Z]$/, 'Invalid GSTIN format')
@@ -116,8 +140,7 @@ export default function KYCBasicInfo() {
       .required('PAN Number is required'),
     panHoldersName: Yup.string()
       .transform((value) => value?.toUpperCase())
-      .required("PAN Holder's Name is required")
-      .matches(/^[A-Za-z\s]+$/, 'Only alphabets allowed'),
+      .required("PAN Holder's Name is required"),
     merchantDealershipTypeId: Yup.string().required('Merchant type is required'),
     companyInfoFetchConsent: Yup.boolean(),
     panOcrConsent: Yup.boolean(),
@@ -186,8 +209,59 @@ export default function KYCBasicInfo() {
     .matches(/^[LU][0-9]{5}[A-Z]{2}[0-9]{4}[A-Z]{3}[0-9]{6}$/)
     .isValidSync((cinValue || '').trim().toUpperCase());
   const canFetchCompanyInfo = companyInfoFetchConsent && isCinValid;
+  const acceptedConsentMap = useMemo(
+    () =>
+      new Map(
+        (userConsents || [])
+          .filter((item) => item?.consentTemplateId)
+          .map((item) => [item.consentTemplateId, Boolean(item.isChecked)])
+      ),
+    [userConsents]
+  );
 
-  const onSubmit = handleSubmit(async (formData) => {
+  const handleConsentChange = async (fieldName, consentTemplateId, checked, field) => {
+    if (!sessionId || !consentTemplateId) {
+      return;
+    }
+
+    try {
+      setConsentSubmitting((prev) => ({
+        ...prev,
+        [fieldName]: true,
+      }));
+
+      const payload = {
+        consentTemplateId,
+        isChecked: checked,
+        sessionId,
+      };
+
+      const response = await axiosInstance.post('/user-consents', payload);
+
+      if (response?.data?.sessionId) {
+        await axiosInstance.patch('/user-consents', {
+          ...payload,
+          sessionId: response.data.sessionId,
+        });
+      }
+
+      await refreshUserConsents();
+    } catch (error) {
+      console.error('Failed to save user consent', error);
+      field.onChange(!checked);
+      enqueueSnackbar('Failed to save consent. Please try again.', {
+        variant: 'error',
+      });
+    } finally {
+      setConsentSubmitting((prev) => ({
+        ...prev,
+        [fieldName]: false,
+      }));
+    }
+  };
+
+  const onSubmit = handleSubmit(
+    async (formData) => {
     try {
       // eslint-disable-next-line no-shadow
       const sessionId = localStorage.getItem('sessionId') || '';
@@ -273,11 +347,19 @@ export default function KYCBasicInfo() {
       }
     } catch (error) {
       console.error(error);
-      enqueueSnackbar(error?.error?.message || 'Something went wrong', {
-        variant: 'error',
-      });
+      enqueueSnackbar(
+        error?.error?.message || error?.response?.data?.message || error?.message || 'Something went wrong',
+        { variant: 'error' }
+      );
     }
-  });
+  },
+  (validationErrors) => {
+    const first = Object.values(validationErrors)[0];
+    const message = first?.message || 'Please fill all required fields correctly';
+    enqueueSnackbar(message, { variant: 'error' });
+    console.error('Form validation errors:', validationErrors);
+  }
+  );
 
   const existingPAN = useMemo(() => {
     const p = kycProgress?.profile?.merchantPanCard;
@@ -423,9 +505,21 @@ export default function KYCBasicInfo() {
     extractPanDetails();
   }, [panFile?.id, skipPanExtractionOnce, enqueueSnackbar, setValue]);
 
+  useEffect(() => {
+    if (companyConsentDetails?.id) {
+      setValue(
+        'companyInfoFetchConsent',
+        acceptedConsentMap.get(companyConsentDetails.id) ?? false
+      );
+    }
+
+    if (panConsentDetails?.id) {
+      setValue('panOcrConsent', acceptedConsentMap.get(panConsentDetails.id) ?? false);
+    }
+  }, [acceptedConsentMap, companyConsentDetails, panConsentDetails, setValue]);
+
   const handleAutoFill = useCallback(async () => {
     setIsAutofilling(true);
-
     try {
       const generatedData = generateCompanyBasicInfoAutofill();
       const stateValue =
@@ -574,7 +668,21 @@ export default function KYCBasicInfo() {
               <Grid xs={12}>
                 <RHFCheckbox
                   name="companyInfoFetchConsent"
-                  label="I agree to fetch and use my company data from authorized third-party sources."
+                  label={getConsentLabel(
+                    companyConsentDetails?.content,
+                    'I agree to fetch and use my company data from authorized third-party sources.'
+                  )}
+                  onChange={async (_, checked, field) => {
+                    await handleConsentChange(
+                      'companyInfoFetchConsent',
+                      companyConsentDetails?.id,
+                      checked,
+                      field
+                    );
+                  }}
+                  checkboxProps={{
+                    disabled: consentSubmitting.companyInfoFetchConsent,
+                  }}
                   sx={{
                     alignItems: 'flex-start',
                     m: 0,
@@ -813,7 +921,21 @@ export default function KYCBasicInfo() {
               <Grid xs={12}>
                 <RHFCheckbox
                   name="panOcrConsent"
-                  label="I confirm and agree to the use and storage of my PAN details for verification and compliance."
+                  label={getConsentLabel(
+                    panConsentDetails?.content,
+                    'I confirm and agree to the use and storage of my PAN details for verification and compliance.'
+                  )}
+                  onChange={async (_, checked, field) => {
+                    await handleConsentChange(
+                      'panOcrConsent',
+                      panConsentDetails?.id,
+                      checked,
+                      field
+                    );
+                  }}
+                  checkboxProps={{
+                    disabled: consentSubmitting.panOcrConsent,
+                  }}
                   sx={{
                     alignItems: 'flex-start',
                     m: 0,

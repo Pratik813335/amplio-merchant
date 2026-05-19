@@ -17,11 +17,29 @@ import FormProvider, { RHFCheckbox, RHFSelect, RHFTextField } from 'src/componen
 
 import { useSnackbar } from 'src/components/snackbar';
 import axiosInstance from 'src/utils/axios';
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useGetPsp } from 'src/api/psp-master';
 import { LoadingButton } from '@mui/lab';
 import { applyAutofillValues } from 'src/utils/autofill/form';
 import { getPspAutofillDefaults } from 'src/utils/autofill/generators';
+import { useGetConsentDetails } from 'src/api/consent-details';
+import { useGetUserConsents } from 'src/api/user-consents';
+
+const PSP_CONSENT_SLUG = 'merchant-psp-details';
+
+function getConsentLabel(content, fallbackLabel) {
+  if (!content) {
+    return fallbackLabel;
+  }
+
+  return (
+    <Box
+      component="span"
+      sx={{ display: 'inline' }}
+      dangerouslySetInnerHTML={{ __html: content }}
+    />
+  );
+}
 
 export default function PSPIntegrationForm({
   open,
@@ -33,6 +51,28 @@ export default function PSPIntegrationForm({
   const { enqueueSnackbar } = useSnackbar();
   const { psp = [], pspsLoading } = useGetPsp();
   const [isAutofilling, setIsAutofilling] = useState(false);
+  const [consentSubmitting, setConsentSubmitting] = useState(false);
+  const identifierId = sessionStorage.getItem('merchant_profile_id');
+  const { consentDetails: pspConsentDetails } = useGetConsentDetails(PSP_CONSENT_SLUG);
+  const { userConsents, refreshUserConsents } = useGetUserConsents({
+    identifierId,
+  });
+  const existingPspConsent = useMemo(
+    () =>
+      (userConsents || [])
+        .filter((item) => item?.consentTemplateId === pspConsentDetails?.id)
+        .sort((a, b) => {
+          if (Boolean(a?.isChecked) !== Boolean(b?.isChecked)) {
+            return Number(Boolean(b?.isChecked)) - Number(Boolean(a?.isChecked));
+          }
+
+          const aTime = new Date(a?.updatedAt || a?.createdAt || 0).getTime();
+          const bTime = new Date(b?.updatedAt || b?.createdAt || 0).getTime();
+          return bTime - aTime;
+        })[0] || null,
+    [pspConsentDetails?.id, userConsents]
+  );
+  const hasSubmittedPsp = Boolean(currentPSP?.id);
 
   const PSPValidationSchema = Yup.object().shape({
     pspMasterId: Yup.string().required('PSP is required'),
@@ -67,11 +107,43 @@ export default function PSPIntegrationForm({
   const fields = selectedPsp?.pspMasterFields || [];
   const sortedFields = [...fields].sort((a, b) => a.order - b.order);
 
+  const handlePspConsentChange = async (_, checked, field) => {
+    if (!identifierId || !pspConsentDetails?.id) {
+      return;
+    }
+
+    setConsentSubmitting(true);
+
+    try {
+      const payload = {
+        consentTemplateId: pspConsentDetails.id,
+        isChecked: checked,
+        identifierId,
+      };
+
+      if (existingPspConsent?.identifierId || existingPspConsent?.id) {
+        await axiosInstance.patch('/user-consents', payload);
+      } else {
+        await axiosInstance.post('/user-consents', payload);
+      }
+
+      await refreshUserConsents();
+    } catch (error) {
+      console.error('Failed to save PSP consent', error);
+      field.onChange(!checked);
+      enqueueSnackbar('Failed to save consent. Please try again.', {
+        variant: 'error',
+      });
+    } finally {
+      setConsentSubmitting(false);
+    }
+  };
+
   useEffect(() => {
     if (currentPSP && psp.length) {
       const resetData = {
         pspMasterId: currentPSP.pspMasterId,
-        pspConsent: true,
+        pspConsent: false,
       };
 
       const pspMaster = psp.find((p) => p.id === currentPSP.pspMasterId);
@@ -91,6 +163,12 @@ export default function PSPIntegrationForm({
       });
     }
   }, [currentPSP, psp, reset]);
+
+  useEffect(() => {
+    if (open) {
+      setValue('pspConsent', Boolean(existingPspConsent?.isChecked));
+    }
+  }, [existingPspConsent?.isChecked, open, setValue]);
 
   const onSubmit = handleSubmit(async (data) => {
     try {
@@ -215,7 +293,14 @@ export default function PSPIntegrationForm({
 
             <RHFCheckbox
               name="pspConsent"
-              label="I agree to the use of PSP details for payment processing and integration."
+              label={getConsentLabel(
+                pspConsentDetails?.content,
+                'I agree to the use of PSP details for payment processing and integration.'
+              )}
+              onChange={handlePspConsentChange}
+              checkboxProps={{
+                disabled: consentSubmitting || hasSubmittedPsp,
+              }}
               sx={{
                 alignItems: 'flex-start',
                 m: 0,
@@ -254,7 +339,7 @@ export default function PSPIntegrationForm({
                 boxShadow: 'none',
               },
             }}
-            disabled={isSubmitting}
+            disabled={isSubmitting || consentSubmitting}
           >
             Submit for Review
           </Button>

@@ -482,11 +482,11 @@ export default function BusinessProfile() {
             </Grid>
           </Grid>
 
-          {/* <Box sx={{ mt: 4, display: 'flex', justifyContent: 'flex-end' }}>
+          <Box sx={{ mt: 4, display: 'flex', justifyContent: 'flex-end' }}>
             <LoadingButton type="submit" variant="contained" color="primary" loading={isSubmitting}>
               Save Changes
             </LoadingButton>
-          </Box> */}
+          </Box>
 
 
 

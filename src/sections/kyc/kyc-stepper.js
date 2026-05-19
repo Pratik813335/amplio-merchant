@@ -18,7 +18,7 @@ import UbosListView from './ubo/view/kyc-ubo-list-view';
 export default function Stepper() {
   const router = useRouter();
   const sessionId = localStorage.getItem('sessionId');
-  const { kycProgress } = useGetKycProgress(sessionId);
+  const { kycProgress, kycProgressLoading } = useGetKycProgress(sessionId);
   const onboardingState = getMerchantOnboardingState(kycProgress);
   const steps = [
     { id: 'kyc_merchant_documents', number: 1, lines: ['Merchant', 'Documents'] },
@@ -51,6 +51,10 @@ export default function Stepper() {
   const lastProgressSignatureRef = useRef('');
 
   const nextIncompleteStepId = useMemo(() => {
+    if (kycProgressLoading || !kycProgress) {
+      return null;
+    }
+
     const progress = kycProgress?.currentProgress || [];
 
     if (!progress.includes('merchant_documents')) return 'kyc_merchant_documents';
@@ -60,7 +64,7 @@ export default function Stepper() {
     if (!progress.includes('merchant_psp_details')) return 'kyc_psp';
 
     return 'kyc_psp';
-  }, [kycProgress]);
+  }, [kycProgress, kycProgressLoading]);
 
   useEffect(() => {
     if (onboardingState === 'pending_approval') {
@@ -69,6 +73,10 @@ export default function Stepper() {
   }, [onboardingState, router]);
 
   useEffect(() => {
+    if (kycProgressLoading || !kycProgress) {
+      return;
+    }
+
     const progress = kycProgress?.currentProgress || [];
     const progressSignature = JSON.stringify(progress);
     const hasProgressChanged = lastProgressSignatureRef.current !== progressSignature;
@@ -97,11 +105,11 @@ export default function Stepper() {
       )
     );
 
-    if (hasProgressChanged) {
+    if (hasProgressChanged && nextIncompleteStepId) {
       setActiveStepId(nextIncompleteStepId);
       lastProgressSignatureRef.current = progressSignature;
     }
-  }, [kycProgress, nextIncompleteStepId, stepProgressKeyMap]);
+  }, [kycProgress, kycProgressLoading, nextIncompleteStepId, stepProgressKeyMap]);
 
   const updateStepPercent = (stepId, percent) => {
     setStepsProgress((prev) => ({
@@ -122,6 +130,10 @@ export default function Stepper() {
   };
 
   const renderForm = () => {
+    if (kycProgressLoading || !kycProgress) {
+      return null;
+    }
+
     switch (activeStepId) {
       case 'kyc_merchant_documents':
         return (
